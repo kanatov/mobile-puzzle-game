@@ -5,6 +5,7 @@ using System.Collections;
 public class UnitType {
 
 	public string name;
-	public GameObject gameObject;
+	public GameObject model;
 	public float speed;
+	public int DirectionGroup;
 }

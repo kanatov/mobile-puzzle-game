@@ -2,23 +2,27 @@
 using System.Collections.Generic;
 using System.Linq;
 
-public class Unit : MonoBehaviour {
+public class Unit : MonoBehaviour
+{
 
 	// Public data
 	public Main Main;
-	public GameObject prefab;
-	public float speed;
+	public Map Map;
 	// Direction group depend the allowed direction layer
 	// 0. Ground
-	public int DirectionGroup;
-	public int PlayerGroup;
+	public int Type;
+	public UnitType[] UnitTypes;
 
 	// Private data
-	Node target;
-	Node stepTarget;
-	Node source;
-	List<Node> path = null;
-	List<Node> pathDebug = new List<Node>();
+	GameObject model;
+
+	Cell target;
+	Cell stepTarget;
+	Cell source;
+
+	List<Cell> path = null;
+	List<Cell> pathDebug = new List<Cell> ();
+
 	bool go = true;
 	int counter = 0;
 	int updatePath = 10;
@@ -26,83 +30,102 @@ public class Unit : MonoBehaviour {
 	// Debug
 	Color debugPathColor = Color.yellow;
 
+	public void Init (int _type, Cell _target)
+	{
+		Type = _type;
+		target = source = stepTarget = _target;
+		this.GetComponent<Transform> ().position = Map.GetWorldCoordinates (_target);
 
-	void Update() {
+		model = (GameObject)Instantiate (UnitTypes [_type].model);
+		model.GetComponent<Transform> ().SetParent (this.GetComponent<Transform> ());
+		model.GetComponent<Transform> ().localPosition = new Vector3 (0f, 0.5f, 0f);
+
+		Map.UpdateCellMask (source, 0, -1);
+	}
+
+	void Update ()
+	{
 		// Debug Path
-		int currNode = 0;
+		int currCell = 0;
 		
-		while (currNode < pathDebug.Count - 1) {
-			Node startNode = pathDebug [currNode];
-			Vector3 start = Main.GetWorldCoordinates (startNode);
+		while (currCell < pathDebug.Count - 1) {
+			Cell startCell = pathDebug [currCell];
+			Vector3 start = Map.GetWorldCoordinates (startCell);
 			
-			Node endNode = pathDebug [currNode + 1];
-			Vector3 end = Main.GetWorldCoordinates (endNode);
+			Cell endCell = pathDebug [currCell + 1];
+			Vector3 end = Map.GetWorldCoordinates (endCell);
 			
 			Debug.DrawLine (start, end, debugPathColor);
 			
-			currNode++;
+			currCell++;
 		}
 
 		// Walk animation
-		GetComponent<Transform> ().position = Vector3.MoveTowards(
+		GetComponent<Transform> ().position = Vector3.MoveTowards (
 			GetComponent<Transform> ().position,
-			Main.GetWorldCoordinates(stepTarget),
-			Time.deltaTime * speed
+			Map.GetWorldCoordinates (stepTarget),
+			Time.deltaTime * UnitTypes [Type].speed
 		);
 
-		if (GetComponent<Transform> ().position == Main.GetWorldCoordinates (stepTarget) && go) {
+		if (GetComponent<Transform> ().position == Map.GetWorldCoordinates (stepTarget) && go) {
 			// Unit animation completed
 			NextStep ();
 		}
 	}
 
-	void OnMouseUp() {
-		Main.Select(this.gameObject);
+	void OnMouseUp ()
+	{
+		Main.Select (this.GetComponent<Unit> ());
 	}
 
-	public void Select() {
-		prefab.GetComponent<Renderer>().material.color = Color.red;
+	public void Select ()
+	{
+		model.GetComponent<Renderer> ().material.color = Color.red;
 	}
 
-	public void Deselect() {
-		prefab.GetComponent<Renderer>().material.color = Color.white;
+	public void Deselect ()
+	{
+		model.GetComponent<Renderer> ().material.color = Color.white;
 	}
 
-	public void GoTo(Node _target) {
+	public void GoTo (Cell _target)
+	{
 		if (source != _target && stepTarget != _target) {
 
 			target = _target;
 			counter = 0;
-			path = Main.Map.FindPath(stepTarget, target);
+			path = Map.FindPath (stepTarget, target);
 
 			if (path != null) {
 				// Debug
-				pathDebug = new List<Node>(path);
+				pathDebug = new List<Cell> (path);
 				debugPathColor = Color.yellow;
 
 				// Game
-				stepTarget = path[0];
+				stepTarget = path [0];
 				go = true;
 			} else {
 				// Debug
-				pathDebug = new List<Node>();
-				pathDebug.Add(stepTarget);
-				pathDebug.Add(target);
+				pathDebug = new List<Cell> ();
+				pathDebug.Add (stepTarget);
+				pathDebug.Add (target);
 				debugPathColor = Color.red;
 
 				// Game
 				go = false;
 
-				Invoke("TryGoTo", 1);
+				Invoke ("TryGoTo", 1);
 			}
 		}
 	}
 
-	void TryGoTo() {
+	void TryGoTo ()
+	{
 		GoTo (target);
 	}
 
-	void NextStep() {
+	void NextStep ()
+	{
 		source = stepTarget;
 
 		if (path != null) {
@@ -111,25 +134,32 @@ public class Unit : MonoBehaviour {
 				return;
 			}
 
-			if (path[1].DirectionLayers[DirectionGroup] == -1) {
+			if (path [1].DirectionLayers [UnitTypes [Type].DirectionGroup] == -1) {
 				// The next cell is unavailable
-				// TODO relation between units
-				// TODO units go through each other if it's only the one way
+				// TODO AI: relation between units: units go through each other or shifting if it's only the one way
+				// TODO AI: Unit run away from zombies
+				// TODO AI: imidietly find new path if obstacle (once)
+				// TODO Pathf: One cell step: Simple A* pathfinding
+				// TODO Pathf: Convert cells graph to nodes
+				// TODO Pathf: Small grid
+				// TODO Pathf: move by cell coordinates
+
+				// TO DO Movement out of grid
 				path = null;
 				return;
 			}
 
 			if (target != source) {
 				// Unit target is not achived yet
-				MakeNextStep();
+				MakeNextStep ();
 			} else {
 				path = null;
 			}
 		} else {
 			// We have no path
 			if (target == source) {
-				pathDebug = new List<Node>();
-				GoTo (Main.Map.GetRandomPlace());
+				pathDebug = new List<Cell> ();
+				GoTo (Map.GetRandomPlace ());
 			} else {
 				// The array is finished, but our goal is not achieved yet
 				// Probably we should wait some time, or it is not posible
@@ -138,14 +168,15 @@ public class Unit : MonoBehaviour {
 		}
 	}
 
-	void MakeNextStep() {
+	void MakeNextStep ()
+	{
 		if (counter < updatePath) {
 			counter++;
-			Main.Map.UpdateNodeMask (path [0], 0, 255);
+			Map.UpdateCellMask (path [0], 0, 255);
 		
 			stepTarget = path [1];
 		
-			Main.Map.UpdateNodeMask (stepTarget, 0, -1);
+			Map.UpdateCellMask (stepTarget, 0, -1);
 		
 			path.RemoveAt (0);
 		} else {
@@ -154,18 +185,8 @@ public class Unit : MonoBehaviour {
 		}
 	}
 
-	public void Place(Node _target) {
-		// It is important to get a Pos variable from real node
-		target = source = stepTarget = _target;
-		this.GetComponent<Transform> ().position = Main.GetWorldCoordinates (source);
-		Main.Map.UpdateNodeMask (source, 0, -1);
-
-		speed = UnityEngine.Random.Range (1.5f, 2.5f); 
-		DirectionGroup = 0; 
-		PlayerGroup = 0; 
-	}
-
-	void GetRandomUpdate () {
+	void GetRandomUpdate ()
+	{
 		updatePath = Random.Range (10, 20);
 	}
 }
