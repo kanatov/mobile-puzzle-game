@@ -4,21 +4,22 @@ using System.Linq;
 
 public class Unit : MonoBehaviour
 {
-
+	// Global unit class
 	// Public data
 	public Main Main;
 	public Map Map;
 	// Direction group depend the allowed direction layer
-	// 0. Ground
+	// 0. Player
+	// 1. Zombie
 	public int Type;
 	public UnitType[] UnitTypes;
+
+	public Cell stepTarget;
 
 	// Private data
 	GameObject model;
 
 	Cell target;
-	Cell stepTarget;
-	Cell source;
 
 	List<Cell> path = null;
 	List<Cell> pathDebug = new List<Cell> ();
@@ -30,21 +31,27 @@ public class Unit : MonoBehaviour
 	// Debug
 	Color debugPathColor = Color.yellow;
 
-	public void Init (int _type, Cell _target)
+	public void Init (int _type, Cell _pos)
 	{
 		Type = _type;
-		target = source = stepTarget = _target;
-		this.GetComponent<Transform> ().position = Map.GetWorldCoordinates (_target);
+		target = stepTarget = _pos;
+		this.GetComponent<Transform> ().position = Map.GetWorldCoordinates (_pos);
 
 		model = (GameObject)Instantiate (UnitTypes [_type].model);
 		model.GetComponent<Transform> ().SetParent (this.GetComponent<Transform> ());
 		model.GetComponent<Transform> ().localPosition = new Vector3 (0f, 0.5f, 0f);
 
-		Map.UpdateCellMask (source, 0, -1);
+		Map.UpdateCellMask (stepTarget, 0, -1);
 	}
 
 	void Update ()
 	{
+		// Unit animation completed
+		if (go && GetComponent<Transform> ().position == Map.GetWorldCoordinates (stepTarget)) {
+			GetStep ();
+			return;
+		}
+
 		// Debug Path
 		int currCell = 0;
 		
@@ -66,43 +73,82 @@ public class Unit : MonoBehaviour
 			Map.GetWorldCoordinates (stepTarget),
 			Time.deltaTime * UnitTypes [Type].speed
 		);
+	}
 
-		if (GetComponent<Transform> ().position == Map.GetWorldCoordinates (stepTarget) && go) {
-			// Unit animation completed
-			NextStep ();
+	// TODO AI: relation between units: units go through each other or shifting if it's only the one way
+	// TODO AI: Unit run away from zombies
+	// TODO AI: imidietly find new path if obstacle (once)
+	// TODO Pathf: One cell step: Simple A* pathfinding
+	// TODO Pathf: Convert cells graph to nodes
+	// TODO Pathf: Small grid
+	// TODO Pathf: move by cell coordinates
+	
+	// TO DO Movement out of grid
+
+	void GetStep ()
+	{
+		if (path == null) {
+			if (target == stepTarget) {
+				pathDebug = new List<Cell> ();
+				GoTo (Map.GetRandomPlace ());
+			} else {
+				Invoke ("TryGoTo", 1);
+			}
+
+			return;
 		}
-	}
 
-	void OnMouseUp ()
-	{
-		Main.Select (this.GetComponent<Unit> ());
-	}
+		if (path.Count == 1) {
+			path = null;
+			return;
+		}
+			
+		if (path [1].DirectionLayers [UnitTypes [0].DirectionGroup] == -1) {
+			// The next cell is unavailable
+			path = null;
+			return;
+		}
+			
+		if (target != stepTarget) {
+			// Unit target is not achived yet
+			// Making step
+				
+			if (counter < updatePath) {
+				counter++;
+				Map.UpdateCellMask (path [0], 0, 255);
 
-	public void Select ()
-	{
-		model.GetComponent<Renderer> ().material.color = Color.red;
-	}
+//					if (Type == 1) {
+//						// If unit is Zombie: check closest player unit
+//						FindClosestPlayer ();
+//						return;
+//					}
 
-	public void Deselect ()
-	{
-		model.GetComponent<Renderer> ().material.color = Color.white;
+				stepTarget = path [1];
+				Map.UpdateCellMask (stepTarget, 0, -1);
+				path.RemoveAt (0);
+			} else {
+				GetRandomUpdate ();
+				GoTo (target);
+			}
+		} else {
+			path = null;
+		}
 	}
 
 	public void GoTo (Cell _target)
 	{
-		if (source != _target && stepTarget != _target) {
+		if (stepTarget != _target) {
 
 			target = _target;
 			counter = 0;
+
 			path = Map.FindPath (stepTarget, target);
 
 			if (path != null) {
 				// Debug
 				pathDebug = new List<Cell> (path);
 				debugPathColor = Color.yellow;
-
 				// Game
-				stepTarget = path [0];
 				go = true;
 			} else {
 				// Debug
@@ -124,69 +170,41 @@ public class Unit : MonoBehaviour
 		GoTo (target);
 	}
 
-	void NextStep ()
-	{
-		source = stepTarget;
-
-		if (path != null) {
-			if (path.Count == 1) {
-				path = null;
-				return;
-			}
-
-			if (path [1].DirectionLayers [UnitTypes [Type].DirectionGroup] == -1) {
-				// The next cell is unavailable
-				// TODO AI: relation between units: units go through each other or shifting if it's only the one way
-				// TODO AI: Unit run away from zombies
-				// TODO AI: imidietly find new path if obstacle (once)
-				// TODO Pathf: One cell step: Simple A* pathfinding
-				// TODO Pathf: Convert cells graph to nodes
-				// TODO Pathf: Small grid
-				// TODO Pathf: move by cell coordinates
-
-				// TO DO Movement out of grid
-				path = null;
-				return;
-			}
-
-			if (target != source) {
-				// Unit target is not achived yet
-				MakeNextStep ();
-			} else {
-				path = null;
-			}
-		} else {
-			// We have no path
-			if (target == source) {
-				pathDebug = new List<Cell> ();
-				GoTo (Map.GetRandomPlace ());
-			} else {
-				// The array is finished, but our goal is not achieved yet
-				// Probably we should wait some time, or it is not posible
-				GoTo (target);
-			}
-		}
-	}
-
-	void MakeNextStep ()
-	{
-		if (counter < updatePath) {
-			counter++;
-			Map.UpdateCellMask (path [0], 0, 255);
-		
-			stepTarget = path [1];
-		
-			Map.UpdateCellMask (stepTarget, 0, -1);
-		
-			path.RemoveAt (0);
-		} else {
-			GetRandomUpdate ();
-			GoTo (target);
-		}
-	}
-
 	void GetRandomUpdate ()
 	{
 		updatePath = Random.Range (10, 20);
+	}
+
+	void FindClosestPlayer ()
+	{
+		Cell altTarget = null;
+		int altDistance = 0;
+		
+		foreach (var player in Main.Players) {
+			int tmpDeistance = Map.GetDistance (stepTarget, player.stepTarget);
+			if (tmpDeistance < altDistance || altDistance == 0) {
+				altDistance = tmpDeistance;
+				altTarget = player.stepTarget;
+			}
+		}
+
+		path = null;
+		GoTo (altTarget);
+		
+	}
+
+	void OnMouseUp ()
+	{
+		Main.Select (this.GetComponent<Unit> ());
+	}
+	
+	public void Select ()
+	{
+		model.GetComponent<Renderer> ().material.color = Color.red;
+	}
+	
+	public void Deselect ()
+	{
+		model.GetComponent<Renderer> ().material.color = Color.white;
 	}
 }

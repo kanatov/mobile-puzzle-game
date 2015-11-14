@@ -12,6 +12,9 @@ public class Cell : MonoBehaviour
 	public Color highliteColor = Color.blue;
 	public Color normalColor;
 	public GameObject Tile;
+	public Cell parent;
+	public int gCost;
+	public int hCost;
 
 	// DirectionLayerss of cell emptyness
 	// Compare index
@@ -36,6 +39,12 @@ public class Cell : MonoBehaviour
 	{
 		if (Tile != null) {
 			Tile.GetComponent<Renderer> ().material.color = normalColor;
+		}
+	}
+
+	public int fCost {
+		get {
+			return gCost + hCost;
 		}
 	}
 }

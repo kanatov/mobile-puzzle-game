@@ -8,19 +8,21 @@ public class Main : MonoBehaviour
 	//Public data
 	public GameObject Map;
 	public Unit selectedObject;
+	public List<Unit> Players;
 	public GameObject MapPrefab;
 
 	// Level properties
 	int[] level1 = new int[] {
 		20, // Width
 		20, // Height
-		3, // Friend units
-		10, // Enemy units
+		20, // Friend units
+		0, // Enemy units
 		80, // Grass space
 	};
 
 	void Start ()
 	{
+		Players = new List<Unit> ();
 		NewLevel (level1);
 	}	
 
