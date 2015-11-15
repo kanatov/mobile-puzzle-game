@@ -18,7 +18,8 @@ public class Cell : MonoBehaviour
 
 	// DirectionLayerss of cell emptyness
 	// Compare index
-	// 0. Ground (
+	// 0. Ground
+	// 1. Units
 	public int[] DirectionLayers;
 
 	void OnMouseUp ()

@@ -5,12 +5,13 @@ using System.Collections.Generic;
 
 public class Map : MonoBehaviour
 {
-
+	//Private data
 	// Allowed paths to:
 	// 1. avoid adges, cutt edges
 	// 2. 256 available 3x3 chunk cases
 	// 3. Allowed or prohibed way for one of 8 directions
 	int[,] AllowedDirections = new int[256, 8];
+	int pathfindingMax;
 
 	// Public data
 	public Main Main;
@@ -23,6 +24,8 @@ public class Map : MonoBehaviour
 	public void Init (int[] _level)
 	{
 		Cells = new GameObject[_level [0], _level [1]];
+
+		pathfindingMax = (_level[0] * _level[1]) / 2;
 
 		PopulateCell (Cells);
 		PopulateNeighbours (Cells);
@@ -57,7 +60,7 @@ public class Map : MonoBehaviour
 				cellClass.Main = Main;
 				cellClass.x = x;
 				cellClass.y = y;
-				cellClass.DirectionLayers = new int[] {255,255,255,255};
+				cellClass.DirectionLayers = new int[] {255,255};
 
 				cellClass.terrain = GetTerrain ();
 			}
@@ -347,18 +350,31 @@ public class Map : MonoBehaviour
 
 					currentCell.neighbours [i].parent = currentCell;
 
-					if (!opened.Contains (currentCell.neighbours [i]))
+					if (!opened.Contains (currentCell.neighbours [i]) && closed.Count < pathfindingMax)
 						opened.Add (currentCell.neighbours [i]);
 				}
 			}
 		}
 
 		if (!closed.Contains (_target)) {
-			Debug.Log ("Unreacheble goal! " + _source.x + " " + _source.y + ", " + _target.x + " " + _target.y + ". " + Time.timeSinceLevelLoad);
-			Debug.Log (closed.Count);
-			return null;
+//			Debug.LogWarning ("Unreacheble goal! " + _source.x + " " + _source.y + ", " + _target.x + " " + _target.y + ". " + Time.timeSinceLevelLoad);
+			Cell closestCell = null;
+			int distance = 0;
+
+			foreach (var cell in closed) {
+				int altDistance = GetDistance(cell, _target);
+				if (distance == 0 || altDistance < distance){
+					closestCell = cell;
+					distance = altDistance;
+				}
+			}
+
+			// TODO Don't change the _target, but check to better path next time
+			_target = closestCell;
 		}
 
+		if (closed.Count > 150)
+			Debug.Log ("Count: " + closed.Count + ", Target: " + _target.x + " " + _target.y);
 		List<Cell> path = new List<Cell> ();
 		Cell tmpCell = _target;
 
@@ -370,124 +386,6 @@ public class Map : MonoBehaviour
 
 		path.Reverse ();
 		return path;
-
-
-
-
-
-
-
-//		Dictionary<Cell, float> dist = new Dictionary<Cell, float> ();
-//		Dictionary<Cell, Cell> prev = new Dictionary<Cell, Cell> ();
-//		
-//		// Setup the "unvisited" -- the list of cells we haven't checked yet.
-//		List<Cell> unvisited = new List<Cell> ();
-//		
-//		dist [_source] = 0;
-//		prev [_source] = null;
-//		
-//		// Initialize everything to have INFINITY distance, since
-//		// we don't know any better right now. Also, it's possible
-//		// that some cells CAN'T be reached from the source,
-//		// which would make INFINITY a reasonable value
-//		foreach (GameObject tile in Cells) {
-//			Cell v = tile.GetComponent<Cell> ();
-//			if (v != _source) {
-//				dist [v] = Mathf.Infinity;
-//				prev [v] = null;
-//			}
-//			unvisited.Add (v);
-//		}
-//		
-//		while (unvisited.Count > 0) {
-//			// "u" is going to be the unvisited cell with the smallest distance.
-//			Cell u = null;
-//			
-//			foreach (Cell possibleU in unvisited) {
-//				if (u == null || dist [possibleU] < dist [u]) {
-//					u = possibleU;
-//				}
-//			}
-//			
-//			if (u == _target) {
-//				break;
-//			}
-//			
-//			unvisited.Remove (u);
-//
-//			// Detect target direction
-//			// If Tile in target's direction is acceptable:
-//			// Visiti it
-//			// else visit evry tile
-//
-//			// For every neighbour of Unvisited cell
-//			for (int i = 0; i < u.neighbours.Length; i++) {
-//				if (u.neighbours [i] != null) {
-//
-//					// V - it's current neighbour
-//					Cell v = u.neighbours [i];
-//
-//					// Alternate coast is previous coast + of Unvisited cell + path to the neighbour
-//					float alt = dist [u] + TileCoast (u, v, i);
-//
-//					if (alt < dist [v]) {
-//						// Alternate coast is less then previous neighbour coast
-//						// Apply alternate coast to the neighbour
-//						dist [v] = alt;
-//						prev [v] = u;
-//					}
-//				}
-//			}
-//		}
-//		
-//		
-//		// If we get there, the either we found the shortest route
-//		// to our target, or there is no route at ALL to our target.
-//		if (prev [_target] == null) {
-//			
-//			// No route between our target and the source
-//			// Try to find closest cell
-//			Cell closestCell = null;
-//			
-//			int sourceLengthX = Mathf.Abs (_source.x - _target.x);
-//			int sourceLengthY = Mathf.Abs (_source.y - _target.y);
-//			int sourceLength = sourceLengthX + sourceLengthY;
-//			
-//			int shortestLength = sourceLength;
-//			
-//			// Try to find closest cell from available
-//			foreach (var c in prev) {
-//				if (c.Value != null) {
-//					int lengthX = Mathf.Abs (c.Key.x - _target.x);
-//					int lengthY = Mathf.Abs (c.Key.y - _target.y);
-//					int lengthSumm = lengthX + lengthY;
-//					
-//					if (shortestLength > lengthSumm) {
-//						closestCell = c.Key;
-//						shortestLength = lengthSumm;
-//					}
-//				}
-//			}
-//			
-//			if (shortestLength < sourceLength) {
-//				_target = closestCell;
-//			} else {
-//				return null;
-//			}
-//			
-//		}
-//		
-//		List<Cell> currentPath = new List<Cell> ();
-//		Cell curr = _target;
-//		
-//		// Step through the "prev" chain and add it to our path
-//		while (curr != null) {
-//			currentPath.Add (curr);
-//			curr = prev [curr];
-//		}
-//		
-//		currentPath.Reverse ();
-//		return currentPath;
 	}
 
 	public int GetDistance (Cell _source, Cell _target)
@@ -500,35 +398,6 @@ public class Map : MonoBehaviour
 		}
 		return (14 * distanceX) + (10 * (distanceY - distanceX));
 	}
-
-//	// Tile Coast
-//	float TileCoast (Cell _source, Cell _target, int _direction)
-//	{
-//		//Base coast
-//		float coast = 1;
-//
-//		if (_target.DirectionLayers [0] == -1) {
-//			coast = Mathf.Infinity;
-//		}
-//
-//		int map = 0;
-//		if (_source.DirectionLayers [0] == -1) {
-//			map = CalculateCellMask (_source, 0);
-//		} else {
-//			map = _source.DirectionLayers [0];
-//		}
-//
-//		if (AllowedDirections [map, _direction] == 0) {
-//			coast = Mathf.Infinity;
-//		}
-//
-//		if (_source.x != _target.x && _source.y != _target.y) {
-//			coast += 0.001f;
-//		}
-//		
-//		return coast;
-//		
-//	}
 
 	public Cell GetRandomPlace ()
 	{
@@ -550,17 +419,23 @@ public class Map : MonoBehaviour
 		return cell;
 	}
 
-	void PlaceUnit (int _type)
+	public void PlaceUnit (int _type)
 	{
 		GameObject unit = (GameObject)GameObject.Instantiate (UnitRoot);
+
+		unit.tag = GetUnitTag (_type);
 
 		Unit unitClass = unit.GetComponent<Unit> ();
 		unitClass.Main = Main;
 		unitClass.Map = this.GetComponent<Map> ();
 		unitClass.Init (_type, GetRandomPlace ());
+	}
 
-		if (_type == 0)
-			Main.Players.Add (unitClass);
+	String GetUnitTag (int _type) {
+		if (_type == 1)
+			return "Enemy";
+
+		return "Player";
 	}
 
 	// Tile > World coordinates converter

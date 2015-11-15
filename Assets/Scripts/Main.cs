@@ -8,21 +8,19 @@ public class Main : MonoBehaviour
 	//Public data
 	public GameObject Map;
 	public Unit selectedObject;
-	public List<Unit> Players;
 	public GameObject MapPrefab;
 
 	// Level properties
 	int[] level1 = new int[] {
-		20, // Width
-		20, // Height
-		20, // Friend units
-		0, // Enemy units
+		30, // Width
+		30, // Height
+		3, // Friend units
+		15, // Enemy units
 		80, // Grass space
 	};
 
 	void Start ()
 	{
-		Players = new List<Unit> ();
 		NewLevel (level1);
 	}	
 
@@ -77,7 +75,7 @@ public class Main : MonoBehaviour
 			for (int y = 0; y < Map.GetComponent<Map>().Cells.GetLength (1); y++) {
 				Cell cells = Map.GetComponent<Map> ().Cells [x, y].GetComponent<Cell> ();
 				if (cells.terrain == 0) {
-					if (cells.DirectionLayers [0] != -1) {
+					if (cells.DirectionLayers [1] != -1) {
 						cells.Normal ();
 					} else {
 						cells.Highlite (0.6f, 0.6f, 0.3f);
