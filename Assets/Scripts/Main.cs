@@ -9,6 +9,8 @@ public class Main : MonoBehaviour
 	public GameObject Map;
 	public Unit selectedObject;
 	public GameObject MapPrefab;
+	public List<Unit> Players = new List<Unit>();
+	public List<Unit> Enemies = new List<Unit>();
 
 	// Level properties
 	int[] level1 = new int[] {

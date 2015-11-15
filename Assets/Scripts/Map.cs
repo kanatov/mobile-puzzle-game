@@ -286,32 +286,21 @@ public class Map : MonoBehaviour
 			return null;
 		}
 
-		List<Cell> opened = new List<Cell> ();
+		Heap<Cell> opened = new Heap<Cell> (Cells.GetLength(0) * Cells.GetLength(1));
 		HashSet<Cell> closed = new HashSet<Cell> ();
 
 		opened.Add (_source);
 
 		while (opened.Count > 0) {
 			// Assign some active node as current
-			Cell currentCell = opened [0];
+			Cell currentCell = opened.RemoveFirst();
 
-			// Looking for the closest node to our target
-			for (int i = 1; i < opened.Count; i++) {
-				// If the fCost of some node is less then current cell fCost
-				// or
-				// If the fCost of some node is equal but hCost is less
-				if (opened [i].fCost < currentCell.fCost || opened [i].fCost == currentCell.fCost && opened [i].hCost < currentCell.hCost) {
-					currentCell = opened [i];
-				}
-			}
 
-			// Closest node was found
-			// Let's remove it from active node and put it to the closed
-			opened.Remove (currentCell);
 			closed.Add (currentCell);
 
-			if (currentCell == _target)
+			if (currentCell == _target) {
 				break;
+			}
 
 			// TODO Pathf: Make ReturnNeighbour(layer) function to the node
 			// TODO Pathf: Detect unreacheble cell: terrain, building or unit? Stop, wait, collaborate or attack?
@@ -357,7 +346,7 @@ public class Map : MonoBehaviour
 		}
 
 		if (!closed.Contains (_target)) {
-//			Debug.LogWarning ("Unreacheble goal! " + _source.x + " " + _source.y + ", " + _target.x + " " + _target.y + ". " + Time.timeSinceLevelLoad);
+			Debug.LogWarning ("Unreacheble goal! " + _source.x + " " + _source.y + ", " + _target.x + " " + _target.y + ". " + Time.timeSinceLevelLoad);
 			Cell closestCell = null;
 			int distance = 0;
 
@@ -373,8 +362,8 @@ public class Map : MonoBehaviour
 			_target = closestCell;
 		}
 
-		if (closed.Count > 150)
-			Debug.Log ("Count: " + closed.Count + ", Target: " + _target.x + " " + _target.y);
+		if (closed.Count > 200)
+			Debug.LogWarningFormat ("Count: " + closed.Count + ", Source: " + _source.x + " " + _source.y + ", Target: " + _target.x + " " + _target.y);
 		List<Cell> path = new List<Cell> ();
 		Cell tmpCell = _target;
 
@@ -423,19 +412,10 @@ public class Map : MonoBehaviour
 	{
 		GameObject unit = (GameObject)GameObject.Instantiate (UnitRoot);
 
-		unit.tag = GetUnitTag (_type);
-
 		Unit unitClass = unit.GetComponent<Unit> ();
 		unitClass.Main = Main;
 		unitClass.Map = this.GetComponent<Map> ();
 		unitClass.Init (_type, GetRandomPlace ());
-	}
-
-	String GetUnitTag (int _type) {
-		if (_type == 1)
-			return "Enemy";
-
-		return "Player";
 	}
 
 	// Tile > World coordinates converter

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-public class Cell : MonoBehaviour
+public class Cell : MonoBehaviour, IHeapItem<Cell>
 {
 	// Neighbours connections to each direction
 	public Cell[] neighbours = new Cell[8];
@@ -21,6 +21,7 @@ public class Cell : MonoBehaviour
 	// 0. Ground
 	// 1. Units
 	public int[] DirectionLayers;
+	int heapIndex;
 
 	void OnMouseUp ()
 	{
@@ -47,6 +48,27 @@ public class Cell : MonoBehaviour
 		get {
 			return gCost + hCost;
 		}
+	}
+
+	public int HeapIndex {
+		get {
+			return heapIndex;
+		}
+
+		set {
+			heapIndex = value;
+		}
+
+	}
+
+	public int CompareTo (Cell cellToCompare) {
+		int compare = fCost.CompareTo(cellToCompare.fCost);
+
+		if (compare == 0) {
+			compare = hCost.CompareTo(cellToCompare.hCost);
+		}
+
+		return -compare;
 	}
 }
 

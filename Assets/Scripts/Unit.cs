@@ -13,7 +13,10 @@ public class Unit : MonoBehaviour
 	// 1. Zombie
 	public int Type;
 	public UnitType[] UnitTypes;
-	GameObject AttackTarget;
+
+	Unit AttackTarget;
+	int AttackTargetDistance;
+	public List<Unit> Enemyes = new List<Unit>();
 
 	public Cell stepTarget;
 	public Color highliteColor = Color.blue;
@@ -32,6 +35,8 @@ public class Unit : MonoBehaviour
 	int updatePath = 10;
 	int DistanceToTarget = 0;
 
+	bool die = false;
+
 	// Debug
 	Color debugPathColor = Color.yellow;
 
@@ -43,7 +48,9 @@ public class Unit : MonoBehaviour
 	// TODO Pathf: Convert cells graph to nodes
 	// TODO Pathf: Small grid
 	// TODO Pathf: move by cell coordinates
+	// TODO Pathf: follow by player path
 	// TODO AI: Slow unit follow to the fast
+	// TODO AI: If enemy far away from the player – mage group of enemies and round the player
 	// TO DO Movement out of grid
 
 
@@ -59,13 +66,18 @@ public class Unit : MonoBehaviour
 		normalColor = model.GetComponent<Renderer> ().material.color;
 
 		Map.UpdateCellMask (stepTarget, 1, -1);
+		if (Type == 0)
+			Main.Players.Add(this);
+
+		if (Type == 1)
+			Main.Enemies.Add(this);
 	}
 
 	void Update ()
 	{
 		if (GetComponent<Transform> ().position == Map.GetWorldCoordinates (stepTarget)) {
 			if (Type == 0)
-				MakeStep();
+				PlayerAction ();
 
 			if (Type == 1)
 				EnemyAction ();
@@ -90,7 +102,6 @@ public class Unit : MonoBehaviour
 		if (AttackTarget != null) {
 			if (DistanceToTarget < 20) {
 				AttackTarget.GetComponent<Unit>().Die();
-				Map.PlaceUnit(0);
 				return;
 			}
 		}
@@ -103,25 +114,32 @@ public class Unit : MonoBehaviour
 
 	}
 
+	void PlayerAction() {
+
+	}
+
 	void UpdateTarget() {
 		DistanceToTarget = 0;
 		target = stepTarget;
 		AttackTarget = null;
 
-		GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
-
-		foreach (var player in players) {
-			Unit unit = player.GetComponent<Unit>();
+		foreach (var player in Main.Players) {
+			Unit unit = player;
 			
-			int tmpDeistance = Map.GetDistance (stepTarget, unit.stepTarget);
+			int tmpDistance = Map.GetDistance (stepTarget, unit.stepTarget);
 			// TODO if distance < attack → break
 			
-			if (tmpDeistance < DistanceToTarget || DistanceToTarget == 0) {
-				DistanceToTarget = tmpDeistance;
+			if (tmpDistance < DistanceToTarget || DistanceToTarget == 0) {
+				DistanceToTarget = tmpDistance;
 				target = unit.stepTarget;
 				AttackTarget = player;
 			}
 		}
+
+//		if (!AttackTarget.GetComponent<Unit>().Enemyes.Contains(this)) {
+//			AttackTarget.GetComponent<Unit>().Enemyes.Add(this);
+//		}
+
 	}
 
 	void MakeStep() {
@@ -163,10 +181,14 @@ public class Unit : MonoBehaviour
 	{
 		if (!timerLock) {
 			timerLock = true;
-			Invoke ("TimerUnlock", 0.5f);
+			Invoke ("TimerUnlock", 1f);
 
-			target = _target;
-			path = Map.FindPath (stepTarget, target);
+			if (_target != stepTarget) {
+				target = _target;
+				path = Map.FindPath (stepTarget, target);
+			}
+
+//			Debug.Log ("Path: " + path.Count + ", Source: " + stepTarget.x + " " + stepTarget.y + ", Target: " + target.x + " " + target.y);
 
 			if (path != null) {
 				// Debug
@@ -210,8 +232,21 @@ public class Unit : MonoBehaviour
 	}
 
 	public void Die() {
-		Map.UpdateCellMask (stepTarget, 1, 255);
-		Destroy(gameObject);
+		if (!die ) {
+			die = true;
+			if (Type == 0) {
+				Main.Players.Remove(this);
+				Map.PlaceUnit(0);
+			}
+
+			if (Type == 1) {
+				Main.Enemies.Remove(this);
+				Map.PlaceUnit(1);
+			}
+
+			Map.UpdateCellMask (stepTarget, 1, 255);
+			Destroy(gameObject);
+		}
 	}
 
 	void DebugDrawPath(){
