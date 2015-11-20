@@ -7,7 +7,6 @@ public class Unit : MonoBehaviour {
 	public int id;
 	public float speed;
 	public Cell source;
-	public Color highliteColor = Color.red;
 	public Color normalColor;
 	public bool dead = false;
 	public Cell target;
@@ -16,8 +15,13 @@ public class Unit : MonoBehaviour {
 	public List<Cell> pathDebug = new List<Cell> ();
 	public bool timerLock = false;
 	public int DistanceToTarget = 0;
+	public int attackDistance = 20;
+	public int viewDistance = 100;
 	public float health = 10f;
 	public float damage = 1f;
+	public float damageLockTime = 0.5f;
+	public bool damageLock = false;
+	public float lockTime = 1f;
 	public Material material;
 
 	void Update () {
@@ -38,16 +42,30 @@ public class Unit : MonoBehaviour {
 	}
 
 	public void TimerLock () {
-		Invoke ("TimerUnlock", 1f);
+		timerLock = true;
+		Invoke ("TimerUnlock", lockTime);
 	}
 
 	void TimerUnlock () {
 		timerLock = false;
 	}
 
+	public void DamageLock () {
+		damageLock = true;
+		Invoke ("DamageUnlock", damageLockTime);
+	}
+	
+	void DamageUnlock () {
+		damageLock = false;
+	}
+	
 	void Fade() {
 		if (material.color != normalColor) {
-			material.color = Color.Lerp (material.color, normalColor, 0.1f);
+			material.color = Color.Lerp (material.color, normalColor, 0.5f);
 		}
+	}
+
+	public void Highlite (Color _color) {
+		model.GetComponent<Renderer>().material.color = _color;
 	}
 }

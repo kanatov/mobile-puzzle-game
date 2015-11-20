@@ -25,8 +25,10 @@ public class Cell : MonoBehaviour, IHeapItem<Cell>
 
 	void OnMouseUp ()
 	{
-		material.color = highliteColor;
-		UnitManager.Click (this.GetComponent<Cell> ());
+		if (terrain == 0) {
+			material.color = highliteColor;
+			UnitManager.Click (this.GetComponent<Cell> ());
+		}
 	}
 
 	void Fade() {
