@@ -290,6 +290,11 @@ public static class MapManager {
 			return null;
 		}
 
+		if (_source == null || _target == null) {
+			Debug.LogWarning ("Pathfinding: source == " + _source + ", target == " + _target);
+			return null;
+		}
+
 		Heap<Cell> opened = new Heap<Cell> (Cells.GetLength(0) * Cells.GetLength(1));
 		HashSet<Cell> closed = new HashSet<Cell> ();
 

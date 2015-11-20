@@ -1,13 +1,13 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/UnitManager.cs">
     <Files>
       <File FileName="Assets/Scripts/Main.cs" Line="22" Column="17" />
-      <File FileName="Assets/Scripts/MapManager.cs" Line="353" Column="37" />
-      <File FileName="Assets/Scripts/UnitManager.cs" Line="128" Column="20" />
-      <File FileName="Assets/Scripts/Unit.cs" Line="44" Column="28" />
+      <File FileName="Assets/Scripts/MapManager.cs" Line="384" Column="31" />
+      <File FileName="Assets/Scripts/UnitManager.cs" Line="173" Column="15" />
+      <File FileName="Assets/Scripts/Unit.cs" Line="1" Column="1" />
       <File FileName="Assets/Scripts/UnitType.cs" Line="1" Column="1" />
-      <File FileName="Assets/Scripts/Camera.cs" Line="13" Column="25" />
+      <File FileName="Assets/Scripts/Camera.cs" Line="1" Column="1" />
       <File FileName="Assets/Scripts/Cell.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>

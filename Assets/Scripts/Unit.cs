@@ -14,13 +14,13 @@ public class Unit : MonoBehaviour {
 	public List<Cell> path = null;
 	public List<Cell> pathDebug = new List<Cell> ();
 	public bool timerLock = false;
-	public int DistanceToTarget = 0;
 	public int attackDistance = 20;
 	public int viewDistance = 100;
 	public float health = 10f;
 	public float damage = 1f;
 	public float damageLockTime = 0.5f;
 	public bool damageLock = false;
+	public bool unitClick = false;
 	public float lockTime = 1f;
 	public Material material;
 
@@ -36,9 +36,7 @@ public class Unit : MonoBehaviour {
 	}
 
 	void OnMouseUp () {
-		if (!UnitManager.Players.Contains(this)) {
-			UnitManager.Attack (UnitManager.Players[0], this);
-		}
+		UnitManager.UnitClick (this);
 	}
 
 	public void TimerLock () {

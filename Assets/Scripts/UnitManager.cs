@@ -13,6 +13,8 @@ using System.Linq;
 // TODO AI: Slow unit follow to the fast
 // TODO AI: If enemy far away from the player – mage group of enemies and round the player
 // TODO Calculate only heighbour chunks
+// TODO Aray of assaulter of victim
+// TODO Attack if possible by distance 
 // TO DO Movement out of grid
 
 public static class UnitManager {
@@ -24,7 +26,7 @@ public static class UnitManager {
 	public static GameObject UnitContainer;
 
 	// Private
-	static Color highliteColor = Color.red;
+	static Color highliteColor = new Color(1f, 0.5f, 0f);
 
 
 	public static void Create (int _id) {
@@ -48,10 +50,10 @@ public static class UnitManager {
 
 		if (unit.id == 0) {
 			Players.Add(unit);
-			unit.damage = 2f;
+			unit.damage = 3f;
 			unit.attackDistance = 20;
 			unit.viewDistance = 50;
-			unit.lockTime = 0.5f;
+			unit.lockTime = 0.3f;
 		}
 		
 		if (unit.id == 1)
@@ -62,113 +64,91 @@ public static class UnitManager {
 	// Check for the path and make next turn
 	public static void Idle (Unit _unit) {
 		if (!_unit.damageLock) {
-			_unit.DamageLock();
-			FindVictim(_unit);
-		}
+			// Find victim
 
-
-		if (_unit.path == null) {
-			if (_unit.target == _unit.source) {
-				// Our journey is finished let's get a new journey
-				_unit.pathDebug = null;
-//				GoTo (_unit, MapManager.GetRandomPlace ());
+			List<Unit> victims;
+			
+			if (_unit.id == 0) {
+				victims = Enemies;
 			} else {
-				// No way to our target, try to find new way
-				GoTo (_unit, _unit.target);
+				victims = Players;
 			}
 			
-			return;
+			int newDistance = 0;
+			
+			foreach (var victim in victims) {
+				int tmpDistance = MapManager.GetDistance (_unit.source, victim.source);
+				
+				if (tmpDistance < _unit.viewDistance) {
+					if (tmpDistance < newDistance || newDistance == 0) {
+						newDistance = tmpDistance;
+						_unit.victim = victim;
+					}
+				}
+			}
 		}
-		
+
+		if (_unit.victim == null) {
+			// Follow the path
+			if (_unit.target == _unit.source) {
+				return;
+			}
+
+			if (_unit.path != null) {
+				MakeStep(_unit);
+			} else {
+				_unit.pathDebug = null;
+				if (_unit.unitClick) {
+					_unit.unitClick = false;
+					_unit.target = _unit.source;
+				} else {
+					GoTo (_unit, _unit.target);
+				}
+			}
+		} else {
+			// Attack or follow
+			if (MapManager.GetDistance(_unit.source, _unit.victim.source) <= _unit.attackDistance) {
+				Hurt(_unit);
+			} else {
+				GoTo (_unit, _unit.victim.source);
+				MakeStep(_unit);
+			}
+		}
+
+		_unit.DamageLock();
+	}
+
+
+	static void MakeStep(Unit _unit) {
 		if (_unit.path.Count < 2) {
 			_unit.path = null;
 			return;
 		}
 		
 		if (_unit.path [1].DirectionLayers [1] == -1) {
-			// The next cell is unavailable
-			// TODO AI: after pause try again same path
-			
-			if (!_unit.timerLock)
-				_unit.path = null;
-			
 			return;
 		}
-		
+
+		if (!_unit.timerLock) {
+			GoTo(_unit, _unit.target);
+		}
+
 		MapManager.UpdateCellMask (_unit.path [0], 1, 255);
 		_unit.source = _unit.path [1];
 		MapManager.UpdateCellMask (_unit.source, 1, -1);
 		_unit.path.RemoveAt (0);
 	}
 
-	
-	static void FindVictim (Unit _unit) {
-		List<Unit> units;
-		
-		if (_unit.id == 0) {
-			units = Enemies;
-		} else {
-			units = Players;
-		}
-		
-		_unit.victim = null;
-		int newDistance = 0;
-		Unit newVictim = null;
 
-		foreach (var unit in units) {
-			int tmpDistance = MapManager.GetDistance (_unit.source, unit.source);
-			
-			if (tmpDistance < _unit.viewDistance) {
-				if (tmpDistance < newDistance || newDistance == 0) {
-					newDistance = tmpDistance;
-					newVictim = unit;
-				}
-			}
-		}
-
-		if (newVictim != null) {
-			Attack (_unit, newVictim);
-		}
-
-		AttackVictim (_unit);
-	}
-
-
-	static void AttackVictim (Unit _unit) {
-		if (_unit.victim != null) {
-			if (_unit.victim.dead) {
-				_unit.victim = null;
-				return;
-			}
-			if (MapManager.GetDistance(_unit.source, _unit.victim.source) < _unit.attackDistance) {
-				Hurt(_unit);
-				return;
-			}
-		}
-	}
-
-
-	public static void GoTo (Unit _unit, Cell _target) {
-		_unit.target = _target;
-		
+	static void GoTo (Unit _unit, Cell _target) {
 		if (!_unit.timerLock) {
 			_unit.TimerLock();
 			
-			if (_target != _unit.source) {
-				_unit.path = MapManager.FindPath (_unit.source, _unit.target);
-			}
+			_unit.path = MapManager.FindPath (_unit.source, _target);
 			
 			if (_unit.path != null) {
 				// Debug
 				_unit.pathDebug = new List<Cell> (_unit.path);
-			} else {
-				// Debug
-				_unit.pathDebug = new List<Cell> ();
-				_unit.pathDebug.Add (_unit.source);
-				_unit.pathDebug.Add (_unit.target);
-				
-				// Game
-				GoTo (_unit, _unit.target);
 			}
 		}
 	}
@@ -185,50 +165,55 @@ public static class UnitManager {
 
 
 	public static void Click (Cell _target) {
-		GoTo (Players[0], _target);
+		Players[0].target = _target;
 	}
 
 
-	public static void Kill(Unit _unit) {
-		// TODO when unit dead the all enemies should forget the path
+	public static void UnitClick (Unit _unit) {
+		if (!Players.Contains(_unit)) {
+			_unit.Highlite(new Color (0f, 1f, 1f));
 
-		if (!_unit.dead) {
-			_unit.dead = true;
-			MapManager.UpdateCellMask (_unit.source, 1, 255);
-
-			// TODO Make array with lists by Unit.Type order
-			if (_unit.id == 0) {
-				Players.Remove(_unit);
-			}
-			
-			if (_unit.id == 1) {
-				Enemies.Remove(_unit);
-			}
-			
-			Create(_unit.id);
-
-			GameObject.Destroy(_unit.gameObject);
-		}
-	}
-
-
-	// TODO minimal distance from where we can attack the unit
-	public static void Attack (Unit _assault, Unit _victim) {
-		_victim.Highlite(new Color (1f, 0.5f, 0f));
-		if (_assault.victim == null || _assault.victim != _victim) {
-			_assault.victim = _victim;
-			GoTo(_assault, _victim.source);
+			Players[0].unitClick = true;
+			Players[0].victim = _unit;
 		}
 	}
 
 
 	static void Hurt (Unit _assault) {
-		if (_assault.victim.health <= 0) {
-			_assault.path = null;
-			Kill (_assault.victim);
+		if (_assault.damageLock) {
 			return;
 		}
+		_assault.DamageLock();
+		
 		_assault.victim.health -= _assault.damage;
 		_assault.victim.Highlite(highliteColor);
+		
+		if (_assault.victim.health <= 0 || _assault.victim.dead) {
+			Kill (_assault);
+		}
+	}
+
+
+	public static void Kill(Unit _unit) {
+		if (!_unit.victim.dead) {
+			_unit.victim.dead = true;
+			MapManager.UpdateCellMask (_unit.victim.source, 1, 255);
+
+			// TODO Make array with lists by Unit.Type order
+			if (_unit.victim.id == 0) {
+				Players.Remove(_unit.victim);
+			}
+			
+			if (_unit.id == 1) {
+				Enemies.Remove(_unit.victim);
+			}
+			
+			Create(_unit.victim.id);
+
+			GameObject.Destroy(_unit.victim.gameObject);
+
+			_unit.path = null;
+			_unit.victim = null;
+		}
 	}
 }
