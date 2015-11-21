@@ -1,51 +1,80 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections.Generic;
 
 public class Unit : MonoBehaviour {
 
-	public GameObject model;
+	// Type of the Unit
 	public int id;
-	public float speed;
-	public Cell source;
+
+	// Look
+	public GameObject model;
 	public Color normalColor;
-	public bool dead = false;
-	public Cell target;
-	public Unit victim;
-	public List<Cell> path = null;
-	public List<Cell> pathDebug = new List<Cell> ();
-	public bool timerLock = false;
-	public int attackDistance = 20;
-	public int viewDistance = 100;
-	public float health = 10f;
-	public float damage = 1f;
-	public float damageLockTime = 0.5f;
-	public bool damageLock = false;
-	public bool unitClick = false;
-	public float lockTime = 1f;
 	public Material material;
+
+	// Movement
+	public Cell source;
+	public Cell target;
+	public Cell newTarget;
+	public float speed;
+	public List<Cell> path;
+	public List<Cell> pathVis;
+	public bool pathLock;
+	public float pathLockTime;
+
+	// Attack
+	public Unit victim;
+	public Unit victimClick;
+	public int attackDistance;
+	public int viewDistance;
+	public float damage;
+	public float damageLockTime;
+	public bool damageLock;
+
+	// Health
+	public float health;
+	public float maxHealth;
+	public bool dead;
+	public GameObject healthPanel;
+	public Slider healthSlider;
+	float healthPanelOffset = 2.35f;
+
 
 	void Update () {
 		if (GetComponent<Transform> ().position == MapManager.GetWorldCoordinates (source)) {
 			UnitManager.Idle(this);
 		} else {
 			UnitManager.WalkAnimation (this);
-			MapManager.DebugDrawPath(pathDebug);
+			MapManager.DebugDrawPath(pathVis);
 		}
 
 		Fade();
+		HealthBarPosition();
+	}
+
+	void HealthBarPosition () {
+		if (healthPanel != null) {
+			float x = this.GetComponent<Transform>().position.x;
+			float y = this.GetComponent<Transform>().position.y;
+			float z = this.GetComponent<Transform>().position.z;
+			
+			Vector3 worldPos = new Vector3(x,y + healthPanelOffset, z);
+			Vector3 screenPos = UnityEngine.Camera.main.WorldToScreenPoint(worldPos);
+			healthPanel.transform.position = new Vector3(screenPos.x, screenPos.y, screenPos.z);
+		}
 	}
 
 	void OnMouseUp () {
 		UnitManager.UnitClick (this);
 	}
 
-	public void TimerLock () {
-		timerLock = true;
-		Invoke ("TimerUnlock", lockTime);
+	public void PathLock () {
+		pathLock = true;
+		Invoke ("PathUnlock", pathLockTime);
 	}
 
-	void TimerUnlock () {
-		timerLock = false;
+	void PathUnlock () {
+		pathLock = false;
 	}
 
 	public void DamageLock () {
@@ -64,6 +93,6 @@ public class Unit : MonoBehaviour {
 	}
 
 	public void Highlite (Color _color) {
-		model.GetComponent<Renderer>().material.color = _color;
+		material.color = _color;
 	}
 }

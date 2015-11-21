@@ -32,7 +32,7 @@ public static class MapManager {
 
 		Cells = new Cell[_level [0], _level [1]];
 		
-		pathfindingMax = (_level[0] * _level[1]) / 2;
+		pathfindingMax = (_level[0] * _level[1]) / 3;
 		
 		PopulateCell (Cells);
 		PopulateNeighbours (Cells);
@@ -78,7 +78,7 @@ public static class MapManager {
 		float range = UnityEngine.Random.Range (0.0f, 1.0f);
 		int type = 0;
 		
-		if (range > 0.7f) {
+		if (range > 0.9f) {
 			type = 1;
 		}
 		return type;
@@ -229,6 +229,7 @@ public static class MapManager {
 		if (_cell.DirectionLayers [_layer] != -1) {
 			_cell.DirectionLayers [_layer] = CalculateCellMask (_cell, _layer);
 		}
+
 		// For all neighbour we know
 		for (int i = 0; i < _cell.neighbours.Length; i++) {
 			
@@ -239,7 +240,6 @@ public static class MapManager {
 				continue;
 			
 			_cell.neighbours [i].DirectionLayers [_layer] = CalculateCellMask (_cell.neighbours [i], _layer);
-			
 		}
 	}
 	
@@ -285,13 +285,13 @@ public static class MapManager {
 	// Calculate new path
 	public static List<Cell> FindPath (Cell _source, Cell _target)
 	{
-		if (_source == _target) {
-			Debug.LogWarning ("Pathfinding: source == target");
+		if (_source == null || _target == null) {
+			Debug.LogWarning ("Pathfinding: source == " + _source + ", target == " + _target);
 			return null;
 		}
 
-		if (_source == null || _target == null) {
-			Debug.LogWarning ("Pathfinding: source == " + _source + ", target == " + _target);
+		if (_source == _target) {
+			Debug.LogWarning ("Pathfinding: source == target");
 			return null;
 		}
 
@@ -304,20 +304,16 @@ public static class MapManager {
 			// Assign some active node as current
 			Cell currentCell = opened.RemoveFirst();
 
-
 			closed.Add (currentCell);
 
 			if (currentCell == _target) {
 				break;
 			}
 
-			// TODO Pathf: Make ReturnNeighbour(layer) function to the node
-			// TODO Pathf: Detect unreacheble cell: terrain, building or unit? Stop, wait, collaborate or attack?
-
 			// If our cell is start cell, probably it allready busie
 			// We should calculate it neighbour map
 			int map;
-			if (currentCell.DirectionLayers [0] == -1) {
+			if (currentCell == _source) {
 				map = CalculateCellMask (_source, 0);
 			} else {
 				map = currentCell.DirectionLayers [0];
@@ -332,13 +328,25 @@ public static class MapManager {
 				if (closed.Contains (currentCell.neighbours [i]))
 					continue;
 
-				// Check for dynamic obstackle
-				if (currentCell.neighbours [i].DirectionLayers [0] == -1)
-					continue;
-
 				// Check for allowed direction
 				if (AllowedDirections [map, i] == 0)
 					continue;
+
+				// Check for static obstackle
+				if (currentCell.neighbours [i].DirectionLayers [0] == -1)
+					continue;
+				
+				// Check for dynamic obstackle
+//				if (currentCell.neighbours [i].DirectionLayers [1] == -1)
+//					continue;
+//
+//				if (currentCell.neighbours [i] == _target) {
+//					if (currentCell.neighbours [i].DirectionLayers [1] == -1) {
+//						_target = currentCell;
+//						opened.Add (_target);
+//						break;
+//					}
+//				}
 
 				int newMovementCostToNeghbour = currentCell.gCost + GetDistance (currentCell, currentCell.neighbours [i]);
 
@@ -354,25 +362,29 @@ public static class MapManager {
 			}
 		}
 
+		if (closed.Count >= pathfindingMax)
+			Debug.LogWarningFormat ("Count: " + closed.Count + ", Source: " + _source.x + " " + _source.y + ", Target: " + _target.x + " " + _target.y);
+
 		if (!closed.Contains (_target)) {
 			Debug.LogWarning ("Unreacheble goal! " + _source.x + " " + _source.y + ", " + _target.x + " " + _target.y + ". " + Time.timeSinceLevelLoad);
-			Cell closestCell = null;
-			int distance = 0;
+			Cell closestCell = _source;
+			int distance = GetDistance (_source, _target);
 
 			foreach (var cell in closed) {
 				int altDistance = GetDistance(cell, _target);
-				if (distance == 0 || altDistance < distance){
+				if (altDistance < distance){
 					closestCell = cell;
 					distance = altDistance;
 				}
 			}
 
-			// TODO Don't change the _target, but check to better path next time
-			_target = closestCell;
+			if (closestCell == _source) {
+				return null;
+			} else {
+				_target = closestCell;
+			}
 		}
 
-		if (closed.Count > 200)
-			Debug.LogWarningFormat ("Count: " + closed.Count + ", Source: " + _source.x + " " + _source.y + ", Target: " + _target.x + " " + _target.y);
 		List<Cell> path = new List<Cell> ();
 		Cell tmpCell = _target;
 
