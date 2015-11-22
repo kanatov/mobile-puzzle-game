@@ -11,4 +11,5 @@ public class UnitType {
 	public float damageLockTime;
 	public int viewDistance;
 	public int attackDistance;
+	public int directionLayer;
 }

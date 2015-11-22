@@ -36,8 +36,13 @@ public static class UnitManager {
 		unit.id = _id;
 
 		// Position
+		unit.speed = UnitTypes[unit.id].speed;
+		unit.directionLayer = UnitTypes[unit.id].directionLayer;
+		unit.pathLock = false;
+		unit.pathLockTime = 0.3f;
+
 		unit.source = MapManager.GetRandomPlace ();
-		MapManager.UpdateCellMask (unit.source, 1, -1);
+		MapManager.UpdateCellMask (unit.source, unit.directionLayer, false);
 		unit.GetComponent<Transform> ().position = MapManager.GetWorldCoordinates (unit.source);
 
 		// Look
@@ -48,17 +53,13 @@ public static class UnitManager {
 		unit.material = unit.model.GetComponent<Renderer>().material;
 		unit.normalColor = unit.material.color;
 		
-		// Movement
-		unit.speed = UnitTypes[unit.id].speed;
-		unit.pathLock = false;
-		unit.pathLockTime = 0.3f;
-		
 		// Attack
 		unit.attackDistance = UnitTypes[unit.id].attackDistance;
 		unit.viewDistance = UnitTypes[unit.id].viewDistance;
 		unit.damage = UnitTypes[unit.id].damage;
 		unit.damageLockTime = UnitTypes[unit.id].damageLockTime;
 		unit.damageLock = false;
+		unit.battle = false;
 
 		// Health
 		unit.maxHealth = UnitTypes[unit.id].maxHealth;
@@ -85,6 +86,7 @@ public static class UnitManager {
 			_unit.DamageLock();
 
 			if (_unit.victimFollow != null && MapManager.GetDistance (_unit.source, _unit.victimFollow.source) <= _unit.attackDistance ) {
+				_unit.battle = true;
 				Hurt (_unit, _unit.victimFollow);
 			} else {
 				Unit newVictim = null;
@@ -110,12 +112,22 @@ public static class UnitManager {
 
 				if (newVictim != null) {
 					if (currentDistance <= _unit.attackDistance) {
+						_unit.battle = false;
+
+						if (_unit != Players[0]) {
+							_unit.battle = true;
+						}
 						Hurt (_unit, newVictim);
 					} else {
+						_unit.battle = false;
+
 						if (_unit.cellFollow == null && _unit.victimFollow == null) {
 							_unit.victimFollow = newVictim;
 						}
 					}
+				} else {
+					// TODO is it happenes?
+					_unit.battle = false;
 				}
 			}
 		}
@@ -123,6 +135,12 @@ public static class UnitManager {
 
 	public static void Walk(Unit _unit) {
 		if (_unit.GetComponent<Transform> ().position == MapManager.GetWorldCoordinates (_unit.source)) {
+			if (_unit.battle && _unit.cellFollow == null) {
+				_unit.path = null;
+				_unit.pathVis = null;
+				return;
+			}
+
 			if (_unit.source == _unit.cellFollow) {
 				_unit.path = null;
 				_unit.pathVis = null;
@@ -159,14 +177,15 @@ public static class UnitManager {
 				return;
 			}
 			
-			if (_unit.path [1].DirectionLayers [1] == -1) {
+			if (_unit.path [1].DirectionLayers [_unit.directionLayer] == -1) {
 				return;
 			}
+
 			_unit.pathVis = new List<Cell>(_unit.path);
 
-			MapManager.UpdateCellMask (_unit.path [0], 1, 255);
+			MapManager.UpdateCellMask (_unit.path [0], _unit.directionLayer, true);
 			_unit.source = _unit.path [1];
-			MapManager.UpdateCellMask (_unit.source, 1, -1);
+			MapManager.UpdateCellMask (_unit.source, _unit.directionLayer, false);
 
 			_unit.path.RemoveAt (0);
 		}
@@ -209,7 +228,7 @@ public static class UnitManager {
 		if (_victim.health <= 0 && !_victim.dead) {
 			_victim.dead = true;
 
-			MapManager.UpdateCellMask (_victim.source, 1, 255);
+			MapManager.UpdateCellMask (_victim.source, _victim.directionLayer, true);
 			
 			if (_victim.id == 0) {
 				Players.Remove(_victim);

@@ -212,24 +212,23 @@ public static class MapManager {
 				Cell cell = _map [x, y];
 				
 				if (cell.terrain == 1)
-					UpdateCellMask (cell, 0, -1);
+					UpdateCellMask (cell, 0, false);
 			}
 		}
 	}
 	
 	// Tell to the neighbours that cell is closed now
 	// And set to the neighbours movement index
-	public static void UpdateCellMask (Cell _cell, int _layer, int _set)
+	public static void UpdateCellMask (Cell _cell, int _layer, bool _walkable)
 	{
 		
 		// Set zero index of available paths
-		_cell.DirectionLayers [_layer] = _set;
-		
-		// Update ourself first if necessery
-		if (_cell.DirectionLayers [_layer] != -1) {
+		if (_walkable) {
 			_cell.DirectionLayers [_layer] = CalculateCellMask (_cell, _layer);
+		} else {
+			_cell.DirectionLayers [_layer] = -1;
 		}
-
+		
 		// For all neighbour we know
 		for (int i = 0; i < _cell.neighbours.Length; i++) {
 			
@@ -306,15 +305,15 @@ public static class MapManager {
 
 			closed.Add (currentCell);
 
+
 			if (currentCell == _target) {
 				break;
 			}
 
-			// If our cell is start cell, probably it allready busie
-			// We should calculate it neighbour map
+			// HACK
 			int map;
 			if (currentCell == _source) {
-				map = CalculateCellMask (_source, 0);
+				map = CalculateCellMask (currentCell, 0);
 			} else {
 				map = currentCell.DirectionLayers [0];
 			}
@@ -331,22 +330,6 @@ public static class MapManager {
 				// Check for allowed direction
 				if (AllowedDirections [map, i] == 0)
 					continue;
-
-				// Check for static obstackle
-				if (currentCell.neighbours [i].DirectionLayers [0] == -1)
-					continue;
-				
-				// Check for dynamic obstackle
-//				if (currentCell.neighbours [i].DirectionLayers [1] == -1)
-//					continue;
-//
-//				if (currentCell.neighbours [i] == _target) {
-//					if (currentCell.neighbours [i].DirectionLayers [1] == -1) {
-//						_target = currentCell;
-//						opened.Add (_target);
-//						break;
-//					}
-//				}
 
 				int newMovementCostToNeghbour = currentCell.gCost + GetDistance (currentCell, currentCell.neighbours [i]);
 

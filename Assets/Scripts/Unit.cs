@@ -20,6 +20,7 @@ public class Unit : MonoBehaviour {
 	public List<Cell> pathVis;
 	public bool pathLock;
 	public float pathLockTime;
+	public int directionLayer;
 
 	// Attack
 	public Unit victimFollow;
@@ -28,6 +29,7 @@ public class Unit : MonoBehaviour {
 	public float damage;
 	public float damageLockTime;
 	public bool damageLock;
+	public bool battle;
 
 	// Health
 	public float health;
