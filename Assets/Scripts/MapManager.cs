@@ -299,6 +299,9 @@ public static class MapManager {
 
 		opened.Add (_source);
 
+		// HACK
+		bool recover = false;
+
 		while (opened.Count > 0) {
 			// Assign some active node as current
 			Cell currentCell = opened.RemoveFirst();
@@ -307,6 +310,11 @@ public static class MapManager {
 
 
 			if (currentCell == _target) {
+				if (recover) {
+					// HACK
+					UpdateCellMask(_target, 0, false);
+				}
+
 				break;
 			}
 
@@ -318,6 +326,7 @@ public static class MapManager {
 				map = currentCell.DirectionLayers [0];
 			}
 
+
 			// For every neighbour of current cell
 			for (int i = 0; i < currentCell.neighbours.Length; i++) {
 				// Check for an empty neighbour
@@ -326,6 +335,11 @@ public static class MapManager {
 
 				if (closed.Contains (currentCell.neighbours [i]))
 					continue;
+
+				if (currentCell.neighbours [i] == _target && currentCell.neighbours [i].DirectionLayers[0] == -1) {
+					UpdateCellMask(currentCell.neighbours [i], 0, true);
+					recover = true;
+				}
 
 				// Check for allowed direction
 				if (AllowedDirections [map, i] == 0)
