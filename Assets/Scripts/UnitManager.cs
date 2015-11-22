@@ -52,7 +52,7 @@ public static class UnitManager {
 		// Movement
 		unit.speed = UnitTypes[unit.id].speed;
 		unit.pathLock = false;
-		unit.pathLockTime = 1f;
+		unit.pathLockTime = 0.5f;
 		
 		// Attack
 		unit.attackDistance = UnitTypes[unit.id].attackDistance;
@@ -80,110 +80,117 @@ public static class UnitManager {
 
 
 	// Check for the path and make next turn
-	public static void Idle (Unit _unit) {
-		if (!_unit.damageLock && _unit.victimClick == null) {
-			// Find victim
-			_unit.victim = null;
+	public static void Behaviour (Unit _unit) {
 
-			List<Unit> victims;
+		// If Damgae not locked
+		// If we have the victimBoss
+		// If the victimBoss is acceptable
+		// Hurt victim boss
+		// else
+		// if other targets acceptable
+		// hurt other targets
 
-			if (_unit.id == 0) {
-				victims = Enemies;
-			} else {
-				victims = Players;
-			}
-			
-			int newDistance = 0;
-			
-			foreach (var victim in victims) {
-				int tmpDistance = MapManager.GetDistance (_unit.source, victim.source);
+		if (!_unit.damageLock) {
+			_unit.DamageLock();
+
+			if (_unit.victimBoss == null) {
+				_unit.victim = null;
+
+				// Find victim
+				List<Unit> victims;
+
+				if (_unit.id == 0) {
+					victims = Enemies;
+				} else {
+					victims = Players;
+				}
 				
-				if (tmpDistance <= _unit.viewDistance) {
-					if (tmpDistance < newDistance || newDistance == 0) {
-						newDistance = tmpDistance;
-						_unit.victim = victim;
+				int newDistance = 0;
+				
+				foreach (var victim in victims) {
+					int tmpDistance = MapManager.GetDistance (_unit.source, victim.source);
+					
+					if (tmpDistance <= _unit.viewDistance) {
+						if (tmpDistance < newDistance || newDistance == 0) {
+							newDistance = tmpDistance;
+							_unit.victim = victim;
+						}
 					}
 				}
 			}
-		}
 
-		if (_unit.victim == null) {
-			// Update target
-			if (_unit.newTarget != null && !_unit.pathLock) {
-				_unit.target = _unit.newTarget;
-				_unit.newTarget = null;
+			if (_unit.victim != null) {
+				if (MapManager.GetDistance(_unit.source, _unit.victim.source) <= _unit.attackDistance) {
+					Hurt(_unit);
+					_unit.target = _unit.source;
+					return;
+				}
+
+				_unit.target = _unit.victim.source;
 			}
-			
-			// Back to source position after attack
-			if (_unit.target == _unit.source) {
-				_unit.path = null;
-				_unit.pathVis = null;
-				return;
-			}
-
-			GoTo (_unit, _unit.target);
-		} else {
-			if (MapManager.GetDistance(_unit.source, _unit.victim.source) <= _unit.attackDistance) {
-				Hurt(_unit);
-				_unit.path = null;
-				return;
-			}
-			GoTo (_unit, _unit.victim.source);
 		}
 
-		// We need this check becouse of timer locks
-		if (_unit.path == null) {
-			return;
-		}
-
-		// Make Step
-		if (_unit.path.Count == 1) {
-			Debug.Log ("_unit.path.Count = " + _unit.path.Count);
-			return;
-		}
-
-		if (_unit.path [1].DirectionLayers [1] == -1) {
-			return;
-		}
-		
-		MapManager.UpdateCellMask (_unit.path [0], 1, 255);
-		_unit.source = _unit.path [1];
-		MapManager.UpdateCellMask (_unit.source, 1, -1);
-		_unit.path.RemoveAt (0);
+		GoTo (_unit, _unit.target);
+		Walk (_unit);
 	}
 
+	static void Walk(Unit _unit) {
+		if (_unit.GetComponent<Transform> ().position != MapManager.GetWorldCoordinates (_unit.source)) { 
+			Transform trans = _unit.gameObject.GetComponent<Transform> ();
+			trans.position = Vector3.MoveTowards (
+				trans.position,
+				MapManager.GetWorldCoordinates (_unit.source),
+				Time.deltaTime * _unit.speed
+				);
+		} else {
+			// We need this check becouse of timer locks
+			if (_unit.path == null) {
+				return;
+			}
+			
+			if (_unit.path.Count == 1) {
+				_unit.path = null;
+				return;
+			}
+			
+			if (_unit.path [1].DirectionLayers [1] == -1) {
+				return;
+			}
+
+			MapManager.UpdateCellMask (_unit.path [0], 1, 255);
+			_unit.source = _unit.path [1];
+			MapManager.UpdateCellMask (_unit.source, 1, -1);
+			_unit.path.RemoveAt (0);
+		}
+	}
 
 	static void GoTo (Unit _unit, Cell _target) {
+		if (_unit.source == _target) {
+			_unit.pathVis = null;
+			_unit.path = null;
+			return;
+		}
+
 		if (_unit.pathLock) {
 			return;
 		}
 		_unit.PathLock();
 
-		if (_target == _unit.source) {
-			return;
-		}
-			
 		_unit.path = MapManager.FindPath (_unit.source, _target);
 		
+		// Debug
 		if (_unit.path != null) {
-			// Debug
 			_unit.pathVis = new List<Cell> (_unit.path);
 		}
 	}
 
 
-	public static void WalkAnimation(Unit _unit) {
-		Transform trans = _unit.gameObject.GetComponent<Transform> ();
-		trans.position = Vector3.MoveTowards (
-			trans.position,
-			MapManager.GetWorldCoordinates (_unit.source),
-			Time.deltaTime * _unit.speed
-			);
-	}
-
-
 	public static void Click (Cell _target) {
-		Players[0].newTarget = _target;
+		Players[0].path = null;
+		Players[0].target = _target;
+		Players[0].victim = null;
+		Players[0].pathLock = false;
+		GoTo (Players[0], Players[0].target);
 	}
 
 
@@ -191,18 +198,16 @@ public static class UnitManager {
 		if (!Players.Contains(_unit)) {
 			_unit.Highlite(new Color (0f, 1f, 1f));
 
-			Players[0].victimClick = _unit;
+			Players[0].victimBoss = _unit;
 			Players[0].victim = _unit;
+			Players[0].target = Players[0].victim.source;
+			Players[0].pathLock = false;
+			GoTo (Players[0], Players[0].target);
 		}
 	}
 
 
 	static void Hurt (Unit _assault) {
-		if (_assault.damageLock) {
-			return;
-		}
-		_assault.DamageLock();
-
 		_assault.victim.healthPanel.SetActive(true);
 		_assault.victim.health -= _assault.damage;
 		_assault.victim.healthSlider.value = _assault.victim.health/_assault.victim.maxHealth;		
@@ -226,8 +231,8 @@ public static class UnitManager {
 			GameObject.Destroy(_assault.victim.healthPanel);
 			GameObject.Destroy(_assault.victim.gameObject);
 			
-			if (_assault.victimClick == _assault.victim) {
-				_assault.victimClick = null;
+			if (_assault.victimBoss == _assault.victim) {
+				_assault.victimBoss = null;
 				_assault.target = _assault.source;
 			}
 

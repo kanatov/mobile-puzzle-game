@@ -442,6 +442,10 @@ public static class MapManager {
 
 
 	public static void DebugDrawPath(List<Cell> _path){
+		if (_path == null) {
+			return;
+		}
+
 		int currCell = 0;
 		
 		while (currCell < _path.Count - 1) {

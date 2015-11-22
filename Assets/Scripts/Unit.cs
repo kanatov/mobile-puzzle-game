@@ -24,7 +24,7 @@ public class Unit : MonoBehaviour {
 
 	// Attack
 	public Unit victim;
-	public Unit victimClick;
+	public Unit victimBoss;
 	public int attackDistance;
 	public int viewDistance;
 	public float damage;
@@ -41,13 +41,8 @@ public class Unit : MonoBehaviour {
 
 
 	void Update () {
-		if (GetComponent<Transform> ().position == MapManager.GetWorldCoordinates (source)) {
-			UnitManager.Idle(this);
-		} else {
-			UnitManager.WalkAnimation (this);
-			MapManager.DebugDrawPath(pathVis);
-		}
-
+		UnitManager.Behaviour(this);
+		MapManager.DebugDrawPath(pathVis);
 		Fade();
 		HealthBarPosition();
 	}
