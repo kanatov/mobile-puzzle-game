@@ -14,17 +14,14 @@ public class Unit : MonoBehaviour {
 
 	// Movement
 	public Cell source;
-	public Cell target;
-	public Cell newTarget;
+	public Cell cellFollow;
 	public float speed;
 	public List<Cell> path;
-	public List<Cell> pathVis;
 	public bool pathLock;
 	public float pathLockTime;
 
 	// Attack
-	public Unit victim;
-	public Unit victimBoss;
+	public Unit victimFollow;
 	public int attackDistance;
 	public int viewDistance;
 	public float damage;
@@ -41,8 +38,9 @@ public class Unit : MonoBehaviour {
 
 
 	void Update () {
-		UnitManager.Behaviour(this);
-		MapManager.DebugDrawPath(pathVis);
+		UnitManager.Attack(this);
+		UnitManager.Walk(this);
+		MapManager.DebugDrawPath(path);
 		Fade();
 		HealthBarPosition();
 	}
@@ -60,7 +58,9 @@ public class Unit : MonoBehaviour {
 	}
 
 	void OnMouseUp () {
-		UnitManager.UnitClick (this);
+		if (this != UnitManager.Players[0]) {
+			UnitManager.SetUnitTarget (this);
+		}
 	}
 
 	public void PathLock () {

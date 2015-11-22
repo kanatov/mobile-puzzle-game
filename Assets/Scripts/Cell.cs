@@ -27,7 +27,7 @@ public class Cell : MonoBehaviour, IHeapItem<Cell>
 	{
 		if (terrain == 0) {
 			material.color = highliteColor;
-			UnitManager.Click (this.GetComponent<Cell> ());
+			UnitManager.SetCellTarget (this);
 		}
 	}
 
