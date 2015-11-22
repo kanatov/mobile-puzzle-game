@@ -441,18 +441,22 @@ public static class MapManager {
 	//
 
 
-	public static void DebugDrawPath(List<Cell> _path){
-		if (_path == null) {
+	public static void DebugDrawPath(Unit _unit){
+		if (_unit != UnitManager.Players[0]) {
+			return;
+		}
+
+		if (_unit.pathVis == null) {
 			return;
 		}
 
 		int currCell = 0;
 		
-		while (currCell < _path.Count - 1) {
-			Cell startCell = _path [currCell];
+		while (currCell < _unit.pathVis.Count - 1) {
+			Cell startCell = _unit.pathVis [currCell];
 			Vector3 start = GetWorldCoordinates (startCell);
 			
-			Cell endCell = _path [currCell + 1];
+			Cell endCell = _unit.pathVis [currCell + 1];
 			Vector3 end = GetWorldCoordinates (endCell);
 			
 			Debug.DrawLine (start, end, debugColor);

@@ -17,6 +17,7 @@ public class Unit : MonoBehaviour {
 	public Cell cellFollow;
 	public float speed;
 	public List<Cell> path;
+	public List<Cell> pathVis;
 	public bool pathLock;
 	public float pathLockTime;
 
@@ -40,9 +41,9 @@ public class Unit : MonoBehaviour {
 	void Update () {
 		UnitManager.Attack(this);
 		UnitManager.Walk(this);
-		MapManager.DebugDrawPath(path);
 		Fade();
 		HealthBarPosition();
+		MapManager.DebugDrawPath(this);
 	}
 
 	void HealthBarPosition () {

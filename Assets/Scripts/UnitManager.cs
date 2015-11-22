@@ -125,11 +125,13 @@ public static class UnitManager {
 		if (_unit.GetComponent<Transform> ().position == MapManager.GetWorldCoordinates (_unit.source)) {
 			if (_unit.source == _unit.cellFollow) {
 				_unit.path = null;
+				_unit.pathVis = null;
 				_unit.cellFollow = null;
 				return;
 			}
 
 			if (_unit.cellFollow == null && _unit.victimFollow == null) {
+				_unit.pathVis = null;
 				_unit.path = null;
 				return;
 			}
@@ -160,10 +162,12 @@ public static class UnitManager {
 			if (_unit.path [1].DirectionLayers [1] == -1) {
 				return;
 			}
-			
+			_unit.pathVis = new List<Cell>(_unit.path);
+
 			MapManager.UpdateCellMask (_unit.path [0], 1, 255);
 			_unit.source = _unit.path [1];
 			MapManager.UpdateCellMask (_unit.source, 1, -1);
+
 			_unit.path.RemoveAt (0);
 		}
 
