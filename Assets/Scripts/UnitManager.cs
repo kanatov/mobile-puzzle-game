@@ -23,7 +23,6 @@ public static class UnitManager {
 	public static UnitType[] UnitTypes;
 	public static GameObject UnitContainer;
 	public static GameObject[] UI;
-	public static Canvas canvas;
 
 	// Private
 	static Color highliteColor = new Color(1f, 0.5f, 0f);
@@ -65,8 +64,8 @@ public static class UnitManager {
 		unit.maxHealth = UnitTypes[unit.id].maxHealth;
 		unit.health = unit.maxHealth;
 		unit.dead = false;
-		unit.healthPanel = (GameObject) GameObject.Instantiate(UI[0]);
-		unit.healthPanel.GetComponent<Transform>().SetParent(canvas.GetComponent<Transform>(), false);
+		unit.healthPanel = (GameObject) GameObject.Instantiate(UI[1]);
+		unit.healthPanel.GetComponent<Transform>().SetParent(UI[0].GetComponent<Transform>(), false);
 		unit.healthSlider = unit.healthPanel.GetComponentInChildren<Slider>();
 		unit.healthPanel.SetActive(false);
 

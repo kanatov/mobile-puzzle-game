@@ -15,7 +15,8 @@ public class Camera : MonoBehaviour {
 
 	void FollowPlayer () {
 		if (UnitManager.Players.Count != 0) {
-			GetComponent<Transform>().position = UnitManager.Players[0].GetComponent<Transform>().position;
+//			GetComponent<Transform>().position = UnitManager.Players[0].GetComponent<Transform>().position;
+			GetComponent<Transform>().position = new Vector3(5f,0f,5f);
 		}
 	}
 }

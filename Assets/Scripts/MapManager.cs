@@ -18,7 +18,7 @@ public static class MapManager {
 	public static GameObject[] TerrainModels;
 
 	// Create Map
-	public static void Init (int[] _level) {
+	public static void Create (int[] _level, int[] _terrain) {
 		// Looking for the old MapRoot instance and remove it
 		GameObject[] mapInstances = GameObject.FindGameObjectsWithTag ("Map");
 		foreach (var i in mapInstances) {
@@ -33,7 +33,7 @@ public static class MapManager {
 		
 		pathfindingMax = (_level[0] * _level[1]) / 3;
 		
-		PopulateCell (Cells);
+		PopulateCell (Cells, _terrain);
 		PopulateNeighbours (Cells);
 		PopulateAllowedDirections (AllowedDirections);
 		PopulateGroundMap (Cells);
@@ -49,8 +49,7 @@ public static class MapManager {
 	}
 
 	// Create cell GameObjects and add it to array
-	static void PopulateCell (Cell[,] _map)
-	{
+	static void PopulateCell (Cell[,] _map, int[] _terrain) {
 		for (int x = 0; x < _map.GetLength(0); x++) {
 			for (int y = 0; y < _map.GetLength(1); y++) {
 				GameObject cell = (GameObject)GameObject.Instantiate (
@@ -64,23 +63,16 @@ public static class MapManager {
 				_map [x, y].x = x;
 				_map [x, y].y = y;
 				_map [x, y].DirectionLayers = new int[] {255,255};
-				_map [x, y].terrain = GetTerrain ();
+				_map [x, y].terrain = GetTerrain (_terrain, x, y);
 			}
 		}
 	}
 
-	// TODO Map: Procedural map generation
-	// TODO Map: hills
-	// Map terrain generator
-	static int GetTerrain ()
-	{
-		float range = UnityEngine.Random.Range (0.0f, 1.0f);
-		int type = 0;
-		
-		if (range > 0.65f) {
-			type = 1;
-		}
-		return type;
+	static int GetTerrain (int[] _terrain, int _x, int _y) {
+		int point = 0;
+
+		point = _y * Cells.GetLength(0) + _x;
+		return _terrain[point];
 	}
 
 	// Calculate all neigbours and add them to each other
@@ -362,14 +354,11 @@ public static class MapManager {
 
 					currentCell.neighbours [i].parent = currentCell;
 
-					if (!opened.Contains (currentCell.neighbours [i]) && closed.Count < pathfindingMax)
+					if (!opened.Contains (currentCell.neighbours [i]))
 						opened.Add (currentCell.neighbours [i]);
 				}
 			}
 		}
-
-		if (closed.Count >= pathfindingMax)
-			Debug.LogWarningFormat ("Count: " + closed.Count + ", Source: " + _source.x + " " + _source.y + ", Target: " + _target.x + " " + _target.y);
 
 		if (!closed.Contains (_target)) {
 			Debug.LogWarning ("Unreacheble goal! " + _source.x + " " + _source.y + ", " + _target.x + " " + _target.y + ". " + Time.timeSinceLevelLoad);

@@ -39,7 +39,6 @@ public class Unit : MonoBehaviour {
 	public Slider healthSlider;
 	float healthPanelOffset = 2.35f;
 
-
 	void Update () {
 		UnitManager.Attack(this);
 		UnitManager.Walk(this);
