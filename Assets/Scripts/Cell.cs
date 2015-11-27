@@ -8,8 +8,8 @@ public class Cell : MonoBehaviour, IHeapItem<Cell>
 	public int terrain;
 	public int x;
 	public int y;
-	public Color highliteColor = Color.yellow;
 	public Color normalColor;
+	public Color highliteColor = Color.white;
 	public GameObject Tile;
 	public Cell parent;
 	public int gCost;
@@ -23,18 +23,18 @@ public class Cell : MonoBehaviour, IHeapItem<Cell>
 		Fade();
 	}
 
-	void OnMouseUp ()
+	void OnMouseDown ()
 	{
 		if (terrain == 0) {
-			material.color = highliteColor;
+//			material.color = highliteColor;
 			UnitManager.SetCellTarget (this);
 		}
 	}
 
 	void Fade() {
-		if (material.color != normalColor) {
-			material.color = Color.Lerp (material.color, normalColor, 0.1f);
-		}
+//		if (material.color != normalColor) {
+//			material.color = Color.Lerp (material.color, normalColor, 0.1f);
+//		}
 	}
 
 	public int fCost {

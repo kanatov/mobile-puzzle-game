@@ -18,8 +18,7 @@ public static class MapManager {
 	public static GameObject[] TerrainModels;
 
 	// Create Map
-	public static void Init (int[] _level)
-	{
+	public static void Init (int[] _level) {
 		// Looking for the old MapRoot instance and remove it
 		GameObject[] mapInstances = GameObject.FindGameObjectsWithTag ("Map");
 		foreach (var i in mapInstances) {
@@ -78,7 +77,7 @@ public static class MapManager {
 		float range = UnityEngine.Random.Range (0.0f, 1.0f);
 		int type = 0;
 		
-		if (range > 0.9f) {
+		if (range > 0.65f) {
 			type = 1;
 		}
 		return type;
@@ -262,20 +261,31 @@ public static class MapManager {
 	}
 	
 	// Draw map tiles on scene
-	static void DrawTerrain (Cell[,] map)
-	{
+	static void DrawTerrain (Cell[,] map) {
+		// Draw floor
+		GameObject floor = (GameObject)GameObject.Instantiate (
+			TerrainModels[0],
+			new Vector3 ((map.GetLength(0)/2) - 0.5f, 0f, (map.GetLength(1)/2) - 0.5f),
+			Quaternion.Euler (new Vector3 (90, 90, 0))
+			);
+		floor.GetComponent<Transform>().localScale = new Vector3 (map.GetLength(0), map.GetLength(1), 1);
+
+		// Draw cells
 		for (int x = 0; x < map.GetLength (0); x++) {
 			for (int y = 0; y < map.GetLength (1); y++) {
 				Cell cell = map [x, y];
 				GameObject terrain;
-				
-				terrain = (GameObject)GameObject.Instantiate (TerrainModels [cell.terrain]);
-				terrain.GetComponent<Transform> ().SetParent (map [x, y].GetComponent<Transform> ());
-				terrain.GetComponent<Transform> ().localPosition = new Vector3 (0f, 0f, 0f);
-				
-				cell.normalColor = terrain.GetComponent<Renderer> ().material.color;
-				cell.Tile = terrain;
-				cell.material = cell.Tile.GetComponent<Renderer>().material;
+
+				if (cell.terrain == 1) {
+					terrain = (GameObject)GameObject.Instantiate (TerrainModels [cell.terrain]);
+					terrain.GetComponent<Transform> ().SetParent (map [x, y].GetComponent<Transform> ());
+					terrain.GetComponent<Transform> ().localPosition = new Vector3 (0f, 0f, -0.5f);
+					terrain.GetComponent<Transform> ().localScale = new Vector3 (1f, 1f, 1f);
+					
+					cell.normalColor = terrain.GetComponent<Renderer> ().material.color;
+					cell.Tile = terrain;
+					cell.material = cell.Tile.GetComponent<Renderer>().material;
+				}
 
 			}
 		}
@@ -301,6 +311,10 @@ public static class MapManager {
 
 		// HACK
 		bool recover = false;
+		if (_target.DirectionLayers[0] == -1) {
+			UpdateCellMask(_target, 0, true);
+			recover = true;
+		}
 
 		while (opened.Count > 0) {
 			// Assign some active node as current
@@ -310,8 +324,8 @@ public static class MapManager {
 
 
 			if (currentCell == _target) {
+				// HACK
 				if (recover) {
-					// HACK
 					UpdateCellMask(_target, 0, false);
 				}
 
@@ -335,11 +349,6 @@ public static class MapManager {
 
 				if (closed.Contains (currentCell.neighbours [i]))
 					continue;
-
-				if (currentCell.neighbours [i] == _target && currentCell.neighbours [i].DirectionLayers[0] == -1) {
-					UpdateCellMask(currentCell.neighbours [i], 0, true);
-					recover = true;
-				}
 
 				// Check for allowed direction
 				if (AllowedDirections [map, i] == 0)
@@ -462,31 +471,31 @@ public static class MapManager {
 		}
 	}
 
-	public static void DebugDrawClosedCells ()
-	{
-		for (int x = 0; x < Cells.GetLength (0); x++) {
-			for (int y = 0; y < Cells.GetLength (1); y++) {
-				if (Cells [x, y].terrain == 0) {
-					if (Cells [x, y].DirectionLayers [1] != -1) {
-						DebugNormalTile(Cells [x, y]);
-					} else {
-						DebugHighliteTile(Cells [x, y], 0.6f, 0.6f, 0.3f);
-					}
-				}
-			}
-		}
-	}
+//	public static void DebugDrawClosedCells ()
+//	{
+//		for (int x = 0; x < Cells.GetLength (0); x++) {
+//			for (int y = 0; y < Cells.GetLength (1); y++) {
+//				if (Cells [x, y].terrain == 0) {
+//					if (Cells [x, y].DirectionLayers [1] != -1) {
+//						DebugNormalTile(Cells [x, y]);
+//					} else {
+//						DebugHighliteTile(Cells [x, y], 0.6f, 0.6f, 0.3f);
+//					}
+//				}
+//			}
+//		}
+//	}
 
-	public static void DebugHighliteTile (Cell _cell, float _r, float _g, float _b)
-	{
-		GameObject tile = _cell.Tile;
-
-		if (tile != null) {
-			if (tile.GetComponent<Renderer> ().material.color != _cell.highliteColor) {
-				tile.GetComponent<Renderer> ().material.color = new Color (_r, _g, _b);
-			}
-		}
-	}
+//	public static void DebugHighliteTile (Cell _cell, float _r, float _g, float _b)
+//	{
+//		GameObject tile = _cell.Tile;
+//
+//		if (tile != null) {
+//			if (tile.GetComponent<Renderer> ().material.color != _cell.highliteColor) {
+//				tile.GetComponent<Renderer> ().material.color = new Color (_r, _g, _b);
+//			}
+//		}
+//	}
 	
 	public static void DebugNormalTile (Cell _cell)
 	{

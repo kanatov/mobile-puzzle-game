@@ -10,6 +10,12 @@ public class Camera : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		GetComponent<Transform>().position = UnitManager.Players[0].GetComponent<Transform>().position;
+		FollowPlayer();
+	}
+
+	void FollowPlayer () {
+		if (UnitManager.Players.Count != 0) {
+			GetComponent<Transform>().position = UnitManager.Players[0].GetComponent<Transform>().position;
+		}
 	}
 }
