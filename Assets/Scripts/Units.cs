@@ -15,7 +15,7 @@ using System.Linq;
 // TODO AI: If enemy far away from the player – mage group of enemies and round the player
 // TODO Calculate only heighbour chunks
 
-public static class UnitManager {
+public static class Units {
 
 	// Public
 	public static List<Unit> Players = new List<Unit>();
@@ -26,42 +26,42 @@ public static class UnitManager {
 
 	// Private
 	static Color highliteColor = new Color(1f, 0.5f, 0f);
-
-	public static void Create (int _id) {
-		GameObject unitContainer = (GameObject)GameObject.Instantiate (UnitContainer);
-		Unit unit = unitContainer.GetComponent<Unit> ();
-
-		// Type of the Unit
-		unit.id = _id;
-
-		// Position
-		unit.speed = UnitTypes[unit.id].speed;
-		unit.directionLayer = UnitTypes[unit.id].directionLayer;
-
-		unit.source = MapManager.GetRandomPlace ();
-		MapManager.UpdateCellMask (unit.source, unit.directionLayer, false);
-		unit.GetComponent<Transform> ().position = MapManager.GetWorldCoordinates (unit.source);
-
-		// Look
-		unit.model = GameObject.Instantiate (UnitTypes[unit.id].model);
-		unit.model.GetComponent<Transform> ().SetParent (unit.GetComponent<Transform> ());
-		unit.model.GetComponent<Transform> ().localPosition = new Vector3 (0f, 0.5f, 0f);
-
-		unit.material = unit.model.GetComponent<Renderer>().material;
-		unit.normalColor = unit.material.color;
-		
-		// Attack
-		unit.attackDistance = UnitTypes[unit.id].attackDistance;
-		unit.viewDistance = UnitTypes[unit.id].viewDistance;
-
-		// Health
-		unit.dead = false;
-
-		if (unit.id == 0) {
-			Players.Add(unit);
-		} else {
-			Enemies.Add(unit);
-		}
-	}
+//
+//	public static void Create (int _id) {
+//		GameObject unitContainer = (GameObject)GameObject.Instantiate (UnitContainer);
+//		Unit unit = unitContainer.GetComponent<Unit> ();
+//
+//		// Type of the Unit
+//		unit.id = _id;
+//
+//		// Position
+//		unit.speed = UnitTypes[unit.id].speed;
+//		unit.directionLayer = UnitTypes[unit.id].directionLayer;
+//
+//		unit.source = Map.GetRandomPlace ();
+//		Map.UpdateCellMask (unit.source, unit.directionLayer, false);
+//		unit.GetComponent<Transform> ().position = Map.GetWorldCoordinates (unit.source);
+//
+//		// Look
+//		unit.model = GameObject.Instantiate (UnitTypes[unit.id].model);
+//		unit.model.GetComponent<Transform> ().SetParent (unit.GetComponent<Transform> ());
+//		unit.model.GetComponent<Transform> ().localPosition = new Vector3 (0f, 0.5f, 0f);
+//
+//		unit.material = unit.model.GetComponent<Renderer>().material;
+//		unit.normalColor = unit.material.color;
+//		
+//		// Attack
+//		unit.attackDistance = UnitTypes[unit.id].attackDistance;
+//		unit.viewDistance = UnitTypes[unit.id].viewDistance;
+//
+//		// Health
+//		unit.dead = false;
+//
+//		if (unit.id == 0) {
+//			Players.Add(unit);
+//		} else {
+//			Enemies.Add(unit);
+//		}
+//	}
 }
 

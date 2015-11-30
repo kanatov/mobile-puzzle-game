@@ -1,0 +1,25 @@
+﻿using UnityEngine;
+
+public class Unit : MonoBehaviour {
+
+	// Type of the Unit
+	public int id;
+
+	// Look
+	public GameObject model;
+	public Color normalColor;
+	public Material material;
+
+	// Movement
+	public Cell source;
+	public Direction direction = Direction.None;
+	public float speed;
+	public int directionLayer;
+
+	// Attack
+	public int attackDistance;
+	public int viewDistance;
+
+	// Health
+	public bool dead;
+}
