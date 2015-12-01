@@ -9,47 +9,59 @@ public static class Map {
 	public static GameObject map;
 	public static Cell[,] cells;
 	public static GameObject CellContainer;
-	public static GameObject UnitContainer;
-	public static GameObject[] TerrainModels;
+	public static GameObject unitContainer;
+	public static GameObject[] terrainModels;
 
-	// Create Map
+	public static float hexSpeed = 4;
+	public static Vector3 hexSmallScale = new Vector3 (0.05f, 0.05f, 0.05f);
+
+	static float hexOffsetX, hexOffsetY;
+
+
 	public static void Init () {
-
 		// Create map container
-		map = GameObject.Instantiate (UnitContainer);
+		if (map != null) {
+			GameObject.Destroy(map.gameObject);
+			cells = null;
+		}
+
+		map = GameObject.Instantiate (unitContainer);
 		map.GetComponent<Transform>().position = new Vector3 (Player.x, 0f, Player.y);
 
+		// Calculate hex offsets
+		float d = 0.5f / (Mathf.Sqrt(3)/2);
+		hexOffsetX = d * 1.5f;
+		hexOffsetY = d * Mathf.Sqrt(3);
+
+		//Init map
 		Overview.Init();
-		UpdateMap (0,0);
+		UpdateMap (0, 0);
 	}
 
-	// set new player coordinates
-	// if world coordinates != player coordinates
-	// move world parent
-
 	public static void UpdateMap (int _shiftX, int _shiftY) {
+		if (GameController.turnLock) {
+			return;
+		}
 
 		if (_shiftX != 0) {
-			Overview.shift = !Overview.shift;
-
-			if (!Overview.shift) {
-				_shiftY *= 0;
+			if (Overview.GetShift) {
+				_shiftY = -1;
 			}
+			Overview.shift = !Overview.shift;
 		}
 
 		Player.x += _shiftX;
 		Player.y += _shiftY;
 
-
 		// Copy and add tiles
-		int cellSizeX = Overview.Get(Player.overview).GetLength(0);
-		int cellSizeY = Overview.Get(Player.overview).GetLength(1);
+		int cellSizeX = Overview.GetMask(Player.overview).GetLength(0);
+		int cellSizeY = Overview.GetMask(Player.overview).GetLength(1);
 		Cell[,] newCells = new Cell[cellSizeX, cellSizeY];
 		List<Cell> copyed = new List<Cell>();
 
 		for (int x = 0; x < newCells.GetLength(0); x++) {
 			for (int y = 0; y < newCells.GetLength(1); y++) {
-				if (Overview.Get(Player.overview)[x, y] != 0) {
+				if (Overview.GetMask(Player.overview)[x, y] != 0) {
 					if (cells != null) {
 						if (x + _shiftX >= 0 && y + _shiftY >= 0) {
 							if (x + _shiftX < cellSizeX && y + _shiftY < cellSizeY) {
@@ -72,14 +84,18 @@ public static class Map {
 					}
 				}
 				if (newCells[x, y] != null) {
-					newCells[x, y].GetComponent<Transform> ().localPosition = GetWorldCoordinates(newCells[x, y]);
+					newCells[x, y].GetComponent<Transform> ().localPosition = GetWorldCoordinates(newCells[x, y].x, newCells[x, y].y);
 				}
 
 				if (cells != null && cells[x, y] != null) {
-					cells[x, y].GetComponent<Transform> ().localPosition = GetWorldCoordinates(cells[x, y]);
+					cells[x, y].GetComponent<Transform> ().localPosition = GetWorldCoordinates(cells[x, y].x, cells[x, y].y);
 				}
 			}
 		}
+
+		int playerCellX = Mathf.RoundToInt(newCells.GetLength(0)/2);
+		int playerCellY = newCells.GetLength(1) - 2;
+		Player.source = newCells[playerCellX, playerCellY];
 
 		// Remove tiles and set coordinates
 		if (cells != null) {
@@ -90,135 +106,30 @@ public static class Map {
 					}
 				}
 			}
+		} else {
+			map.GetComponent<Transform>().position = GetZeroPosition();
 		}
+
 		cells = newCells;
 		map.GetComponent<Move>().enabled = true;
 	}
 
-	// Tile > World coordinates converter
-	public static Vector3 GetWorldCoordinates (Cell _cell) {
-		float x, y;
-			if( _cell.x % 2 == 0 ) {
-				x = _cell.x * Terrain.offsetX;
-				y = (_cell.y + 0.5f) * Terrain.offsetY;
-			} else {
-				x = _cell.x * Terrain.offsetX;
-				y = _cell.y * Terrain.offsetY;
-			}
+	public static Vector3 GetZeroPosition () {
+		Vector3 ztLocal = Player.source.GetComponent<Transform>().localPosition;
+		return ztLocal * -1;
+	}
 
-		
+	// Tile > World coordinates converter
+	public static Vector3 GetWorldCoordinates (int _x, int _y) {
+		float x, y;
+
+		if( _x % 2 == 0 ) {
+			x = _x * hexOffsetX;
+			y = (_y + 0.5f) * hexOffsetY;
+		} else {
+			x = _x * hexOffsetX;
+			y = _y * hexOffsetY;
+		}
 		return new Vector3 (x, 0f, -y);
 	}
-	// Calculate all neigbours and add them to each other
-//	static void PopulateNeighbours (Cell[,] _map)
-//	{
-//
-//		int width = _map.GetLength (0);
-//		int height = _map.GetLength (1);
-//
-//		for (int x = 0; x < width; x++) {
-//			for (int y = 0; y < height; y++) {
-//
-//				// 0           1           2
-//				//           
-//				//   | -1, 1  0, 1  1, 1
-//				//   |
-//				// 7 | -1, 0  0, 0  1, 0   3
-//				//   | 
-//				//   | -1,-1  0,-1  1,-1 
-//				//  y|________________
-//				//  0 x
-//				// 6           5           4
-//
-//				// Top
-//				if (y > 0)
-//					_map [x, y].neighbours [5] = RockFilter (_map [x, y - 1]);
-//				
-//				//Bottom
-//				if (y < height - 1)
-//					_map [x, y].neighbours [1] = RockFilter (_map [x, y + 1]);
-//
-//				//Left
-//				if (x > 0) {
-//					_map [x, y].neighbours [7] = RockFilter (_map [x - 1, y]);
-//
-//					//Left Top
-//					if (y > 0)
-//						_map [x, y].neighbours [6] = RockFilter (_map [x - 1, y - 1]);
-//
-//					//Left Bottom
-//					if (y < height - 1)
-//						_map [x, y].neighbours [0] = RockFilter (_map [x - 1, y + 1]);
-//				}
-//				
-//				// Right
-//				if (x < width - 1) {
-//					_map [x, y].neighbours [3] = RockFilter (_map [x + 1, y]);
-//
-//					//Right Top
-//					if (y > 0)
-//						_map [x, y].neighbours [4] = RockFilter (_map [x + 1, y - 1]);
-//
-//					//Right Bottom
-//					if (y < height - 1)
-//						_map [x, y].neighbours [2] = RockFilter (_map [x + 1, y + 1]);
-//				}
-//			}
-//		}
-//	}
-
-//	static Cell RockFilter (Cell _cell)
-//	{
-//		if (_cell.terrain == 1) {
-//			return null;
-//		} else {
-//			return _cell;
-//		}
-//	}
-//
-//
-//	// Create movement map with terrain
-//	static void PopulateGroundMap (Cell[,] _map)
-//	{
-//		for (int x = 0; x < _map.GetLength(0); x++) {
-//			for (int y = 0; y < _map.GetLength(1); y++) {
-//				Cell cell = _map [x, y];
-//				
-//				if (cell.terrain == 1)
-//					UpdateCellMask (cell, 0, false);
-//			}
-//		}
-//	}
-//	
-//	public static int GetDistance (Cell _source, Cell _target)
-//	{
-//		int distanceX = Mathf.Abs (_source.x - _target.x);
-//		int distanceY = Mathf.Abs (_source.y - _target.y);
-//
-//		if (distanceX > distanceY) {
-//			return (14 * distanceY) + (10 * (distanceX - distanceY));
-//		}
-//		return (14 * distanceX) + (10 * (distanceY - distanceX));
-//	}
-//
-//	public static Cell GetRandomPlace ()
-//	{
-//		Cell cell;
-//
-//		do {
-//			cell = null;
-//			int x;
-//			int y;
-//
-//			x = UnityEngine.Random.Range (0, Cells.GetLength (0));
-//			y = UnityEngine.Random.Range (0, Cells.GetLength (1));
-//
-//			if (Cells [x, y].DirectionLayers [0] != -1) {
-//				cell = Cells [x, y];
-//			}
-//		} while (cell == null);
-//
-//		return cell;
-//	}
-//
 }

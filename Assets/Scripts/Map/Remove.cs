@@ -3,20 +3,21 @@ using System.Collections;
 
 public class Remove : MonoBehaviour {
 	Transform trans;
-	Vector3 target = new Vector3 (0.05f, 0.05f, 0.05f);
 
 	void OnEnable () {
 		trans = this.GetComponent<Transform>();
+		GameController.turnLockQueue++;
 	}
 
 	void Update () {
-		if (trans.localScale != target) {
+		if (trans.localScale != Map.hexSmallScale) {
 			trans.localScale = Vector3.MoveTowards (
 				trans.localScale,
-				target,
-				Time.deltaTime * 2
+				Map.hexSmallScale,
+				Time.deltaTime * Map.hexSpeed
 				);
 		} else {
+			GameController.turnLockQueue--;
 			this.enabled = false;
 			GameObject.Destroy (this.gameObject);
 		}

@@ -80,12 +80,12 @@ public static class SwipeManager {
 		}
 		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.Left ) > 0.906f ) {
 			SwipeDirection = Direction.Left;
-			Map.UpdateMap(-1, -1);
+			Map.UpdateMap(-1, 0);
 			return;
 		}
 		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.Right ) > 0.906f) {
 			SwipeDirection = Direction.Right;
-			Map.UpdateMap(1, -1);
+			Map.UpdateMap(1, 0);
 			return;
 		}
 		

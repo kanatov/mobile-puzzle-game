@@ -52,10 +52,9 @@
      <Compile Include="Assets\Scripts\Game\Player.cs" />
      <Compile Include="Assets\Scripts\Game\PlayerDefault.cs" />
      <Compile Include="Assets\Scripts\Loader.cs" />
-     <Compile Include="Assets\Scripts\Map\Create.cs" />
+     <Compile Include="Assets\Scripts\Map\Add.cs" />
      <Compile Include="Assets\Scripts\Map\Map.cs" />
      <Compile Include="Assets\Scripts\Map\Overview.cs" />
-     <Compile Include="Assets\Scripts\Map\Pathfinding.cs" />
      <Compile Include="Assets\Scripts\Map\Remove.cs" />
      <Compile Include="Assets\Scripts\Map\Terrain.cs" />
      <Compile Include="Assets\Scripts\MyDebug.cs" />

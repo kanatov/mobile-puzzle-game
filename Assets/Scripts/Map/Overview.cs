@@ -46,17 +46,27 @@ public class Overview {
 					newArray[x,overviewMasks[i].GetLength(1) - y] = overviewMasks[i][x,y-1];
 				}
 			}
-
 			overviewMasksShift[i] = newArray;
 		}
 
 	}
 
-	public static int[,] Get (int _size) {
+	public static int[,] GetMask (int _size) {
 		if (shift) {
 			return overviewMasks[_size];
 		} else {
 			return overviewMasksShift[_size];
 		}
 	}
+
+	public static bool GetShift {
+		get {
+			if (Player.overview % 2 == 0) {
+				return !shift;
+			} else {
+				return shift;
+			}
+		}
+	}
+
 }

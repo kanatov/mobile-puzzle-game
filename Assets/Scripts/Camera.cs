@@ -2,17 +2,10 @@
 using System.Collections;
 
 public class Camera : MonoBehaviour {
+	public GameObject camera;
 
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		FollowPlayer();
-	}
-
-	void FollowPlayer () {
+	public void SetPosition () {
+		float z = Overview.overviewMasks[Player.overview].GetLength(1)/2;
+		this.GetComponent<Transform>().position = new Vector3(0f, 0f, z);
 	}
 }

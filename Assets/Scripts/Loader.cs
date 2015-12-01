@@ -1,19 +1,19 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
-using System.Linq;
 
 public class Loader : MonoBehaviour {
-	public GameObject CellContainer;
-	public GameObject[] TerrainModels;
-	public GameObject UnitContainer;
-	public GameObject[] UI;
+	public GameObject cellContainer;
+	public GameObject[] terrainModels;
+	public GameObject unitContainer;
+	public GameObject[] ui;
+	public GameObject cameraContainer;
 
 	void Start () {
-		Units.UnitContainer = UnitContainer;
-		Map.UnitContainer = UnitContainer;
-		Map.CellContainer = CellContainer;
-		Map.TerrainModels = TerrainModels;
-		GameController.UI = UI;
+		Units.UnitContainer = unitContainer;
+		Map.unitContainer = unitContainer;
+		Map.CellContainer = cellContainer;
+		Map.terrainModels = terrainModels;
+		GameController.ui = ui;
+		GameController.cameraContainer = cameraContainer;
 
 		GameController.Init ();
 

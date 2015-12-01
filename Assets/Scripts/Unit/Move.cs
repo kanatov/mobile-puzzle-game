@@ -9,24 +9,28 @@ public class Move : MonoBehaviour {
 	void OnEnable () {
 		trans = this.GetComponent<Transform>();
 		unit = this.GetComponent<Unit>();
+		GameController.turnLockQueue++;
+//		if (unit.source == null) {
+			target = Map.GetZeroPosition();
+			unit.speed = Map.hexSpeed;
 
-		if (unit.source == null) {
-			target = new Vector3 (-Player.x, 0, Player.y);
-			unit.speed = 2;
-		} else {
-			target = Map.GetWorldCoordinates (unit.source);
-		}
+//		} else {
+//			target = Map.GetWorldCoordinates (unit.source.x, unit.source.y);
+//		}
 
 	}
 
 	void Update () {
-		if (trans.position != target) {
+		if (trans.position != Map.GetZeroPosition()) {
 			trans.position = Vector3.MoveTowards (
 				trans.position,
-				target,
+				Map.GetZeroPosition(),
 				Time.deltaTime * unit.speed
 				);
 		} else {
+			if (unit.source == null) {
+				GameController.turnLockQueue--;
+			}
 			this.enabled = false;
 		}
 	}
