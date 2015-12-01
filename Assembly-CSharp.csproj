@@ -45,14 +45,14 @@
 	</Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\Scripts\Camera.cs" />
-     <Compile Include="Assets\Scripts\Cell.cs" />
-     <Compile Include="Assets\Scripts\DirectionManager.cs" />
+     <Compile Include="Assets\Scripts\Game\Camera.cs" />
      <Compile Include="Assets\Scripts\Game\GameController.cs" />
+     <Compile Include="Assets\Scripts\Game\Loader.cs" />
      <Compile Include="Assets\Scripts\Game\Player.cs" />
      <Compile Include="Assets\Scripts\Game\PlayerDefault.cs" />
-     <Compile Include="Assets\Scripts\Loader.cs" />
+     <Compile Include="Assets\Scripts\Input\DirectionManager.cs" />
      <Compile Include="Assets\Scripts\Map\Add.cs" />
+     <Compile Include="Assets\Scripts\Map\Cell.cs" />
      <Compile Include="Assets\Scripts\Map\Map.cs" />
      <Compile Include="Assets\Scripts\Map\Overview.cs" />
      <Compile Include="Assets\Scripts\Map\Remove.cs" />
@@ -60,8 +60,8 @@
      <Compile Include="Assets\Scripts\MyDebug.cs" />
      <Compile Include="Assets\Scripts\Unit\Move.cs" />
      <Compile Include="Assets\Scripts\Unit\Unit.cs" />
-     <Compile Include="Assets\Scripts\UnitType.cs" />
-     <Compile Include="Assets\Scripts\Units.cs" />
+     <Compile Include="Assets\Scripts\Unit\UnitType.cs" />
+     <Compile Include="Assets\Scripts\Unit\Units.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>/Applications/Unity/Unity.app/Contents/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>

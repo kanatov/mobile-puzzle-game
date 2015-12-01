@@ -5,7 +5,6 @@ using System.Collections;
 
 public static class GameController {
 	public static GameObject[] ui;
-	public static GameObject cameraContainer;
 	public static int turnLockQueue = 0;
 	static InputField input;
 	// Load previous data
@@ -19,8 +18,6 @@ public static class GameController {
 
 		// Create world
 		Map.Init ();
-
-		cameraContainer.GetComponent<Camera>().SetPosition();
 	}
 	static void LoadPlayerData() {
 		Player.x = PlayerDefault.x;
@@ -33,6 +30,7 @@ public static class GameController {
 			if (turnLockQueue == 0){
 				return false;
 			} else {
+				Debug.Log ("no");
 				return true;
 			}
 

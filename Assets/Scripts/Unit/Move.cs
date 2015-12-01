@@ -10,21 +10,15 @@ public class Move : MonoBehaviour {
 		trans = this.GetComponent<Transform>();
 		unit = this.GetComponent<Unit>();
 		GameController.turnLockQueue++;
-//		if (unit.source == null) {
-			target = Map.GetZeroPosition();
-			unit.speed = Map.hexSpeed;
-
-//		} else {
-//			target = Map.GetWorldCoordinates (unit.source.x, unit.source.y);
-//		}
-
+		target = Map.GetMapContainerPosition();
+		unit.speed = Map.hexSpeed;
 	}
 
 	void Update () {
-		if (trans.position != Map.GetZeroPosition()) {
+		if (trans.position != Map.GetMapContainerPosition()) {
 			trans.position = Vector3.MoveTowards (
 				trans.position,
-				Map.GetZeroPosition(),
+				Map.GetMapContainerPosition(),
 				Time.deltaTime * unit.speed
 				);
 		} else {

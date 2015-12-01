@@ -1,9 +1,9 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
 public static class Terrain {
-	public static void SetTerrain (Cell _cell) {
+	public static void GetTerrain (Cell _cell) {
 		GameObject model;
 
 		if (_cell.y % 2 == 0) {
@@ -16,5 +16,13 @@ public static class Terrain {
 		model.GetComponent<Transform> ().localScale = new Vector3 (1f, 1f, 1f);
 		
 		_cell.model = model;
+	}
+
+	public static int GetUnit (Cell _cell) {
+		if (_cell.x % 3 == 0 && _cell.y % 3 == 0) {
+			return 0;
+		}
+
+		return -1;
 	}
 }

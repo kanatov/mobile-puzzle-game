@@ -75,7 +75,6 @@ public static class SwipeManager {
 		}
 		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.Down ) > 0.906f ) {
 			SwipeDirection = Direction.Down;
-//			GameController.MoveTo(SwipeDirection);
 			return;
 		}
 		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.Left ) > 0.906f ) {
@@ -91,11 +90,13 @@ public static class SwipeManager {
 		
 		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.UpRight ) >0.906f ) {
 			SwipeDirection = Direction.UpRight;
+			Map.UpdateMap(1, 0);
 			return;
 		}
 		
 		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.UpLeft ) > 0.906f ) {
 			SwipeDirection = Direction.UpLeft;
+			Map.UpdateMap(-1, 0);
 			return;
 		}
 		
