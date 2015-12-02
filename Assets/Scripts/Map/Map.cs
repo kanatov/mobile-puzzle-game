@@ -49,8 +49,8 @@ public static class Map {
 		}
 
 		if (_shiftX != 0) {
-			if (Overview.GetShift) {
-				_shiftY = -1;
+			if (!Overview.shift) {
+				_shiftY = 1;
 			}
 			Overview.shift = !Overview.shift;
 		}
@@ -76,10 +76,11 @@ public static class Map {
 				if (Overview.GetMask(Player.overview)[x, y] != 0) {
 					if (cells != null) {
 						if (x + _shiftX >= 0 && x + _shiftX < mapW) {
-							if (y + _shiftY >= 0) {
-								if (cells[x + _shiftX, y + _shiftY] != null) {
-									newCells[x, y] = cells[x + _shiftX, y + _shiftY];
-									copyed.Add (newCells[x, y]);
+							if (y - _shiftY < mapW && y - _shiftY >= 0) {
+								Cell oldCell = cells[x + _shiftX, y - _shiftY];
+								if (oldCell != null) {
+									newCells[x, y] = oldCell;
+									copyed.Add (oldCell);
 								}
 							}
 						}
@@ -88,10 +89,10 @@ public static class Map {
 					if (cells == null || newCells[x,y] == null) {
 						newCells[x,y] = GetNewCell (x,y);
 					}
-					SetCellWorldPosition(newCells[x, y]);
+					SetWorldPosition(newCells[x, y], x, y);
 				}
 				if (cells != null) {
-					SetCellWorldPosition(cells[x, y]);
+					SetWorldPosition(cells[x, y], x - _shiftX, y - _shiftY);
 				}
 			}
 		}
@@ -118,15 +119,18 @@ public static class Map {
 
 	public static Vector3 GetMapContainerPosition () {
 		Vector3 playerCell = Player.source.GetComponent<Transform>().localPosition;
-		return playerCell * -1;
+		return -playerCell;
 	}
+
 
 	static Cell GetNewCell (int _x, int _y) {
 		GameObject cellContainerObject = GameObject.Instantiate (cellContainer);
 		cellContainerObject.GetComponent<Transform> ().SetParent (map.GetComponent<Transform> ());
 		
 		Cell cell = cellContainerObject.GetComponent<Cell> ();
-		SetCellMapPosition (cell, _x, _y);
+		cell.x = _x - playerCellX + Player.x;
+		cell.y = playerCellY - _y + Player.y;
+
 		Terrain.GetTerrain (cell);
 		Units.GetUnit (cell);
 
@@ -134,34 +138,19 @@ public static class Map {
 	}
 
 
-	static void SetCellWorldPosition (Cell _cell) {
+	static void SetWorldPosition (Cell _cell, int _gridX, int _gridY) {
 		if (_cell == null) {
 			return;
 		}
-		_cell.GetComponent<Transform> ().localPosition = GetWorldCoordinates(_cell.x, _cell.y);
-	}
-
-
-	static void SetCellMapPosition (Cell _cell, int _x, int _y) {
-		if (_cell == null) {
-			return;
-		}
-		_cell.x = _x + Player.x;
-		_cell.y = _y + Player.y;
-	}
-
-
-	// Tile > World coordinates converter
-	public static Vector3 GetWorldCoordinates (int _x, int _y) {
 		float x, y;
-
-		if( _x % 2 == 0 ) {
-			x = _x * hexOffsetX;
-			y = (_y + 0.5f) * hexOffsetY;
+		if( _cell.x % 2 == 0 ) {
+			x = _cell.x * hexOffsetX;
+			y = _cell.y * hexOffsetY;
 		} else {
-			x = _x * hexOffsetX;
-			y = _y * hexOffsetY;
+			x = _cell.x * hexOffsetX;
+			y = (_cell.y + 0.5f) * hexOffsetY;
 		}
-		return new Vector3 (x, 0f, -y);
+
+		_cell.GetComponent<Transform> ().localPosition = new Vector3 (x, 0f, y);
 	}
 }

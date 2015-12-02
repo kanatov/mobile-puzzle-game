@@ -70,7 +70,7 @@ public static class SwipeManager {
 	static void CheckDirection(Vector2 _currentSwipe) {
 		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.Up ) > 0.906f ) {
 			SwipeDirection = Direction.Up;
-			Map.UpdateMap(0, -1);
+			Map.UpdateMap(0, 1);
 			return;
 		}
 		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.Down ) > 0.906f ) {
