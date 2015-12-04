@@ -45,13 +45,7 @@ public static class Map {
 
 
 	public static void UpdateMap (int _shiftX, int _shiftY) {
-		if (GameController.TurnLock != 0) {
-			Debug.Log ("Turnlock: " + GameController.TurnLock);
-			return;
-		}
-
-		GameController.enemyTurn = true;
-		Units.enemies = new List<GameObject>();
+		Units.units = new List<GameObject>();
 
 		if (_shiftX != 0) {
 			if (Player.x % 2 != 0) {
@@ -89,11 +83,12 @@ public static class Map {
 									newCells[x, y] = oldCell;
 									newCells[x, y].arrayX = x;
 									newCells[x, y].arrayY = y;
+									newCells[x, y].model.GetComponent<Renderer>().material.color = Color.white;
 
 									copyed.Add (oldCell);
 									if (oldCell.GetComponent<Transform>().childCount > 1) {
-										GameObject enemy = oldCell.GetComponent<Transform>().GetChild(1).gameObject;
-										Units.enemies.Add (enemy);
+										GameObject unitContainer = oldCell.GetComponent<Transform>().GetChild(1).gameObject;
+										Units.units.Add (unitContainer);
 									}
 								}
 							}
@@ -156,19 +151,44 @@ public static class Map {
 
 
 	static Cell GetNewCell (int _x, int _y) {
-		GameObject cellContainerObject = GameObject.Instantiate (cellContainer);
-		cellContainerObject.GetComponent<Transform> ().SetParent (map.GetComponent<Transform> ());
-		cellContainerObject.GetComponent<Transform> ().localScale = hexSmallScale;
-		
-		Cell cell = cellContainerObject.GetComponent<Cell> ();
+		// Cell container
+		GameObject _cellContainer = GameObject.Instantiate (cellContainer);
+		Transform cellTransform = _cellContainer.GetComponent<Transform> ();
+
+		// Class
+		Cell cell = _cellContainer.GetComponent<Cell> ();
+
+		// Position
 		cell.arrayX = _x;
 		cell.arrayY = _y;
 
 		cell.x = _x - playerCellX + Player.x;
 		cell.y = playerCellY - _y + Player.y;
 
-		Terrain.GetTerrain (cell);
-		Units.GetUnit (cell);
+		// Terrain model
+		cell.terrain = Terrain.GetTerrain (cell);
+		GameObject model = (GameObject) GameObject.Instantiate (Map.terrainModels [cell.terrain]);
+		model.GetComponent<Transform> ().SetParent (cell.GetComponent<Transform> ());
+		model.GetComponent<Transform> ().localPosition = new Vector3 (0f, 0f, 0f);
+		model.GetComponent<Transform> ().localScale = new Vector3 (1f, 1f, 1f);
+		cell.model = model;
+
+		// Unit
+		cell.unit = Terrain.GetUnit(cell);
+
+		if (cell.unit != -1) {
+			GameObject unitContainer = Units.GetUnit(cell.unit);
+			if (cell.unit == 0) {
+				Player.character = unitContainer;
+			}
+			if (cell.unit == 1) {
+				unitContainer.GetComponent<Transform> ().SetParent (cellTransform);
+			}
+		}
+
+		// Parent
+		cellTransform.SetParent (map.GetComponent<Transform> ());
+		cellTransform.localScale = hexSmallScale;
 
 		return cell;
 	}

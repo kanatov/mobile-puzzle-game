@@ -3,7 +3,7 @@ using System.Collections;
 
 public enum Direction { None = -1, Up = 1, Down = 5, Left = 7, Right = 3, UpLeft = 0, UpRight = 2, DownLeft = 6, DownRight = 4 };
 
-public static class SwipeManager {
+public static class InputManager {
 	static float MinSwipeLength = 5;
 	static Vector2 _firstPressPos;
 	static Vector2 _secondPressPos;
@@ -69,45 +69,45 @@ public static class SwipeManager {
 
 	static void CheckDirection(Vector2 _currentSwipe) {
 		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.Up ) > 0.906f ) {
-			SwipeDirection = Direction.Up;
-			Map.UpdateMap(0, 1);
+//			SwipeDirection = Direction.Up;
+			GameController.InputUp();
 			return;
 		}
 		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.Down ) > 0.906f ) {
-			SwipeDirection = Direction.Down;
+//			SwipeDirection = Direction.Down;
 			return;
 		}
 		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.Left ) > 0.906f ) {
-			SwipeDirection = Direction.Left;
-			Map.UpdateMap(-1, 0);
+//			SwipeDirection = Direction.Left;
+			GameController.InputLeft();
 			return;
 		}
 		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.Right ) > 0.906f) {
-			SwipeDirection = Direction.Right;
-			Map.UpdateMap(1, 0);
+//			SwipeDirection = Direction.Right;
+			GameController.InputRight();
 			return;
 		}
 		
 		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.UpRight ) >0.906f ) {
-			SwipeDirection = Direction.UpRight;
-			Map.UpdateMap(1, 0);
+//			SwipeDirection = Direction.UpRight;
+			GameController.InputRight();
 			return;
 		}
 		
 		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.UpLeft ) > 0.906f ) {
-			SwipeDirection = Direction.UpLeft;
-			Map.UpdateMap(-1, 0);
+//			SwipeDirection = Direction.UpLeft;
+			GameController.InputLeft();
 			return;
 		}
 		
-		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.DownLeft ) > 0.906f ) {
-			SwipeDirection = Direction.DownLeft;
-			return;
-		}
-		
-		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.DownRight ) > 0.906f) {
-			SwipeDirection = Direction.DownRight;
-			return;
-		}
+//		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.DownLeft ) > 0.906f ) {
+//			SwipeDirection = Direction.DownLeft;
+//			return;
+//		}
+//		
+//		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.DownRight ) > 0.906f) {
+//			SwipeDirection = Direction.DownRight;
+//			return;
+//		}
 	}
 }

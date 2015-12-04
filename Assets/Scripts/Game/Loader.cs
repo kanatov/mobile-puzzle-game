@@ -22,9 +22,5 @@ public class Loader : MonoBehaviour {
 		GameController.Init ();
 
 	}
-
-	void Update () {
-		SwipeManager.DetectSwipe();
-	}
 }
 

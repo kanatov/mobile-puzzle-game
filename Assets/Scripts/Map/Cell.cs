@@ -8,6 +8,8 @@ public class Cell : MonoBehaviour {
 	public bool die = false;
 
 	public GameObject model;
+
+	public int unit;
 }
 
 

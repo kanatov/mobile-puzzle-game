@@ -12,7 +12,7 @@ public static class Animations {
 				);
 		} else {
 			_size.enabled = false;
-			GameController.TurnLock = -1;
+			GameController.AnimationsCounter = -1;
 
 			if (Map.hexSmallScale != _trans.localScale) {
 				return;
@@ -30,8 +30,8 @@ public static class Animations {
 				Time.deltaTime * _speed
 				);
 		} else {
-			GameController.TurnLock = -1;
 			_move.enabled = false;
+			GameController.AnimationsCounter = -1;
 		}
 	}
 }

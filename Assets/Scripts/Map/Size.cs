@@ -6,8 +6,8 @@ public class Size : MonoBehaviour {
 	Vector3 target;
 
 	void OnEnable () {
+		GameController.AnimationsCounter = 1;
 		trans = this.GetComponent<Transform>();
-		GameController.TurnLock = 1;
 
 		if (this.GetComponent<Cell>().die) {
 			target = Map.hexSmallScale;

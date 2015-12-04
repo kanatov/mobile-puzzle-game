@@ -7,8 +7,8 @@ public class Move : MonoBehaviour {
 	float speed;
 
 	void OnEnable () {
+		GameController.AnimationsCounter = 1;
 		trans = this.GetComponent<Transform>();
-		GameController.TurnLock = 1;
 
 		if (this.GetComponent<Unit>() == null) {
 			target = Map.GetPlayerWorldCoordinates();

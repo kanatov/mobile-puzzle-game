@@ -18,6 +18,7 @@ public class Unit : MonoBehaviour {
 	// Attack
 	public int attackDistance;
 	public int viewDistance;
+	public float damage;
 
 	// Health
 	public bool dead;
