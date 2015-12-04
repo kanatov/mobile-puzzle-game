@@ -19,7 +19,7 @@ public static class Terrain {
 	}
 
 	public static int GetUnit (Cell _cell) {
-		if (_cell.x % 3 == 0 && _cell.y % 3 == 0) {
+		if (_cell.x + _cell.y != 0 && _cell.x % 6 == 0 && _cell.y % 6 == 0) {
 			return 0;
 		}
 

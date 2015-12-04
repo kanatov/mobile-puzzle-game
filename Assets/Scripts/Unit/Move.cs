@@ -3,29 +3,24 @@ using System.Collections;
 
 public class Move : MonoBehaviour {
 	Transform trans;
-	Unit unit;
 	Vector3 target;
+	float speed;
 
 	void OnEnable () {
 		trans = this.GetComponent<Transform>();
-		unit = this.GetComponent<Unit>();
-		GameController.turnLockQueue++;
-		target = Map.GetMapContainerPosition();
-		unit.speed = Map.hexSpeed;
+		GameController.TurnLock = 1;
+
+		if (this.GetComponent<Unit>() == null) {
+			target = Map.GetPlayerWorldCoordinates();
+			speed = Map.hexSpeed;
+		} else {
+			Unit unit = this.GetComponent<Unit>();
+			speed = Map.hexSpeed;
+			target = new Vector3(0f, 0f, 0f);
+		}
 	}
 
 	void Update () {
-		if (trans.position != Map.GetMapContainerPosition()) {
-			trans.position = Vector3.MoveTowards (
-				trans.position,
-				Map.GetMapContainerPosition(),
-				Time.deltaTime * unit.speed
-				);
-		} else {
-			if (unit.source == null) {
-				GameController.turnLockQueue--;
-			}
-			this.enabled = false;
-		}
+		Animations.Move(this, trans, target, speed);
 	}
 }

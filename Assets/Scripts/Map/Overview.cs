@@ -33,8 +33,24 @@ public class Overview {
 		{0,0,1,1,1,1,1,1,0},
 		{0,0,1,1,1,1,1,0,0}
 	};
-	
-	public static int[][,] overviewMasks = new int [][,] {overviewMask5, overviewMask7, overviewMask9};
+
+	static int[,] overviewMask11 = new int[,] {
+		{0,0,0,1,1,1,1,1,1,0,0},
+		{0,0,1,1,1,1,1,1,1,0,0},
+		{0,0,1,1,1,1,1,1,1,1,0},
+		{0,1,1,1,1,1,1,1,1,1,0},
+		{0,1,1,1,1,1,1,1,1,1,1},
+		{1,1,1,1,1,1,1,1,1,1,1},
+		{0,1,1,1,1,1,1,1,1,1,1},
+		{0,1,1,1,1,1,1,1,1,1,0},
+		{0,0,1,1,1,1,1,1,1,1,0},
+		{0,0,1,1,1,1,1,1,1,0,0},
+		{0,0,0,1,1,1,1,1,1,0,0}
+	};
+
+	//
+
+	public static int[][,] overviewMasks = new int [][,] {overviewMask5, overviewMask7, overviewMask9, overviewMask11};
 	public static int[][,] overviewMasksShift = new int [overviewMasks.Length][,];
 
 	public static void Init() {
@@ -48,7 +64,6 @@ public class Overview {
 			}
 			overviewMasksShift[i] = newArray;
 		}
-
 	}
 
 	public static int[,] GetMask (int _size) {

@@ -51,13 +51,13 @@
      <Compile Include="Assets\Scripts\Game\Player.cs" />
      <Compile Include="Assets\Scripts\Game\PlayerDefault.cs" />
      <Compile Include="Assets\Scripts\Input\DirectionManager.cs" />
-     <Compile Include="Assets\Scripts\Map\Add.cs" />
      <Compile Include="Assets\Scripts\Map\Cell.cs" />
      <Compile Include="Assets\Scripts\Map\Map.cs" />
      <Compile Include="Assets\Scripts\Map\Overview.cs" />
-     <Compile Include="Assets\Scripts\Map\Remove.cs" />
+     <Compile Include="Assets\Scripts\Map\Size.cs" />
      <Compile Include="Assets\Scripts\Map\Terrain.cs" />
      <Compile Include="Assets\Scripts\MyDebug.cs" />
+     <Compile Include="Assets\Scripts\Unit\Animations.cs" />
      <Compile Include="Assets\Scripts\Unit\Move.cs" />
      <Compile Include="Assets\Scripts\Unit\Unit.cs" />
      <Compile Include="Assets\Scripts\Unit\UnitType.cs" />

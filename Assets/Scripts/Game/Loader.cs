@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class Loader : MonoBehaviour {
 	public GameObject cellContainer;
+	public GameObject mapContainer;
 	public GameObject[] terrainModels;
 	public UnitType[] unitTypes;
 	public GameObject unitContainer;
@@ -11,6 +12,7 @@ public class Loader : MonoBehaviour {
 	void Start () {
 		Units.unitContainer = unitContainer;
 		Units.unitTypes = unitTypes;
+		Map.mapContainer = mapContainer;
 		Map.unitContainer = unitContainer;
 		Map.cellContainer = cellContainer;
 		Map.terrainModels = terrainModels;

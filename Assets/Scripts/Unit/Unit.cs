@@ -11,7 +11,6 @@ public class Unit : MonoBehaviour {
 	public Material material;
 
 	// Movement
-	public Cell source;
 	public Direction direction = Direction.None;
 	public float speed;
 	public int directionLayer;
