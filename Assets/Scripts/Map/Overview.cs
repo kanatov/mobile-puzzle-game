@@ -79,14 +79,14 @@ public class Overview {
 		}
 	}
 
-	public static bool GetShift {
-		get {
-			if (Player.overview % 2 == 0) {
-				return !shift;
-			} else {
-				return shift;
-			}
-		}
-	}
+//	public static bool GetShift {
+//		get {
+//			if (Player.overview % 2 == 0) {
+//				return !shift;
+//			} else {
+//				return shift;
+//			}
+//		}
+//	}
 
 }

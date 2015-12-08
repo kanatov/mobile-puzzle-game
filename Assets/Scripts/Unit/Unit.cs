@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 
+[System.Serializable]
 public class Unit : MonoBehaviour {
 
 	// Type of the Unit
@@ -11,9 +12,8 @@ public class Unit : MonoBehaviour {
 	public Material material;
 
 	// Movement
-	public Direction direction = Direction.None;
 	public float speed;
-	public int directionLayer;
+	public int overview;
 
 	// Attack
 	public int attackDistance;
@@ -22,4 +22,7 @@ public class Unit : MonoBehaviour {
 
 	// Health
 	public bool dead;
+	public float maxHealth;
+	public float health;
+
 }

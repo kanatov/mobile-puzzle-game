@@ -1,107 +1,110 @@
-﻿using UnityEngine;
+﻿using GenericData;
+using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using System.Collections;
+using System.Collections.Generic;
 
 public static class GameController {
-	public static GameObject[] ui;
+	// Prefabs
+	public static GameObject cellContainer;
+	public static GameObject mapContainer;
+	public static GameObject unitContainer;
+	public static GameObject[] terrainModels;
+	public static UnitType[] unitTypes;
+	public static GameObject ui;
+	public static GameObject uiMenu;
+	public static GameObject uiMap;
+
+	// Runtime data
+	public static PlayerData playerData;
 	static int animationsCounter;
 	static InputField input;
 	static bool firstTurn = true;
-	public static bool enemyTurn = true;
-	public static bool turnLock;
-
 
 	public static void Init () {
-		input = ui[0].GetComponent<InputField>();
-		input.onEndEdit.AddListener(delegate{ChangeOverview(input);});
-		LoadPlayerData();
-		animationsCounter = 0;
-		turnLock = false;
+		// Prepare prefabs
+		cellContainer = Resources.Load<GameObject>("Prefabs/Containers/Cell");
+		mapContainer = Resources.Load<GameObject>("Prefabs/Containers/Map");
+		unitContainer = Resources.Load<GameObject>("Prefabs/Containers/Unit");
 
-		// Create world
-		Overview.Init();
-		Map.Init ();
+		terrainModels = new GameObject[] {
+			Resources.Load<GameObject>("Prefabs/Models/Terrain/Grass"),
+			Resources.Load<GameObject>("Prefabs/Models/Terrain/Rock")
+		};
+
+		// Prepare UI
+		ui = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs/UI/UI"));
+		uiMenu = ui.GetComponent<Transform>().FindChild("Menu").gameObject;
+		uiMenu.SetActive(false);
+		uiMap = ui.GetComponent<Transform>().FindChild("Map").gameObject;
+		uiMap.SetActive(false);
+
+
+		LoadData();
 	}
 
-
-	static void LoadPlayerData() {
-		Player.x = PlayerDefault.x;
-		Player.y = PlayerDefault.y;
-		Player.health = PlayerDefault.maxHealth;
-		Player.overview = PlayerDefault.overview;
-	}
-
-
-	public static int AnimationsCounter {
-		set {
-			animationsCounter += value;
-			if (animationsCounter == 0){
-				MakeTurn();
+	static void LoadData () {
+		Debug.Log ("Loading data");
+		playerData = (PlayerData)SaveLoad.Load(SaveLoad.playerDataFileName);
+		if (playerData == null) {
+			Debug.Log ("Player data == null");
+			playerData = new PlayerData();
+			SaveLoad.Save(playerData, SaveLoad.playerDataFileName);
+			Debug.Log("Player data save check: " + SaveLoad.Load(SaveLoad.playerDataFileName));
+			Map.Init();
+		} else {
+			Debug.Log ("Player data loaded ");
+			Map.currentLevel = (Cell[,])SaveLoad.Load(SaveLoad.levelDataFileName);
+			if (Map.currentLevel == null) {
+				Debug.Log ("Current level data == null");
+				UI.Init();
 			} else {
-				if (Player.character != null) {
-					Player.character.GetComponent<PlayerInput>().enabled = false;
-				}
+				Debug.Log ("Current level data loaded");
+				Map.Init();
 			}
 		}
 	}
 
-
-	static void MakeTurn() {
-		if (Units.units.Count == 0) {
-			Player.character.GetComponent<PlayerInput>().enabled = true;
-		} else {
-			Units.units.RemoveAt(0);
-			MakeTurn();
-		}
-	}
-
-	
-	static void ChangeOverview (InputField _input) {
-		Player.overview = int.Parse(_input.text);
-		Map.Init ();
-	}
-
-
-	// Movement
-	public static bool UnitInput (Cell _cell) {
-		// Cell doe's not exist
-		// Cell is obstackle
-		// Cell contain a unit
-
-		// Player:
-		// 		said direction
-		//			attack if possible
-		//			walk if possible
-		//		
-		// Unit:
-		//		said direction
-		//			attack if possible
-		//			change dirrection
-		//		said direction
-		//			walk if possible
-		//			change dirrection
-
-		if (_cell == null) {
-			return false;
-		}
-		return false;
+//	public static int AnimationsCounter {
+//		set {
+//			animationsCounter += value;
+//			if (animationsCounter == 0){
+//				MakeTurn();
+//			} else {
+//				if (Player.character != null) {
+//					Player.character.GetComponent<PlayerInput>().enabled = false;
+//				}
+//			}
+//		}
+//	}
+//
+//
+//	static void MakeTurn() {
+//		if (Units.units.Count == 0) {
+//			Player.character.GetComponent<PlayerInput>().enabled = true;
+//			return;
+//		}
+//		Units.EnemyBehaviour(Units.units[0]);
+//		Units.units.RemoveAt(0);
+//	}
+//
+//	
+//	static void ChangeOverview (InputField _input) {
+//		Player.overview = int.Parse(_input.text);
+//		Map.Init ();
+//	}
+//
+//
+//	// Movement
+//	public static bool UnitInput (Cell _cell) {
+//		if (_cell == null) {
+//			return false;
+//		}
+//		return false;
 //		if (Player.x == cell.x && Player.y == cell.y) {
 //			attack = true;
 //			EnemyAttack (_unit);
 //			break;
 //		}
-	}
-
-
-	public static void InputLeft () {
-		Map.UpdateMap(-1, 0);
-	}
-	public static void InputUp () {
-		Map.UpdateMap(0, 1);
-	}
-	public static void InputRight () {
-		Map.UpdateMap(1, 0);
-	}
-
+//	}
 }

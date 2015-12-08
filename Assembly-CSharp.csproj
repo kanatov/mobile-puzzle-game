@@ -47,16 +47,17 @@
   <ItemGroup>
      <Compile Include="Assets\Scripts\Game\Camera.cs" />
      <Compile Include="Assets\Scripts\Game\GameController.cs" />
+     <Compile Include="Assets\Scripts\Game\Levels.cs" />
      <Compile Include="Assets\Scripts\Game\Loader.cs" />
-     <Compile Include="Assets\Scripts\Game\Player.cs" />
-     <Compile Include="Assets\Scripts\Game\PlayerDefault.cs" />
+     <Compile Include="Assets\Scripts\Game\PlayerData.cs" />
+     <Compile Include="Assets\Scripts\Game\SaveLoad.cs" />
+     <Compile Include="Assets\Scripts\Game\UI.cs" />
      <Compile Include="Assets\Scripts\Input\InputManager.cs" />
      <Compile Include="Assets\Scripts\Input\PlayerInput.cs" />
      <Compile Include="Assets\Scripts\Map\Cell.cs" />
      <Compile Include="Assets\Scripts\Map\Map.cs" />
      <Compile Include="Assets\Scripts\Map\Overview.cs" />
      <Compile Include="Assets\Scripts\Map\Size.cs" />
-     <Compile Include="Assets\Scripts\Map\Terrain.cs" />
      <Compile Include="Assets\Scripts\MyDebug.cs" />
      <Compile Include="Assets\Scripts\Unit\Animations.cs" />
      <Compile Include="Assets\Scripts\Unit\Move.cs" />
