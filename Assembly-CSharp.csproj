@@ -49,6 +49,7 @@
      <Compile Include="Assets\Scripts\Game\GameController.cs" />
      <Compile Include="Assets\Scripts\Game\Levels.cs" />
      <Compile Include="Assets\Scripts\Game\Loader.cs" />
+     <Compile Include="Assets\Scripts\Game\MyDebug.cs" />
      <Compile Include="Assets\Scripts\Game\PlayerData.cs" />
      <Compile Include="Assets\Scripts\Game\SaveLoad.cs" />
      <Compile Include="Assets\Scripts\Game\UI.cs" />
@@ -58,11 +59,10 @@
      <Compile Include="Assets\Scripts\Map\Map.cs" />
      <Compile Include="Assets\Scripts\Map\Overview.cs" />
      <Compile Include="Assets\Scripts\Map\Size.cs" />
-     <Compile Include="Assets\Scripts\MyDebug.cs" />
      <Compile Include="Assets\Scripts\Unit\Animations.cs" />
      <Compile Include="Assets\Scripts\Unit\Move.cs" />
      <Compile Include="Assets\Scripts\Unit\Unit.cs" />
-     <Compile Include="Assets\Scripts\Unit\UnitType.cs" />
+     <Compile Include="Assets\Scripts\Unit\UnitTypes.cs" />
      <Compile Include="Assets\Scripts\Unit\Units.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>/Applications/Unity/Unity.app/Contents/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>

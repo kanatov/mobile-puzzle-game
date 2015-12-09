@@ -14,8 +14,9 @@ public static class UI {
 
 		Button deleteButton = GameController.uiMenu.GetComponent<Transform>().FindChild("Delete").GetComponent<Button>();
 		deleteButton.onClick.AddListener(() => {
-			SaveLoad.Delete(SaveLoad.levelDataFileName);
-			SaveLoad.Delete(SaveLoad.playerDataFileName);
+			SaveLoad.Delete(SaveLoad.nameLevel);
+			SaveLoad.Delete(SaveLoad.namePlayerProgress);
+			SaveLoad.Delete(SaveLoad.nameUnits);
 		});
 
 		GameController.uiMenu.SetActive(true);

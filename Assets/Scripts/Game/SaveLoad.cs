@@ -7,10 +7,12 @@ namespace GenericData{
 
 	/// Generic Data class
 	public static class SaveLoad {
-		public static string playerDataFileName = "PlayerData";
-		public static string levelDataFileName = "LevelData";
+		public static string namePlayerProgress = "PlayerData";
+		public static string nameLevel = "LevelData";
+		public static string nameUnits = "UnitsData";
 
 		public static bool Save(System.Object _data, string _fileName) {
+			Debug.Log ("Trying to save: " + _fileName);
 			_data = Clone(_data);
 			FileStream file;
 			try {
@@ -28,14 +30,16 @@ namespace GenericData{
 			catch {
 				file.Close();
 				File.Delete(GetFullPath(_fileName));
+				Debug.LogWarning ("Data wasn't saved: " + _fileName);
 				return false;
 			}
-			
 			file.Close();
+			Debug.Log ("Data saved: " + _fileName);
 			return true;
 		}
 		
 		public static System.Object Load(string _fileName) {
+			Debug.Log ("Trying to load: " + _fileName);
 			if(!File.Exists(GetFullPath(_fileName))) return null;
 			
 			BinaryFormatter bf = new BinaryFormatter();
@@ -48,22 +52,28 @@ namespace GenericData{
 			}
 			catch {
 				file.Close();
+				Debug.LogWarning ("Data wasn't loaded: " + _fileName);
 				return null;
 			}
 			
 			file.Close();
+			Debug.Log ("Data loaded: " + _fileName);
 			return data;
 		}
 
 
 		public static bool Delete(string _fileName) {
+			Debug.Log ("Trying to delete: " + _fileName);
+
 			try {
 				File.Delete(GetFullPath(_fileName));
 			}
 			catch (Exception) {
+				Debug.LogWarning ("Data wasn't deleted: " + _fileName);
 				return false;
 			}
-			
+
+			Debug.Log ("Data deleted: " + _fileName);
 			return true;
 		}
 

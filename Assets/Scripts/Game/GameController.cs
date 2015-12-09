@@ -6,11 +6,11 @@ using System.Collections.Generic;
 
 public static class GameController {
 	// Prefabs
+	public static GameObject camera;
 	public static GameObject cellContainer;
 	public static GameObject mapContainer;
 	public static GameObject unitContainer;
 	public static GameObject[] terrainModels;
-	public static UnitType[] unitTypes;
 	public static GameObject ui;
 	public static GameObject uiMenu;
 	public static GameObject uiMap;
@@ -23,6 +23,8 @@ public static class GameController {
 
 	public static void Init () {
 		// Prepare prefabs
+
+		camera = GameObject.FindGameObjectWithTag("MainCamera");
 		cellContainer = Resources.Load<GameObject>("Prefabs/Containers/Cell");
 		mapContainer = Resources.Load<GameObject>("Prefabs/Containers/Map");
 		unitContainer = Resources.Load<GameObject>("Prefabs/Containers/Unit");
@@ -39,27 +41,28 @@ public static class GameController {
 		uiMap = ui.GetComponent<Transform>().FindChild("Map").gameObject;
 		uiMap.SetActive(false);
 
-
+//		MyDebug.ClearData();
 		LoadData();
 	}
 
 	static void LoadData () {
-		Debug.Log ("Loading data");
-		playerData = (PlayerData)SaveLoad.Load(SaveLoad.playerDataFileName);
+		Debug.Log ("Loading Player data");
+		playerData = (PlayerData)SaveLoad.Load(SaveLoad.namePlayerProgress);
 		if (playerData == null) {
-			Debug.Log ("Player data == null");
+			Debug.Log ("First start");
 			playerData = new PlayerData();
-			SaveLoad.Save(playerData, SaveLoad.playerDataFileName);
-			Debug.Log("Player data save check: " + SaveLoad.Load(SaveLoad.playerDataFileName));
+			SaveLoad.Save(playerData, SaveLoad.namePlayerProgress);
 			Map.Init();
 		} else {
-			Debug.Log ("Player data loaded ");
-			Map.currentLevel = (Cell[,])SaveLoad.Load(SaveLoad.levelDataFileName);
-			if (Map.currentLevel == null) {
-				Debug.Log ("Current level data == null");
+			Debug.Log ("Loading Map");
+			Map.currentLevel = (Cell[,])SaveLoad.Load(SaveLoad.nameLevel);
+			Map.currentUnits = (List<Unit>)SaveLoad.Load(SaveLoad.nameUnits);
+
+			if (Map.currentLevel == null || Map.currentUnits == null) {
+				Debug.Log ("Loading Menu");
 				UI.Init();
 			} else {
-				Debug.Log ("Current level data loaded");
+				Debug.Log ("Continuing the Game");
 				Map.Init();
 			}
 		}
@@ -79,14 +82,17 @@ public static class GameController {
 //	}
 //
 //
-//	static void MakeTurn() {
+	static void MakeTurn() {
+		SaveLoad.Save (Map.currentLevel, SaveLoad.nameLevel);
+		SaveLoad.Save (Map.currentUnits, SaveLoad.nameUnits);
+
 //		if (Units.units.Count == 0) {
 //			Player.character.GetComponent<PlayerInput>().enabled = true;
 //			return;
 //		}
 //		Units.EnemyBehaviour(Units.units[0]);
 //		Units.units.RemoveAt(0);
-//	}
+	}
 //
 //	
 //	static void ChangeOverview (InputField _input) {

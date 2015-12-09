@@ -1,7 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
+using GenericData;
 
 public static class MyDebug {
+	public static void ClearData () {
+		SaveLoad.Delete(SaveLoad.nameLevel);
+		SaveLoad.Delete(SaveLoad.namePlayerProgress);
+		SaveLoad.Delete(SaveLoad.nameUnits);
+	}
 
 //	public static void DebugDrawClosedCells ()
 //	{

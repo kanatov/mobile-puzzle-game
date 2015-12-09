@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public enum Direction { None = -1, Up = 1, Down = 5, Left = 7, Right = 3, UpLeft = 0, UpRight = 2, DownLeft = 6, DownRight = 4 };
+public enum Direction { None = -1, Up = 1, Down = 4, Left = 99, Right = 98, UpLeft = 0, UpRight = 2, DownLeft = 5, DownRight = 3 };
 
 public static class InputManager {
 	static float MinSwipeLength = 5;

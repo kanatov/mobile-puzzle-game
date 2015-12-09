@@ -2,35 +2,27 @@
 using System.Collections.Generic;
 
 public static class Units {
-	// Public
-	public static UnitType[] unitTypes;
-	public static GameObject unitContainer;
-	public static Unit player;
-	public static List<GameObject> units;
-//
-//	public static GameObject GetUnit (int _id) {
-//		GameObject _unitContainer = (GameObject)GameObject.Instantiate (unitContainer);
-//		_unitContainer.GetComponent<Transform>().localPosition = new Vector3 (0f, 0f, 0f);
-//
-//		Unit unit = _unitContainer.GetComponent<Unit> ();
-//		unit.id = _id;
-//
-//		// Look
-//		unit.model = GameObject.Instantiate (unitTypes[unit.id].model);
-//		unit.model.GetComponent<Transform> ().SetParent (unit.GetComponent<Transform> ());
-//		unit.model.GetComponent<Transform> ().localPosition = new Vector3 (0f, 1f, 0f);
-//
-//		// Attack
-//		unit.attackDistance = unitTypes[unit.id].attackDistance;
-//		unit.viewDistance = unitTypes[unit.id].viewDistance;
-//		unit.damage = unitTypes[unit.id].damage;
-//
-//		// Health
-//		unit.dead = false;
-//
-//		return _unitContainer;
-//	}
-//
+	public static Unit GetUnit (Cell _cell) {
+		Unit unit = new Unit();
+		unit.id = _cell.unitsAndItems;
+		unit.cell = _cell;
+
+		return unit;
+	}
+
+	public static GameObject GetUnitContainer (Unit _unit) {
+		// Unit container
+		GameObject unitContainer = (GameObject)GameObject.Instantiate (GameController.unitContainer);
+		unitContainer.GetComponent<Transform>().localPosition = new Vector3 (0f, 0f, 0f);
+		
+		// Unit model
+		GameObject model = GameObject.Instantiate (UnitTypes.model[_unit.id]);
+		model.GetComponent<Transform> ().SetParent (unitContainer.GetComponent<Transform>());
+		model.GetComponent<Transform> ().localPosition = new Vector3 (0f, 1f, 0f);
+
+		return unitContainer;
+	}
+
 //	public static void Behaviour (Unit _unit, Direction _direction) {
 //		// define list of cells
 //		// compare list of enemies and cells and feedback

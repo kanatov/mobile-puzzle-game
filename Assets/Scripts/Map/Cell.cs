@@ -5,6 +5,9 @@ using System.Collections;
 public class Cell {
 	[System.NonSerialized]
 	public GameObject terrainModel;
+	public Cell[] neighbours = new Cell[6];
 	public int unitsAndItems;
-	public Unit unit;
+	// HACK
+	public int x;
+	public int y;
 }

@@ -7,226 +7,195 @@ using UnityEngine.UI;
 
 public static class Map {
 	public static Cell[,] currentLevel;
+	public static List<Unit> currentUnits;
 	static GameObject map;
 	static Unit player;
 
 	// World Settings
-	static float hexSpeed = 6;
-	static Vector3 hexSmallScale = new Vector3 (0.05f, 0.05f, 0.05f);
 	static float hexOffsetX, hexOffsetY;
-//	static int mapW, mapH;
+
 
 	public static void Init () {
 		Debug.Log ("Map.Init()");
 
-		// Init UI
-		GameController.uiMap.SetActive(true);
-		Button menuButton = GameController.uiMap.GetComponent<Transform>().FindChild("Menu").GetComponent<Button>();
-		menuButton.onClick.AddListener(() => {
-			UI.Init();
-		});
-
-		// Init map
-		map = GameObject.Instantiate (GameController.mapContainer);
+		PrepareUI ();
+		PrepareMapContainer ();
 		
-		// Calculate hex offsets
-		float d = 0.5f / (Mathf.Sqrt(3)/2);
-		hexOffsetX = d * 1.5f;
-		hexOffsetY = d * Mathf.Sqrt(3);
+		if (currentLevel == null || currentUnits == null) {
+			currentLevel = GetCells (PlayerData.currentLevel);
+			PopulateNeighbours ();
 
-		// Fill cells for current level
-		if (currentLevel == null) {
-			currentLevel = GetLevel(PlayerData.playerLevel);
-			SaveLoad.Save (currentLevel, SaveLoad.levelDataFileName);
+			SaveLoad.Save (currentLevel, SaveLoad.nameLevel);
+			SaveLoad.Save (currentUnits, SaveLoad.nameUnits);
 		}
 
-		if (player == null) {
-			foreach (var _cell in currentLevel) {
-				if (_cell.unit != null && _cell.unit.id == 0) {
-					player = _cell.unit;
-					break;
-				}
-			}
-		}
-
-		// Draw map
-		UpdateMap ();
+		PopulateCellModels ();
+		PopulateUnits ();
 	}
 
 
-	static Cell[,] GetLevel (int _playerLevel) {
+	static void PrepareUI () {
+		GameController.uiMap.SetActive (true);
+		Button menuButton = GameController.uiMap.GetComponent<Transform> ().FindChild ("Menu").GetComponent<Button> ();
+		menuButton.onClick.AddListener (() =>  {
+			UI.Init ();
+		});
+	}
+
+	static void PrepareMapContainer () {
+		map = GameObject.Instantiate (GameController.mapContainer);
+		map.GetComponent<Transform> ().position = Vector3.zero;
+	}
+
+
+	static Cell[,] GetCells (int _playerLevel) {
+		Debug.Log ("Map.GetCells()");
 		int levelW = Levels.unitsAndItems[_playerLevel].GetLength(0);
 		int levelH = Levels.unitsAndItems[_playerLevel].GetLength(1);
 		Cell[,] newCells = new Cell[levelW,levelH];
+		currentUnits = new List<Unit>();
 
-		for (int x = 0; x < Levels.unitsAndItems[_playerLevel].GetLength(0); x++ ){
-			for (int y = 0; y < Levels.unitsAndItems[_playerLevel].GetLength(1); y++ ){
+		for (int x = 0; x < Levels.unitsAndItems[_playerLevel].GetLength(0); x++ ) {
+			for (int y = 0; y < Levels.unitsAndItems[_playerLevel].GetLength(1); y++ ) {
 				newCells[x, y] = new Cell();
 				newCells[x, y].unitsAndItems = Levels.unitsAndItems[_playerLevel][x, y];
+				newCells[x, y].x = x;
+				newCells[x, y].y = y;
+
+				// remove units in list from the map
+				if (newCells[x, y].unitsAndItems < 0) {
+					continue;
+				}
+
+				if (newCells[x, y].unitsAndItems < 16) {
+					Unit unit = Units.GetUnit(newCells[x, y]);
+					currentUnits.Add(unit);
+					newCells[x, y].unitsAndItems = 0;
+				} else {
+					Debug.Log ("Item here");
+				}
 			}
 		}
 		return newCells;
 	}
 
 
-	public static void UpdateMap () {
-		Debug.Log ("UpdateMap()");
-//		Units.units = new List<GameObject>();
-//
-//		if (_shiftX != 0) {
-//			if (Player.x % 2 != 0) {
-//				_shiftY = 1;
-//			}
-//			Overview.shift = !Overview.shift;
-//		}
-//
-//		Player.x += _shiftX;
-//		Player.y += _shiftY;
-//
-//		// Create an temporary array and list
-//		mapW = Overview.GetMask(Player.overview).GetLength(0);
-//		mapH = Overview.GetMask(Player.overview).GetLength(1);
-//
-//
-//		// Find player's cell
-//		playerCellX = Mathf.RoundToInt(mapW/2);
-//		playerCellY = mapH - 2;
-//
-//		// Declarate new map array
-//		Cell[,] newCells = new Cell[mapW, mapH];
-//		List<Cell> copyed = new List<Cell>();
-//
-//		// Add and copy cells to new array
-//		for (int x = 0; x < mapW; x++) {
-//			for (int y = 0; y < mapH; y++) {
-//				if (Overview.GetMask(Player.overview)[x, y] != 0) {
-//					if (cells != null) {
-//						if (x + _shiftX >= 0 && x + _shiftX < mapW) {
-//							if (y - _shiftY < mapW && y - _shiftY >= 0) {
-//
-//								Cell oldCell = cells[x + _shiftX, y - _shiftY];
-//								if (oldCell != null) {
-//									newCells[x, y] = oldCell;
-//									newCells[x, y].arrayX = x;
-//									newCells[x, y].arrayY = y;
-//
-//									copyed.Add (oldCell);
-//									if (oldCell.GetComponent<Transform>().childCount > 1) {
-//										GameObject unitContainer = oldCell.GetComponent<Transform>().GetChild(1).gameObject;
-//										Units.units.Add (unitContainer);
-//									}
-//								}
-//							}
-//						}
-//					}
-//
-//					if (cells == null || newCells[x,y] == null) {
-//						newCells[x,y] = GetNewCell (x,y);
-//					}
-//					if (newCells[x, y] != null) {
-//						newCells[x, y].GetComponent<Transform>().localPosition = GetWorldPosition(newCells[x, y].x, newCells[x, y].y);
-//					}
-//				}
-//				if (cells != null) {
-//					if (cells[x, y] != null) {
-//						cells[x, y].GetComponent<Transform>().localPosition = GetWorldPosition(cells[x, y].x, cells[x, y].y);
-//					}
-//				}
-//			}
-//		}
-//
-//		// Remove tiles
-//		if (cells != null) {
-//			for (int x = 0; x < mapW; x++) {
-//				for (int y = 0; y < mapH; y++) {
-//					if (cells[x, y] != null && !copyed.Contains(cells[x, y])) {
-//						cells[x, y].die = true;
-//						cells[x, y].GetComponent<Size>().enabled = true;
-//					}
-//				}
-//			}
-//		}
-//
-//		if (cells == null) {
-//			map.GetComponent<Transform>().position = GetPlayerWorldCoordinates();
-//		}
-//
-//		cells = newCells;
-//		map.GetComponent<Move>().enabled = true;
+	static void PopulateNeighbours () {
+		Debug.Log ("Map.PopulateNeighbours()");
+		// Add and copy cells to new array
+		for (int x = 0; x < currentLevel.GetLength(0); x++) {
+			for (int y = 0; y < currentLevel.GetLength(1); y++) {
+				for (int n = 0; n < currentLevel[x, y].neighbours.Length; n++) {
+					currentLevel[x, y].neighbours[n] = GetNeighbour(x, y, (Direction)n);
+				}
+			}
+		}
 	}
 
 
-//	public static Vector3 GetPlayerWorldCoordinates () {
-//		Vector3 playerCell = GetWorldPosition(Player.x, Player.y);
-//		return -playerCell;
-//	}
+	static Cell GetNeighbour (int _x, int _y, Direction _n) {
+		int newX = 0;
+		int newY = 0;
+
+		switch (_n) {
+		case Direction.UpLeft:
+			newX = _x - 1;
+			newY = _y - GetShift(_x, 1);
+			break;
+		case Direction.Up:
+			newX = _x;
+			newY = _y - 1;
+			break;
+		case Direction.UpRight:
+			newX = _x + 1;
+			newY = _y - GetShift(_x, 1);
+			break;
+		case Direction.DownRight:
+			newX = _x + 1;
+			newY = _y + GetShift(_x, 1);
+			break;
+		case Direction.Down:
+			newX = _x;
+			newY = _y + 1;
+			break;
+		case Direction.DownLeft:
+			newX = _x - 1;
+			newY = _y + GetShift(_x, 1);
+			break;
+		}
+
+		if (newX < 0 || newY < 0 || newX >= currentLevel.GetLength(0) || newY >= currentLevel.GetLength(1)) {
+			return null;
+		}
+		if (Levels.terrains[PlayerData.currentLevel][newX, newY] == -1) {
+			return null;
+		}
+		if (Levels.terrains[PlayerData.currentLevel][newX, newY] == 1) {
+			return null;
+		}
+
+		return currentLevel[newX, newY];
+	}
 
 
-//	public static GameObject GetCell (int _x, int _y) {
-//		if (_x < 0 || _y < 0) {
-//			return null;
-//		}
-//
-//		if (_x > mapW -1 || _y > mapH -1) {
-//			return null;
-//		}
-//
-//		return cells[_x, _y];
-//	}
-//
+	static void PopulateCellModels () {
+		Debug.Log ("Map.PopulateCellModels()");
 
-//	static Cell GetNewCell (int _x, int _y) {
-//		// Cell container
-//		GameObject _cellContainer = GameObject.Instantiate (cellContainer);
-//		Transform cellTransform = _cellContainer.GetComponent<Transform> ();
-//
-//		// Class
-//		Cell cell = _cellContainer.GetComponent<Cell> ();
-//
-//		// Position
-//		cell.arrayX = _x;
-//		cell.arrayY = _y;
-//
-//		cell.x = _x - playerCellX + Player.x;
-//		cell.y = playerCellY - _y + Player.y;
-//
-//		// Terrain model
-//		cell.terrain = Terrain.GetTerrain (cell);
-//		GameObject model = (GameObject) GameObject.Instantiate (Map.terrainModels [0]);
-//		Transform modelTransform = model.GetComponent<Transform> ();
-//		modelTransform.SetParent (cell.GetComponent<Transform> ());
-//		modelTransform.localPosition = new Vector3 (0f, 0f, 0f);
-//		modelTransform.localScale = new Vector3 (1f, 1f, 1f);
-//		if (cell.terrain == 1) {
-//			model.GetComponent<Renderer> ().material.color = new Color (0.6f, 0.65f, 0.6f);
-//		}
-//
-//		cell.model = model;
-//
-//		// Unit
-//		cell.unit = Terrain.GetUnit(cell);
-//
-//		if (cell.unit != -1) {
-//			GameObject unitContainer = Units.GetUnit(cell.unit);
-//			if (cell.unit == 0) {
-//				Player.character = unitContainer;
-//			}
-//			if (cell.unit == 1) {
-//				unitContainer.GetComponent<Transform> ().SetParent (cellTransform);
-//			}
-//		}
-//
-//		// Parent
-//		cellTransform.SetParent (map.GetComponent<Transform> ());
-//		cellTransform.localScale = hexSmallScale;
-//
-//		return cell;
-//	}
+		float d = 0.5f / (Mathf.Sqrt(3)/2);
+		hexOffsetX = d * 1.5f;
+		hexOffsetY = d * Mathf.Sqrt(3);
+
+		// Add and copy cells to new array
+		for (int x = 0; x < currentLevel.GetLength(0); x++) {
+			for (int y = 0; y < currentLevel.GetLength(1); y++) {
+				int terrain = Levels.terrains[PlayerData.currentLevel][x, y];
+				currentLevel[x, y].terrainModel = GetCellModel(terrain, x, y);
+			}
+		}
+	}
 
 
-	public static Vector3 GetWorldPosition (int _x, int _y) {
+	static GameObject GetCellModel (int _terrain, int _x, int _y) {
+		if (_terrain == -1) {
+			return null;
+		}
+		GameObject cellModel = GameObject.Instantiate(GameController.terrainModels[_terrain]);
+		Transform cellModelTransform = cellModel.GetComponent<Transform> ();
+		cellModelTransform.SetParent (map.GetComponent<Transform>());
+		cellModelTransform.localPosition = GetWorldPosition (_x, _y);
+		return cellModel;
+	}
+
+
+	static void PopulateUnits () {
+		Debug.Log ("Map.PopulateUnits()");
+		
+		foreach (var _unit in currentUnits) {
+			// HACK
+			_unit.cell = currentLevel[_unit.cell.x, _unit.cell.y];
+
+			_unit.unitContainer = Units.GetUnitContainer(_unit);
+			Transform unitTransform = _unit.unitContainer.GetComponent<Transform> ();
+			unitTransform.position = _unit.cell.terrainModel.GetComponent<Transform>().position;
+			
+			if (_unit.id == 0) {
+				PreparePlayer (_unit);
+			}
+		}
+	}
+	
+	static void PreparePlayer (Unit _unit) {
+		player = _unit;
+		Transform cameraTransform = GameController.camera.GetComponent<Transform>();
+		cameraTransform.SetParent(_unit.unitContainer.GetComponent<Transform>());
+		cameraTransform.localPosition = new Vector3 (0f, 7f, -5f);
+		cameraTransform.localEulerAngles = new Vector3(35f, 0f, 0f);
+	}
+
+
+	static Vector3 GetWorldPosition (int _x, int _y) {
 		float x, y;
-		if( _x % 2 == 0 ) {
+		if(GetShift(_x, 1) == 0) {
 			x = _x * hexOffsetX;
 			y = _y * hexOffsetY;
 		} else {
@@ -235,5 +204,14 @@ public static class Map {
 		}
 
 		return new Vector3 (x, 0f, y);
+	}
+
+
+	static int GetShift (int _x, int _shift) {
+		if (_x % 2 != 0) {
+			return _shift;
+		} else {
+			return 0;
+		}
 	}
 }
