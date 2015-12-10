@@ -3,11 +3,11 @@ using System.Collections;
 
 [System.Serializable]
 public class Cell {
-	[System.NonSerialized]
-	public GameObject terrainModel;
 	public Cell[] neighbours = new Cell[6];
 	public int unitsAndItems;
-	// HACK
-	public int x;
+	public int x; // HACK
 	public int y;
+
+	[System.NonSerialized]
+	public GameObject terrainModel;
 }

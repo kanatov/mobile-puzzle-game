@@ -22,16 +22,16 @@ public static class Animations {
 //		}
 //	}
 
-//	public static void Move(Move _move, Transform _trans, Vector3 _target, float _speed) {
-//		if (_trans.localPosition != _target) {
-//			_trans.localPosition = Vector3.MoveTowards (
-//				_trans.localPosition,
-//				_target,
-//				Time.deltaTime * _speed
-//				);
-//		} else {
-//			_move.enabled = false;
+	public static void Move(Move _move, Transform _trans, Vector3 _target, float _speed) {
+		if (_trans.localPosition != _target) {
+			_trans.localPosition = Vector3.MoveTowards (
+				_trans.localPosition,
+				_target,
+				Time.deltaTime * _speed
+				);
+		} else {
+			_move.enabled = false;
 //			GameController.AnimationsCounter = -1;
-//		}
-//	}
+		}
+	}
 }

@@ -1,10 +1,10 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using GenericData;
 
 public static class MyDebug {
 	public static void ClearData () {
-		SaveLoad.Delete(SaveLoad.nameLevel);
+		SaveLoad.Delete(SaveLoad.nameGame);
 		SaveLoad.Delete(SaveLoad.namePlayerProgress);
 		SaveLoad.Delete(SaveLoad.nameUnits);
 	}

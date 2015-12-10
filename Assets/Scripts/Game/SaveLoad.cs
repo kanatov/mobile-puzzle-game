@@ -8,7 +8,7 @@ namespace GenericData{
 	/// Generic Data class
 	public static class SaveLoad {
 		public static string namePlayerProgress = "PlayerData";
-		public static string nameLevel = "LevelData";
+		public static string nameGame = "LevelData";
 		public static string nameUnits = "UnitsData";
 
 		public static bool Save(System.Object _data, string _fileName) {

@@ -56,11 +56,13 @@
      <Compile Include="Assets\Scripts\Input\InputManager.cs" />
      <Compile Include="Assets\Scripts\Input\PlayerInput.cs" />
      <Compile Include="Assets\Scripts\Map\Cell.cs" />
+     <Compile Include="Assets\Scripts\Map\Highlite.cs" />
      <Compile Include="Assets\Scripts\Map\Map.cs" />
      <Compile Include="Assets\Scripts\Map\Overview.cs" />
      <Compile Include="Assets\Scripts\Map\Size.cs" />
      <Compile Include="Assets\Scripts\Unit\Animations.cs" />
      <Compile Include="Assets\Scripts\Unit\Move.cs" />
+     <Compile Include="Assets\Scripts\Unit\Rotate.cs" />
      <Compile Include="Assets\Scripts\Unit\Unit.cs" />
      <Compile Include="Assets\Scripts\Unit\UnitTypes.cs" />
      <Compile Include="Assets\Scripts\Unit\Units.cs" />

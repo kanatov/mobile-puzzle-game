@@ -6,10 +6,10 @@ using GenericData;
 using UnityEngine.UI;
 
 public static class Map {
-	public static Cell[,] currentLevel;
+	public static Cell[,] currentGame;
 	public static List<Unit> currentUnits;
 	static GameObject map;
-	static Unit player;
+	public static Unit player;
 
 	// World Settings
 	static float hexOffsetX, hexOffsetY;
@@ -21,12 +21,9 @@ public static class Map {
 		PrepareUI ();
 		PrepareMapContainer ();
 		
-		if (currentLevel == null || currentUnits == null) {
-			currentLevel = GetCells (PlayerData.currentLevel);
+		if (currentGame == null || currentUnits == null) {
+			currentGame = GetCells (PlayerData.currentLevel);
 			PopulateNeighbours ();
-
-			SaveLoad.Save (currentLevel, SaveLoad.nameLevel);
-			SaveLoad.Save (currentUnits, SaveLoad.nameUnits);
 		}
 
 		PopulateCellModels ();
@@ -71,8 +68,6 @@ public static class Map {
 					Unit unit = Units.GetUnit(newCells[x, y]);
 					currentUnits.Add(unit);
 					newCells[x, y].unitsAndItems = 0;
-				} else {
-					Debug.Log ("Item here");
 				}
 			}
 		}
@@ -83,10 +78,10 @@ public static class Map {
 	static void PopulateNeighbours () {
 		Debug.Log ("Map.PopulateNeighbours()");
 		// Add and copy cells to new array
-		for (int x = 0; x < currentLevel.GetLength(0); x++) {
-			for (int y = 0; y < currentLevel.GetLength(1); y++) {
-				for (int n = 0; n < currentLevel[x, y].neighbours.Length; n++) {
-					currentLevel[x, y].neighbours[n] = GetNeighbour(x, y, (Direction)n);
+		for (int x = 0; x < currentGame.GetLength(0); x++) {
+			for (int y = 0; y < currentGame.GetLength(1); y++) {
+				for (int n = 0; n < currentGame[x, y].neighbours.Length; n++) {
+					currentGame[x, y].neighbours[n] = GetNeighbour(x, y, (Direction)n);
 				}
 			}
 		}
@@ -100,41 +95,37 @@ public static class Map {
 		switch (_n) {
 		case Direction.UpLeft:
 			newX = _x - 1;
-			newY = _y - GetShift(_x, 1);
+			newY = _y + GetShift(_x, 1, 0);
 			break;
 		case Direction.Up:
 			newX = _x;
-			newY = _y - 1;
+			newY = _y + 1;
 			break;
 		case Direction.UpRight:
 			newX = _x + 1;
-			newY = _y - GetShift(_x, 1);
+			newY = _y + GetShift(_x, 1, 0);
 			break;
 		case Direction.DownRight:
 			newX = _x + 1;
-			newY = _y + GetShift(_x, 1);
+			newY = _y - GetShift(_x, 1, 1);
 			break;
 		case Direction.Down:
 			newX = _x;
-			newY = _y + 1;
+			newY = _y - 1;
 			break;
 		case Direction.DownLeft:
 			newX = _x - 1;
-			newY = _y + GetShift(_x, 1);
+			newY = _y - GetShift(_x, 1, 1);
 			break;
 		}
 
-		if (newX < 0 || newY < 0 || newX >= currentLevel.GetLength(0) || newY >= currentLevel.GetLength(1)) {
+		if (newX < 0 || newY < 0 || newX >= currentGame.GetLength(0) || newY >= currentGame.GetLength(1)) {
 			return null;
 		}
-		if (Levels.terrains[PlayerData.currentLevel][newX, newY] == -1) {
-			return null;
+		if (Levels.terrains[PlayerData.currentLevel][newX, newY] == 0) {
+			return currentGame[newX, newY];
 		}
-		if (Levels.terrains[PlayerData.currentLevel][newX, newY] == 1) {
-			return null;
-		}
-
-		return currentLevel[newX, newY];
+		return null;
 	}
 
 
@@ -146,10 +137,13 @@ public static class Map {
 		hexOffsetY = d * Mathf.Sqrt(3);
 
 		// Add and copy cells to new array
-		for (int x = 0; x < currentLevel.GetLength(0); x++) {
-			for (int y = 0; y < currentLevel.GetLength(1); y++) {
+		for (int x = 0; x < currentGame.GetLength(0); x++) {
+			for (int y = 0; y < currentGame.GetLength(1); y++) {
 				int terrain = Levels.terrains[PlayerData.currentLevel][x, y];
-				currentLevel[x, y].terrainModel = GetCellModel(terrain, x, y);
+				currentGame[x, y].terrainModel = GetCellModel(terrain, x, y);
+				if (currentGame[x, y].terrainModel != null) {
+					currentGame[x, y].terrainModel.GetComponent<Highlite>().neighbours = currentGame[x, y].neighbours;
+				}
 			}
 		}
 	}
@@ -172,7 +166,7 @@ public static class Map {
 		
 		foreach (var _unit in currentUnits) {
 			// HACK
-			_unit.cell = currentLevel[_unit.cell.x, _unit.cell.y];
+			_unit.cell = currentGame[_unit.cell.x, _unit.cell.y];
 
 			_unit.unitContainer = Units.GetUnitContainer(_unit);
 			Transform unitTransform = _unit.unitContainer.GetComponent<Transform> ();
@@ -195,7 +189,7 @@ public static class Map {
 
 	static Vector3 GetWorldPosition (int _x, int _y) {
 		float x, y;
-		if(GetShift(_x, 1) == 0) {
+		if(GetShift(_x, 1, 0) == 0) {
 			x = _x * hexOffsetX;
 			y = _y * hexOffsetY;
 		} else {
@@ -207,8 +201,8 @@ public static class Map {
 	}
 
 
-	static int GetShift (int _x, int _shift) {
-		if (_x % 2 != 0) {
+	static int GetShift (int _x, int _shift, int _s) {
+		if ((_x + _s) % 2 == 0) {
 			return _shift;
 		} else {
 			return 0;
