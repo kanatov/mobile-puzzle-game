@@ -29,34 +29,33 @@ public static class Units {
 //			Map.UpdateMap(0, 1);
 			MoveP();
 			break;
-		case Direction.Right:
+		case Direction.Left:
 			Map.player.direction = -1;
 			Upd();
+			MoveP();
 //			Map.UpdateMap(1, 0);
 			break;
-		case Direction.Left:
+		case Direction.Right:
 			Map.player.direction = +1;
 			Upd();
+			MoveP();
 //			Map.UpdateMap(-1, 0);
 			break;
 		}
 	}
 
 	static void Upd() {
-		Map.player.unitContainer.GetComponent<Transform>().eulerAngles = new Vector3(
-			Map.player.unitContainer.GetComponent<Transform>().eulerAngles.x,
+		Transform modelV3 = Map.player.unitContainer.GetComponent<Transform>().GetChild(0).GetComponent<Transform>();
+		modelV3.eulerAngles = new Vector3(
+			modelV3.eulerAngles.x,
 			Map.player.direction * 60,
-			Map.player.unitContainer.GetComponent<Transform>().eulerAngles.z
+			modelV3.eulerAngles.z
 			);
 	}
 
 	static void MoveP() {
 		if (Map.player.cell.neighbours[Map.player.direction] == null) {
-			Debug.Log ("FUCK YOU! " + Map.player.direction);
 			return;
-		} else {
-			Debug.Log ("YOU'RE WELCOM SIR! " + Map.player.direction + ", " + Map.player.cell.neighbours[Map.player.direction].x + " " + Map.player.cell.neighbours[Map.player.direction].y);
-
 		}
 		Map.player.unitContainer.GetComponent<Transform>().localPosition = Map.player.cell.neighbours[Map.player.direction].terrainModel.GetComponent<Transform>().position;
 		Map.player.cell = Map.player.cell.neighbours[Map.player.direction];

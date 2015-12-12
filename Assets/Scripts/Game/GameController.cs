@@ -41,7 +41,7 @@ public static class GameController {
 		uiMap = ui.GetComponent<Transform>().FindChild("Map").gameObject;
 		uiMap.SetActive(false);
 
-//		MyDebug.ClearData();
+		MyDebug.ClearData();
 		LoadData();
 		MakeTurn();
 	}
@@ -56,10 +56,10 @@ public static class GameController {
 			Map.Init();
 		} else {
 			Debug.Log ("Loading Map");
-			Map.currentGame = (Cell[,])SaveLoad.Load(SaveLoad.nameGame);
+			Map.currentLevel = (Cell[,,])SaveLoad.Load(SaveLoad.nameGame);
 			Map.currentUnits = (List<Unit>)SaveLoad.Load(SaveLoad.nameUnits);
 
-			if (Map.currentGame == null || Map.currentUnits == null) {
+			if (Map.currentLevel == null || Map.currentUnits == null) {
 				Debug.Log ("Loading Menu");
 				UI.Init();
 			} else {
@@ -85,9 +85,9 @@ public static class GameController {
 //
 	static void MakeTurn() {
 //		if (GameController == 0) {
-		Map.player.unitContainer.GetComponent<PlayerInput>().enabled = true;
-		SaveLoad.Save(Map.currentGame, SaveLoad.nameGame);
-		SaveLoad.Save(Map.currentUnits, SaveLoad.nameUnits);
+//		Map.player.unitContainer.GetComponent<PlayerInput>().enabled = true;
+//		SaveLoad.Save(Map.currentGame, SaveLoad.nameGame);
+//		SaveLoad.Save(Map.currentUnits, SaveLoad.nameUnits);
 //			return;
 //		}
 //		Units.EnemyBehaviour(Units.units[0]);

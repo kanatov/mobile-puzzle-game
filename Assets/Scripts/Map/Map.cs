@@ -6,10 +6,13 @@ using GenericData;
 using UnityEngine.UI;
 
 public static class Map {
-	public static Cell[,] currentGame;
+	public static Cell[,,] currentLevel;
 	public static List<Unit> currentUnits;
 	static GameObject map;
 	public static Unit player;
+
+	delegate void LoopFunction (int _x, int _y, int _z);
+	static LoopFunction loopFunction;
 
 	// World Settings
 	static float hexOffsetX, hexOffsetY;
@@ -21,12 +24,17 @@ public static class Map {
 		PrepareUI ();
 		PrepareMapContainer ();
 		
-		if (currentGame == null || currentUnits == null) {
-			currentGame = GetCells (PlayerData.currentLevel);
-			PopulateNeighbours ();
+		if (currentLevel == null || currentUnits == null) {
+			PopulateCells ();
 		}
 
-		PopulateCellModels ();
+		float d = 0.5f / (Mathf.Sqrt(3)/2);
+		hexOffsetX = d * 1.5f;
+		hexOffsetY = d * Mathf.Sqrt(3);
+
+		loopFunction = PopulateCellModels;
+		CurrentLevelLoop (loopFunction);
+
 		PopulateUnits ();
 	}
 
@@ -39,156 +47,129 @@ public static class Map {
 		});
 	}
 
+
 	static void PrepareMapContainer () {
 		map = GameObject.Instantiate (GameController.mapContainer);
 		map.GetComponent<Transform> ().position = Vector3.zero;
+
+		Transform cameraTransform = GameController.camera.GetComponent<Transform>();
+		cameraTransform.SetParent(map.GetComponent<Transform>());
+		cameraTransform.localPosition = new Vector3 (-10f, 9.5f, -0.5f);
+		cameraTransform.localEulerAngles = new Vector3(35f, 60f, 0f);
 	}
 
 
-	static Cell[,] GetCells (int _playerLevel) {
+	static void PopulateCells () {
 		Debug.Log ("Map.GetCells()");
-		int levelW = Levels.unitsAndItems[_playerLevel].GetLength(0);
-		int levelH = Levels.unitsAndItems[_playerLevel].GetLength(1);
-		Cell[,] newCells = new Cell[levelW,levelH];
+		int levelZ = Levels.terrains[PlayerData.currentGame].GetLength(0);
+		int levelX = Levels.terrains[PlayerData.currentGame].GetLength(1);
+		int levelY = Levels.terrains[PlayerData.currentGame].GetLength(2);
+
+		currentLevel = new Cell[levelZ,levelX,levelY];
 		currentUnits = new List<Unit>();
 
-		for (int x = 0; x < Levels.unitsAndItems[_playerLevel].GetLength(0); x++ ) {
-			for (int y = 0; y < Levels.unitsAndItems[_playerLevel].GetLength(1); y++ ) {
-				newCells[x, y] = new Cell();
-				newCells[x, y].unitsAndItems = Levels.unitsAndItems[_playerLevel][x, y];
-				newCells[x, y].x = x;
-				newCells[x, y].y = y;
+		loopFunction = PopulateCell;
+		CurrentLevelLoop (loopFunction);
 
-				// remove units in list from the map
-				if (newCells[x, y].unitsAndItems < 0) {
-					continue;
-				}
-
-				if (newCells[x, y].unitsAndItems < 16) {
-					Unit unit = Units.GetUnit(newCells[x, y]);
-					currentUnits.Add(unit);
-					newCells[x, y].unitsAndItems = 0;
-				}
-			}
-		}
-		return newCells;
+		loopFunction = PopulateNeighbours;
+		CurrentLevelLoop (loopFunction);
 	}
 
 
-	static void PopulateNeighbours () {
-		Debug.Log ("Map.PopulateNeighbours()");
-		// Add and copy cells to new array
-		for (int x = 0; x < currentGame.GetLength(0); x++) {
-			for (int y = 0; y < currentGame.GetLength(1); y++) {
-				for (int n = 0; n < currentGame[x, y].neighbours.Length; n++) {
-					currentGame[x, y].neighbours[n] = GetNeighbour(x, y, (Direction)n);
-				}
+	static void PopulateCell (int _x, int _y, int _z) {
+		currentLevel[_z, _x, _y] = new Cell();
+		currentLevel[_z, _x, _y].unitsAndItems = Levels.unitsAndItems[PlayerData.currentGame][_z, _x, _y];
+		currentLevel[_z, _x, _y].x = _x;
+		currentLevel[_z, _x, _y].y = _y;
+		currentLevel[_z, _x, _y].z = _z;
+		
+		// remove units in list from the map
+		if (currentLevel[_z, _x, _y].unitsAndItems >= 0) {
+			if (currentLevel[_z, _x, _y].unitsAndItems < 16) {
+				Unit unit = Units.GetUnit(currentLevel[_z, _x, _y]);
+				currentUnits.Add(unit);
+				currentLevel[_z, _x, _y].unitsAndItems = 0;
 			}
 		}
 	}
 
 
-	static Cell GetNeighbour (int _x, int _y, Direction _n) {
-		int newX = 0;
-		int newY = 0;
-
-		switch (_n) {
-		case Direction.UpLeft:
-			newX = _x - 1;
-			newY = _y + GetShift(_x, 1, 0);
-			break;
-		case Direction.Up:
-			newX = _x;
-			newY = _y + 1;
-			break;
-		case Direction.UpRight:
-			newX = _x + 1;
-			newY = _y + GetShift(_x, 1, 0);
-			break;
-		case Direction.DownRight:
-			newX = _x + 1;
-			newY = _y - GetShift(_x, 1, 1);
-			break;
-		case Direction.Down:
-			newX = _x;
-			newY = _y - 1;
-			break;
-		case Direction.DownLeft:
-			newX = _x - 1;
-			newY = _y - GetShift(_x, 1, 1);
-			break;
-		}
-
-		if (newX < 0 || newY < 0 || newX >= currentGame.GetLength(0) || newY >= currentGame.GetLength(1)) {
-			return null;
-		}
-		if (Levels.terrains[PlayerData.currentLevel][newX, newY] == 0) {
-			return currentGame[newX, newY];
-		}
-		return null;
-	}
-
-
-	static void PopulateCellModels () {
-		Debug.Log ("Map.PopulateCellModels()");
-
-		float d = 0.5f / (Mathf.Sqrt(3)/2);
-		hexOffsetX = d * 1.5f;
-		hexOffsetY = d * Mathf.Sqrt(3);
-
-		// Add and copy cells to new array
-		for (int x = 0; x < currentGame.GetLength(0); x++) {
-			for (int y = 0; y < currentGame.GetLength(1); y++) {
-				int terrain = Levels.terrains[PlayerData.currentLevel][x, y];
-				currentGame[x, y].terrainModel = GetCellModel(terrain, x, y);
-				if (currentGame[x, y].terrainModel != null) {
-					currentGame[x, y].terrainModel.GetComponent<Highlite>().neighbours = currentGame[x, y].neighbours;
-				}
+	static void PopulateNeighbours (int _x, int _y, int _z) {
+		for (int n = 0; n < currentLevel[_z, _x, _y].neighbours.Length; n++) {
+			int newX = 0;
+			int newY = 0;
+			int newZ = 0;
+			
+			switch ((Direction)n) {
+			case Direction.UpLeft:
+				newX = _x - 1;
+				newY = _y + GetShift(_x, 1, 0);
+				break;
+			case Direction.Up:
+				newX = _x;
+				newY = _y + 1;
+				break;
+			case Direction.UpRight:
+				newX = _x + 1;
+				newY = _y + GetShift(_x, 1, 0);
+				break;
+			case Direction.DownRight:
+				newX = _x + 1;
+				newY = _y - GetShift(_x, 1, 1);
+				break;
+			case Direction.Down:
+				newX = _x;
+				newY = _y - 1;
+				break;
+			case Direction.DownLeft:
+				newX = _x - 1;
+				newY = _y - GetShift(_x, 1, 1);
+				break;
+			}
+			
+			if (newX < 0 || newY < 0 || newX >= currentLevel.GetLength(1) || newY >= currentLevel.GetLength(2)) {
+				currentLevel[_z, _x, _y].neighbours[n] = null;
+				return;
+			}
+			if (Levels.terrains[PlayerData.currentGame][_z, newX, newY] == 0) {
+				currentLevel[_z, _x, _y].neighbours[n] = currentLevel[_z, newX, newY];
 			}
 		}
 	}
 
 
-	static GameObject GetCellModel (int _terrain, int _x, int _y) {
-		if (_terrain == -1) {
-			return null;
+	static void PopulateCellModels (int _x, int _y, int _z) {
+		int terrain = Levels.terrains[PlayerData.currentGame][_z, _x, _y];
+		if (terrain == -1) {
+			return;
 		}
-		GameObject cellModel = GameObject.Instantiate(GameController.terrainModels[_terrain]);
+
+		GameObject cellModel = GameObject.Instantiate(GameController.terrainModels[terrain]);
 		Transform cellModelTransform = cellModel.GetComponent<Transform> ();
 		cellModelTransform.SetParent (map.GetComponent<Transform>());
-		cellModelTransform.localPosition = GetWorldPosition (_x, _y);
-		return cellModel;
+		cellModelTransform.localPosition = GetWorldPosition (_x, _y, _z);
+		currentLevel[_z, _x, _y].terrainModel = cellModel;
 	}
 
 
 	static void PopulateUnits () {
-		Debug.Log ("Map.PopulateUnits()");
-		
 		foreach (var _unit in currentUnits) {
 			// HACK
-			_unit.cell = currentGame[_unit.cell.x, _unit.cell.y];
+			_unit.cell = currentLevel[_unit.cell.z, _unit.cell.x, _unit.cell.y];
 
 			_unit.unitContainer = Units.GetUnitContainer(_unit);
 			Transform unitTransform = _unit.unitContainer.GetComponent<Transform> ();
 			unitTransform.position = _unit.cell.terrainModel.GetComponent<Transform>().position;
 			
 			if (_unit.id == 0) {
-				PreparePlayer (_unit);
+				player = _unit;
 			}
 		}
 	}
 	
-	static void PreparePlayer (Unit _unit) {
-		player = _unit;
-		Transform cameraTransform = GameController.camera.GetComponent<Transform>();
-		cameraTransform.SetParent(_unit.unitContainer.GetComponent<Transform>());
-		cameraTransform.localPosition = new Vector3 (0f, 7f, -5f);
-		cameraTransform.localEulerAngles = new Vector3(35f, 0f, 0f);
-	}
 
-
-	static Vector3 GetWorldPosition (int _x, int _y) {
-		float x, y;
+	static Vector3 GetWorldPosition (int _x, int _y, int _z) {
+		float x, y, z;
 		if(GetShift(_x, 1, 0) == 0) {
 			x = _x * hexOffsetX;
 			y = _y * hexOffsetY;
@@ -197,7 +178,7 @@ public static class Map {
 			y = (_y + 0.5f) * hexOffsetY;
 		}
 
-		return new Vector3 (x, 0f, y);
+		return new Vector3 (x, _z*0.7f, y);
 	}
 
 
@@ -206,6 +187,17 @@ public static class Map {
 			return _shift;
 		} else {
 			return 0;
+		}
+	}
+
+
+	static void CurrentLevelLoop (LoopFunction loopFunction) {
+		for (int z = 0; z < currentLevel.GetLength(0); z++ ) {
+			for (int x = 0; x < currentLevel.GetLength(1); x++ ) {
+				for (int y = 0; y < currentLevel.GetLength(2); y++ ) {
+					loopFunction(x, y, z);
+				}
+			}
 		}
 	}
 }

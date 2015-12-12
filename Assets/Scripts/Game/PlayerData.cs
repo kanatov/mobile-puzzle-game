@@ -3,10 +3,10 @@ using System.Collections;
 
 [System.Serializable]
 public class PlayerData {
-	public static int currentLevel;
+	public static int currentGame;
 
 	public PlayerData () {
-		currentLevel = 0;
+		currentGame = 0;
 	}
 	
 }

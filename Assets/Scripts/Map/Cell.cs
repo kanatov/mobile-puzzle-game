@@ -7,6 +7,7 @@ public class Cell {
 	public int unitsAndItems;
 	public int x; // HACK
 	public int y;
+	public int z;
 
 	[System.NonSerialized]
 	public GameObject terrainModel;
