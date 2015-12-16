@@ -1,0 +1,31 @@
+﻿<Properties StartupItem="Assembly-CSharp.csproj" RefactoringSettings.EnableRefactorings="True">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Map/WaypointDT.cs">
+    <Files>
+      <File FileName="Assets/Editor/LevelUpdater.cs" Line="99" Column="33" />
+      <File FileName="Assets/Scripts/Game/GameController.cs" Line="3" Column="1" />
+      <File FileName="Assets/Scripts/Map/MapController.cs" Line="134" Column="17" />
+      <File FileName="Assets/Scripts/Game/Loader.cs" Line="5" Column="21" />
+      <File FileName="Assets/Scripts/Map/TriggerDT.cs" Line="7" Column="28" />
+      <File FileName="Assets/Scripts/Map/WaypointDT.cs" Line="15" Column="1" />
+      <File FileName="Assets/Scripts/Map/Trigger.cs" Line="25" Column="31" />
+      <File FileName="Assets/Editor/TriggerDTEditor.cs" Line="49" Column="33" />
+      <File FileName="Assets/Editor/AutoSnap.cs" Line="27" Column="10" />
+      <File FileName="Assets/Scripts/Map/Waypoint.cs" Line="8" Column="25" />
+      <File FileName="Assets/Scripts/Map/WaypointCollider.cs" Line="8" Column="21" />
+      <File FileName="Assets/Scripts/Units/Unit.cs" Line="8" Column="30" />
+      <File FileName="Assets/Scripts/Units/UnitBehaviour.cs" Line="5" Column="6" />
+    </Files>
+    <Pads>
+      <Pad Id="MonoDevelop.NUnit.TestPad">
+        <State name="__root__">
+          <Node name="Unity" expanded="True" selected="True" />
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

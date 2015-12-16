@@ -1,0 +1,17 @@
+/Users/IlyaKanatov/Documents/unity/Strategy/Unity/Temp/bin/Debug/Assembly-CSharp.dll.mdb
+/Users/IlyaKanatov/Documents/unity/Strategy/Unity/Temp/bin/Debug/Assembly-CSharp.dll
+/Users/IlyaKanatov/Documents/unity/Strategy/Unity/obj/Debug/Assembly-CSharp.dll
+/Users/IlyaKanatov/Documents/unity/Strategy/Unity/obj/Debug/Assembly-CSharp.dll.mdb
+/Users/IlyaKanatov/Documents/unity/Strategy/Unity/Temp/bin/Debug/UnityEngine.dll
+/Users/IlyaKanatov/Documents/unity/Strategy/Unity/Temp/bin/Debug/UnityEditor.dll
+/Users/IlyaKanatov/Documents/unity/Strategy/Unity/Temp/bin/Debug/UnityEngine.UI.dll
+/Users/IlyaKanatov/Documents/unity/Strategy/Unity/Temp/bin/Debug/UnityEngine.Networking.dll
+/Users/IlyaKanatov/Documents/unity/Strategy/Unity/Temp/bin/Debug/Mono.Cecil.dll
+/Users/IlyaKanatov/Documents/unity/Strategy/Unity/Temp/bin/Debug/Unity.SerializationLogic.dll
+/Users/IlyaKanatov/Documents/unity/Strategy/Unity/Temp/bin/Debug/Unity.DataContract.dll
+/Users/IlyaKanatov/Documents/unity/Strategy/Unity/Temp/bin/Debug/ICSharpCode.NRefactory.dll
+/Users/IlyaKanatov/Documents/unity/Strategy/Unity/Temp/bin/Debug/Unity.UNetWeaver.dll
+/Users/IlyaKanatov/Documents/unity/Strategy/Unity/Temp/bin/Debug/Unity.UNetWeaver.dll.mdb
+/Users/IlyaKanatov/Documents/unity/Strategy/Unity/Temp/bin/Debug/Unity.CecilTools.dll
+/Users/IlyaKanatov/Documents/unity/Strategy/Unity/Temp/bin/Debug/Mono.Cecil.Pdb.dll
+/Users/IlyaKanatov/Documents/unity/Strategy/Unity/Temp/bin/Debug/Mono.Cecil.Mdb.dll
