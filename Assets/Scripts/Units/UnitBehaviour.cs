@@ -16,4 +16,5 @@ public enum UnitRotation {
 }
 
 public static class UnitBehaviour {
+	public static Unit player;
 }

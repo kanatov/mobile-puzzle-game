@@ -7,12 +7,24 @@ public class Waypoint {
 	public Vector3 position;
 	public GameObject model;
 	public Waypoint[] neighbours;
+	public UnitRotation[] rotations;
 	public Trigger[] triggers;
 
-	public Waypoint(bool _walkable, Vector3 _position, Waypoint[] _neighbours, Trigger[] _triggers) {
+	// Pathfinding
+	public Waypoint parent;
+	public float gCost;
+	public float hCost;
+	public float fCost {
+		get {
+			return gCost + hCost;
+		}
+	}
+
+	public Waypoint(bool _walkable, Vector3 _position, Waypoint[] _neighbours, UnitRotation[] _rotations, Trigger[] _triggers) {
 		walkable = _walkable;
 		position = _position;
 		neighbours = _neighbours;
+		rotations = _rotations;
 		triggers = _triggers;
 
 		SetModel ();

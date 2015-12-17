@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public enum TriggersTypes {
 	Button = 0,
@@ -49,19 +50,21 @@ public static class MapController {
 				waypointDT.walkable,
 				waypointDT.GetComponent<Transform> ().position,
 				new Waypoint[waypointDT.neighbours.Count],
+				new UnitRotation[waypointDT.rotations.Count],
 				new Trigger[waypointDT.triggers.Count]
 			);
 		}
 
 		for (int i = 0; i < waypoints.Length; i++) {
 			WaypointDT waypointDT = waypointsDT [i].GetComponent<WaypointDT> ();
-			for (int k = 0; k < waypoints [i].neighbours.Length; k++) {
+			for (int k = 0; k < waypoints [i].neighbours.Length; k++)
 				waypoints [i].neighbours [k] = GetWaypoint (waypointDT.neighbours[k]);
-			}
 
-			for (int l = 0; l < waypoints [i].triggers.Length; l++) {
+			for (int l = 0; l < waypoints [i].triggers.Length; l++)
 				waypoints [i].triggers [l] = GetTrigger (waypointDT.triggers[l]);
-			}
+
+			for (int m = 0; m < waypoints [i].rotations.Length; m++)
+				waypoints [i].rotations [m] = waypointDT.rotations[m];
 
 			SetUnit (waypointDT);
 		}
@@ -134,4 +137,93 @@ public static class MapController {
 			unitWaypoints
 		);
 	}
-}
+
+	// Calculate new path
+	public static List<Waypoint> FindPath (Waypoint _source, Waypoint _target) {
+		if (_source == _target) {
+			Debug.LogWarning ("Pathfinding: source == target");
+			return null;
+		}
+
+		List<Waypoint> opened = new List<Waypoint> ();
+		HashSet<Waypoint> closed = new HashSet<Waypoint> ();
+
+		opened.Add (_source);
+
+		while (opened.Count > 0) {
+			// Assign some active node as current
+			Waypoint currentWaypoint = opened [0];
+
+			// Looking for the closest node to our target
+			for (int i = 1; i < opened.Count; i++) {
+				// If the fCost of some node is less then current cell fCost
+				// or
+				// If the fCost of some node is equal but hCost is less
+				if (opened [i].fCost < currentWaypoint.fCost || opened [i].fCost == currentWaypoint.fCost && opened [i].hCost < currentWaypoint.hCost) {
+					currentWaypoint = opened [i];
+				}
+			}
+
+			// Closest node was found
+			// Let's remove it from active node and put it to the closed
+			opened.Remove (currentWaypoint);
+			closed.Add (currentWaypoint);
+
+			if (currentWaypoint == _target)
+				break;
+
+			// For every neighbour of current cell
+			for (int i = 0; i < currentWaypoint.neighbours.Length; i++) {
+				if (closed.Contains (currentWaypoint.neighbours [i]))
+					continue;
+				
+				if (!currentWaypoint.neighbours [i].walkable)
+					continue;
+
+				float newMovementCostToNeghbour = currentWaypoint.gCost + Vector3.Distance (currentWaypoint.position, currentWaypoint.neighbours [i].position);
+
+				if (newMovementCostToNeghbour < currentWaypoint.neighbours [i].gCost || !opened.Contains (currentWaypoint.neighbours [i])) {
+					currentWaypoint.neighbours [i].gCost = newMovementCostToNeghbour;
+					currentWaypoint.neighbours [i].hCost = Vector3.Distance (currentWaypoint.neighbours[i].position, _target.position);
+
+					currentWaypoint.neighbours [i].parent = currentWaypoint;
+
+					if (!opened.Contains (currentWaypoint.neighbours [i])) {
+						opened.Add (currentWaypoint.neighbours [i]);
+					}
+				}
+			}
+		}
+
+		if (!closed.Contains (_target)) {
+			Waypoint closestCell = null;
+			float distance = 0;
+
+			foreach (var cell in closed) {
+				float altDistance = Vector3.Distance(cell.position, _target.position);
+				if (distance == 0 || altDistance < distance){
+					closestCell = cell;
+					distance = altDistance;
+				}
+			}
+
+			_target = closestCell;
+		}
+
+		List<Waypoint> path = new List<Waypoint> ();
+		Waypoint tmpCell = _target;
+
+		while (tmpCell != _source) {
+			path.Add (tmpCell);
+			tmpCell = tmpCell.parent;
+		}
+		path.Add (_source);
+
+		path.Reverse ();
+		return path;
+	}
+		
+	public static int GetRotationDegree (UnitRotation _unitRotation) {
+		return (int)_unitRotation * 60;
+	}
+ }

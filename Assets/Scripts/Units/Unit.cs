@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 [System.Serializable]
 public class Unit {
@@ -14,6 +15,10 @@ public class Unit {
 		waypoints = _waypoints;
 
 		SetModel ();
+
+		if (type == UnitsTypes.Player) {
+			UnitBehaviour.player = this;
+		}
 	}
 
 	void SetModel () {
@@ -21,6 +26,18 @@ public class Unit {
 
 		Transform modelTransform = model.GetComponent<Transform> ();
 		modelTransform.localPosition = waypoints[0].position;
-		modelTransform.eulerAngles = new Vector3 (0f, 60 * (int)rotation, 0f);
+		modelTransform.eulerAngles = new Vector3 (
+			0f,
+			MapController.GetRotationDegree(rotation),
+			0f
+		);
+
+		model.GetComponent<Move> ().source = waypoints [0];
+		model.GetComponent<Rotate> ().target = waypoints [0];
+	}
+
+	public void GoTo (Waypoint _target) {
+		model.GetComponent<Move>().path = MapController.FindPath (model.GetComponent<Move> ().source, _target);
+		model.GetComponent<Move>().enabled = true;
 	}
 }

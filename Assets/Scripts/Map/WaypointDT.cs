@@ -11,4 +11,5 @@ public class WaypointDT : MonoBehaviour {
 
 	public List<GameObject> triggers;
 	public List<GameObject> neighbours;
+	public List<UnitRotation> rotations;
 }

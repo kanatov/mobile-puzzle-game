@@ -27,8 +27,15 @@ class LevelUpdater : EditorWindow {
 			OpenWindow();
 		}
 
+		// Draw filed for waypoint place
+		waypointField = (GameObject)EditorGUILayout.ObjectField(
+			"WaypointDT",
+			waypointField, 
+			typeof(GameObject),
+			false
+		);
 
-		waypointField = (GameObject)EditorGUILayout.ObjectField("WaypointDT", waypointField,  typeof(GameObject), false);
+		// Create waypoints button
 		if (GUILayout.Button ("Create waypoints")) {
 			if (Selection.gameObjects.Length == 0) {
 				return;
@@ -41,17 +48,12 @@ class LevelUpdater : EditorWindow {
 			UpdateWaypoints ();
 		}
 
-		DrawWaypointNetwork ();
-
+		// Update level button
 		if (GUILayout.Button ("Update level")) {
 			UpdateTiles ();
 			UpdateWaypoints ();
 			UpdateTriggers ();
 		}
-	}
-
-	static void UpdateTiles () {
-		MapController.GetContainer (MapController.TAG_TILE);
 	}
 
 	void CreateWaypoints () {
@@ -63,56 +65,90 @@ class LevelUpdater : EditorWindow {
 		}
 	}
 
+	// Place tiles to container
+	static void UpdateTiles () {
+		MapController.GetContainer (MapController.TAG_TILE);
+	}
+
+	// Place waypoint to container
+	// Update waypoint data
 	static void UpdateWaypoints () {
-		GameObject[] items = MapController.GetContainer (MapController.TAG_WAYPOINT);
-		waypoints = items;
+		waypoints = MapController.GetContainer (MapController.TAG_WAYPOINT);
 
-		for (int a = 0; a < items.Length; a++) {
-			WaypointDT pointA = items [a].GetComponent<WaypointDT> ();
-
-			Transform pointATransform = pointA.GetComponent<Transform> ();
-			Vector3 pointAposition = pointATransform.position;
-			pointA.neighbours = new List<GameObject>();
-
-			for (int b = 0; b < items.Length; b++) {
-				WaypointDT pointB = items [b].GetComponent<WaypointDT> ();
-
-				if (pointA == pointB) {
-					continue;
-				}
-
-				Vector3 pointBposition = pointB.GetComponent<Transform> ().position;
-				float distance = Vector3.Distance (pointAposition, pointBposition);
-
-				if (distance < neighbourDistance) {
-					pointA.neighbours.Add(items [b]);
-				}
-			}
+		for (int a = 0; a < waypoints.Length; a++) {
+			WaypointDT _waypointDT = waypoints[a].GetComponent<WaypointDT> ();
+			SetNeighbours (_waypointDT);
 
 			// Check triggers
-			if (pointA.triggers != null) {
-				for (int i = 0; i < pointA.triggers.Count; i++) {
-					if (pointA.triggers[i] == null){
-						continue;
-					}
-					if (pointA.triggers[i].GetComponent<TriggerDT> () == null) {
-						pointA.triggers[i] = null;
-					}
-				}
-			}
-			RemoveEmpties (pointA.triggers);
+			RemoveNullTriggers (_waypointDT);
+			RemoveEmpties (_waypointDT.triggers);
 
 			// Set icon
-			IconManager.SetIcon (items [a], IconManager.Icon.DiamondGray);
-
-			if (!pointA.walkable)
-				IconManager.SetIcon (items [a], IconManager.Icon.DiamondRed);
-
-			if (pointA.triggers != null && pointA.triggers.Count > 0)
-				IconManager.SetIcon (items [a], IconManager.Icon.DiamondYellow);
+			SetIcon (waypoints [a]);
 
 			// Save changes
-			EditorUtility.SetDirty(pointA);
+			EditorUtility.SetDirty(_waypointDT);
+		}
+
+		DrawWaypointNetwork ();
+	}
+
+	static void SetNeighbours (WaypointDT _waypointDT) {
+		Transform pointATransform = _waypointDT.GetComponent<Transform> ();
+		Vector3 pointAPosition = pointATransform.position;
+
+		_waypointDT.neighbours = new List<GameObject> ();
+		_waypointDT.rotations = new List<UnitRotation> ();
+
+		for (int b = 0; b < waypoints.Length; b++) {
+			WaypointDT pointB = waypoints [b].GetComponent<WaypointDT> ();
+
+			if (_waypointDT == pointB) {
+				continue;
+			}
+
+			Transform pointBTransform = pointB.GetComponent<Transform> ();
+			Vector3 pointBPosition = pointBTransform.position;
+			float distance = Vector3.Distance (pointAPosition, pointBPosition);
+
+			if (distance < neighbourDistance) {
+				_waypointDT.neighbours.Add (waypoints [b]);
+//				_waypointDT.rotations.Add (GetRotation (pointATransform, pointBTransform));
+			}
+		}
+	}
+
+//	static UnitRotation GetRotation (Transform _source, Transform _target) {
+//		Vector3 targetRotation = Quaternion.LookRotation(_target.position - _source.position, Vector3.up);
+//		transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 2.0);    
+//
+//
+//		angle = Mathf.Round(angle / 60);
+//		Debug.Log (angle);
+//		return (UnitRotation) angle;
+//	}
+
+	static void SetIcon (GameObject _waypointDTInstance) {
+		IconManager.SetIcon (_waypointDTInstance, IconManager.Icon.DiamondGray);
+		WaypointDT _waypointDT = _waypointDTInstance.GetComponent<WaypointDT>();
+
+		if (!_waypointDT.walkable)
+			IconManager.SetIcon (_waypointDTInstance, IconManager.Icon.DiamondRed);
+		
+		if (_waypointDT.triggers != null && _waypointDT.triggers.Count > 0)
+			IconManager.SetIcon (_waypointDTInstance, IconManager.Icon.DiamondYellow);
+	}
+
+	static void RemoveNullTriggers (WaypointDT _waypointDT) {
+		if (_waypointDT.triggers != null) {
+			for (int i = 0; i < _waypointDT.triggers.Count; i++) {
+				if (_waypointDT.triggers [i] == null) {
+					continue;
+				}
+				if (_waypointDT.triggers [i].GetComponent<TriggerDT> () == null) {
+					_waypointDT.triggers [i] = null;
+				}
+			}
 		}
 	}
 
