@@ -3,25 +3,19 @@ using System.Collections;
 
 [System.Serializable]
 public class Trigger {
-	public TriggersTypes type;
-	public Vector3 position;
-	public int state;
-	public Waypoint[] waypoints;
+	public Vector3[] coordinates;
 	public GameObject model;
+	public string prefab;
+	public Waypoint[] waypoints;
+	public bool activated;
 
-	public Trigger(TriggersTypes _type, Vector3 _position, int _state, Waypoint[] _waypoints) {
-		type = _type;
-		position = _position;
-		state = _state;
-		waypoints = _waypoints;
-
-		SetModel ();
+	public void Launch() {
+		ActivateWaypoints ();
 	}
 
-	void SetModel () {
-		model = GameObject.Instantiate (MapController.triggersModels[(int)type]);
-
-		Transform modelTransform = model.GetComponent<Transform> ();
-		modelTransform.localPosition = position;
+	public void ActivateWaypoints () {
+		foreach (var _waypoint in waypoints) {
+			_waypoint.walkable = !_waypoint.walkable;
+		}
 	}
 }

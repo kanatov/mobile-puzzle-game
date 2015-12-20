@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public enum TriggersTypes {
 	Button = 0,
-	Tile
+	Lock
 }
 
 public enum TerrainsTypes {
@@ -43,6 +43,7 @@ public static class MapController {
 		waypointsDT = GameObject.FindGameObjectsWithTag (TAG_WAYPOINT);
 		waypoints = new Waypoint[waypointsDT.Length];
 
+		// Populate empty waypoints
 		for (int i = 0; i < waypoints.Length; i++) {
 			WaypointDT waypointDT = waypointsDT [i].GetComponent<WaypointDT> ();
 
@@ -50,46 +51,51 @@ public static class MapController {
 				waypointDT.walkable,
 				waypointDT.GetComponent<Transform> ().position,
 				new Waypoint[waypointDT.neighbours.Count],
-				new UnitRotation[waypointDT.rotations.Count],
 				new Trigger[waypointDT.triggers.Count]
 			);
 		}
 
+		// Fill waypoints
 		for (int i = 0; i < waypoints.Length; i++) {
 			WaypointDT waypointDT = waypointsDT [i].GetComponent<WaypointDT> ();
+
+			// Prepare neighbours
 			for (int k = 0; k < waypoints [i].neighbours.Length; k++)
 				waypoints [i].neighbours [k] = GetWaypoint (waypointDT.neighbours[k]);
 
+			// Prepare triggers
 			for (int l = 0; l < waypoints [i].triggers.Length; l++)
 				waypoints [i].triggers [l] = GetTrigger (waypointDT.triggers[l]);
 
-			for (int m = 0; m < waypoints [i].rotations.Length; m++)
-				waypoints [i].rotations [m] = waypointDT.rotations[m];
-
+			// Prepare units
 			SetUnit (waypointDT);
 		}
 
+		// Remove links
 		waypointsDT = null;
 		GameObject.DestroyImmediate (GameObject.FindGameObjectWithTag (TAG_TRIGGER + TAG_CONTAINER));
 		GameObject.DestroyImmediate (GameObject.FindGameObjectWithTag (TAG_WAYPOINT + TAG_CONTAINER));
 
-		GetContainer (TAG_WAYPOINT);
-		GetContainer (TAG_TRIGGER);
-		GetContainer (TAG_UNIT);
+		// Organise scene
+		SetContainer (TAG_WAYPOINT);
+		SetContainer (TAG_TRIGGER);
+		SetContainer (TAG_UNIT);
 	}
 
 	static Trigger GetTrigger(GameObject _triggerDT) {
 		TriggerDT triggerDT = _triggerDT.GetComponent<TriggerDT> ();
-		Trigger trigger = new Trigger (
-			triggerDT.type,
-			triggerDT.GetComponent<Transform>().position,
-			triggerDT.state,
-			new Waypoint[triggerDT.waypoints.Count]
-		);
+		Transform triggerDTTransform = _triggerDT.GetComponent<Transform> ();
+		Trigger trigger = triggerDT.trigger;
 
-		for (int i = 0; i < trigger.waypoints.Length; i++) {
+		trigger.waypoints = new Waypoint[triggerDT.waypoints.Length];
+		for (int i = 0; i < triggerDT.waypoints.Length; i++) {
 			trigger.waypoints [i] = GetWaypoint (triggerDT.waypoints[i]);
 		}
+
+		trigger.coordinates[0] = triggerDTTransform.position;
+		trigger.model = GameObject.Instantiate (Resources.Load<GameObject>(trigger.prefab));
+		trigger.model.GetComponent<Transform> ().position = trigger.coordinates [0];
+		trigger.model.tag = "Trigger";
 
 		return trigger;
 	}
@@ -99,7 +105,7 @@ public static class MapController {
 		return waypoints [i];
 	}
 
-	public static GameObject[] GetContainer (string _tag) {
+	public static GameObject[] SetContainer (string _tag) {
 		GameObject container = GameObject.FindGameObjectWithTag (_tag + TAG_CONTAINER);
 
 		if (container == null) {
@@ -131,7 +137,7 @@ public static class MapController {
 			unitWaypoints [i] = GetWaypoint (_waypointDT.unitWaypoints [i].gameObject);
 		}
 
-		Unit unit = new Unit (
+		new Unit (
 			_waypointDT.unitType,
 			_waypointDT.unitRotation,
 			unitWaypoints

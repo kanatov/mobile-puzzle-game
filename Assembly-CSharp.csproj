@@ -52,6 +52,7 @@
      <Compile Include="Assets\Scripts\Map\MapController.cs" />
      <Compile Include="Assets\Scripts\Map\Trigger.cs" />
      <Compile Include="Assets\Scripts\Map\TriggerDT.cs" />
+     <Compile Include="Assets\Scripts\Map\TriggerLock.cs" />
      <Compile Include="Assets\Scripts\Map\Waypoint.cs" />
      <Compile Include="Assets\Scripts\Map\WaypointCollider.cs" />
      <Compile Include="Assets\Scripts\Map\WaypointDT.cs" />

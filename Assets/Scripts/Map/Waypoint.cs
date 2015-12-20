@@ -7,7 +7,6 @@ public class Waypoint {
 	public Vector3 position;
 	public GameObject model;
 	public Waypoint[] neighbours;
-	public UnitRotation[] rotations;
 	public Trigger[] triggers;
 
 	// Pathfinding
@@ -20,11 +19,10 @@ public class Waypoint {
 		}
 	}
 
-	public Waypoint(bool _walkable, Vector3 _position, Waypoint[] _neighbours, UnitRotation[] _rotations, Trigger[] _triggers) {
+	public Waypoint(bool _walkable, Vector3 _position, Waypoint[] _neighbours, Trigger[] _triggers) {
 		walkable = _walkable;
 		position = _position;
 		neighbours = _neighbours;
-		rotations = _rotations;
 		triggers = _triggers;
 
 		SetModel ();
@@ -47,4 +45,10 @@ public class Waypoint {
 			}
 		}
 	}
+
+//	public void Trigger() {
+//		foreach (var _trigger in triggers) {
+//			_trigger.Launch ();
+//		}
+//	}
 }

@@ -13,6 +13,10 @@ public class Move : MonoBehaviour {
 				this.GetComponent<Rotate> ().target = path[1];
 				this.GetComponent<Rotate> ().enabled = true;
 
+				foreach (var _trigger in path [1].triggers) {
+					_trigger.Launch ();
+				}
+
 				source = path[1];
 				path.RemoveAt (0);
 

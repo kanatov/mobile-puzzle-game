@@ -67,20 +67,20 @@ class LevelUpdater : EditorWindow {
 
 	// Place tiles to container
 	static void UpdateTiles () {
-		MapController.GetContainer (MapController.TAG_TILE);
+		MapController.SetContainer (MapController.TAG_TILE);
 	}
 
 	// Place waypoint to container
 	// Update waypoint data
 	static void UpdateWaypoints () {
-		waypoints = MapController.GetContainer (MapController.TAG_WAYPOINT);
+		waypoints = MapController.SetContainer (MapController.TAG_WAYPOINT);
 
 		for (int a = 0; a < waypoints.Length; a++) {
 			WaypointDT _waypointDT = waypoints[a].GetComponent<WaypointDT> ();
 			SetNeighbours (_waypointDT);
 
 			// Check triggers
-			RemoveNullTriggers (_waypointDT);
+			RemoveWrongTriggers (_waypointDT);
 			RemoveEmpties (_waypointDT.triggers);
 
 			// Set icon
@@ -98,7 +98,6 @@ class LevelUpdater : EditorWindow {
 		Vector3 pointAPosition = pointATransform.position;
 
 		_waypointDT.neighbours = new List<GameObject> ();
-		_waypointDT.rotations = new List<UnitRotation> ();
 
 		for (int b = 0; b < waypoints.Length; b++) {
 			WaypointDT pointB = waypoints [b].GetComponent<WaypointDT> ();
@@ -113,20 +112,9 @@ class LevelUpdater : EditorWindow {
 
 			if (distance < neighbourDistance) {
 				_waypointDT.neighbours.Add (waypoints [b]);
-//				_waypointDT.rotations.Add (GetRotation (pointATransform, pointBTransform));
 			}
 		}
 	}
-
-//	static UnitRotation GetRotation (Transform _source, Transform _target) {
-//		Vector3 targetRotation = Quaternion.LookRotation(_target.position - _source.position, Vector3.up);
-//		transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 2.0);    
-//
-//
-//		angle = Mathf.Round(angle / 60);
-//		Debug.Log (angle);
-//		return (UnitRotation) angle;
-//	}
 
 	static void SetIcon (GameObject _waypointDTInstance) {
 		IconManager.SetIcon (_waypointDTInstance, IconManager.Icon.DiamondGray);
@@ -139,7 +127,7 @@ class LevelUpdater : EditorWindow {
 			IconManager.SetIcon (_waypointDTInstance, IconManager.Icon.DiamondYellow);
 	}
 
-	static void RemoveNullTriggers (WaypointDT _waypointDT) {
+	static void RemoveWrongTriggers (WaypointDT _waypointDT) {
 		if (_waypointDT.triggers != null) {
 			for (int i = 0; i < _waypointDT.triggers.Count; i++) {
 				if (_waypointDT.triggers [i] == null) {
@@ -153,11 +141,12 @@ class LevelUpdater : EditorWindow {
 	}
 
 	static void UpdateTriggers () {
-		GameObject[] items = MapController.GetContainer (MapController.TAG_TRIGGER);
+		GameObject[] items = MapController.SetContainer (MapController.TAG_TRIGGER);
 
 		foreach (var item in items) {
 			TriggerDT triggerDT = item.GetComponent<TriggerDT> ();
-			RemoveEmpties (triggerDT.waypoints);
+
+			// Remove empties
 			EditorUtility.SetDirty (triggerDT);
 		}
 	}
@@ -205,8 +194,9 @@ class LevelUpdater : EditorWindow {
 		}
 
 		for(var i = _source.Count - 1; i > -1; i--) {
-			if (_source[i] == null)
-				_source.RemoveAt(i);
+			if (_source[i] == null) {
+				_source.RemoveAt (i);
+			}
 		}
 	}
 }
