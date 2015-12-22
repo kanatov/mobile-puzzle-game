@@ -2,6 +2,15 @@
 using System.Collections;
 using System.Collections.Generic;
 
+public enum UnitRotation {
+	Forward = 0,
+	ForwardRight,
+	BackwardRight,
+	Backward,
+	BackwardLeft,
+	ForwardLeft
+}
+
 public enum TriggersTypes {
 	Button = 0,
 	Lock
@@ -73,23 +82,25 @@ public static class MapController {
 	static Trigger GetTrigger(GameObject _triggerDT) {
 		TriggerDT triggerDT = _triggerDT.GetComponent<TriggerDT> ();
 		Transform triggerDTTrans = _triggerDT.GetComponent<Transform> ();
-		Trigger trigger = triggerDT.trigger;
 
-		// Copy data from TriggerDT
-		trigger.activateWaypoints = new Waypoint[triggerDT.activateWaypoints.Length];
+		// Copy activateWaypoints
+		Waypoint[] activateWaypoints = new Waypoint[triggerDT.activateWaypoints.Length];
 		for (int i = 0; i < triggerDT.activateWaypoints.Length; i++) {
-			trigger.activateWaypoints [i] = GetWaypointByGO (triggerDT.activateWaypoints[i]);
+			activateWaypoints [i] = GetWaypointByGO (triggerDT.activateWaypoints[i]);
 		}
+
+		// Copy path
+		List<Waypoint> path = new List<Waypoint> ();
 		foreach(var _waypoint in triggerDT.path){
-			trigger.path.Add (GetWaypointByGO (_waypoint));
+			path.Add (GetWaypointByGO (_waypoint));
 		};
 
-		// Create model
-		trigger.currentWaypoint = 0;
-		trigger.model = GameObject.Instantiate (Resources.Load<GameObject>(trigger.prefab));
-		trigger.model.GetComponent<Transform> ().position = trigger.path [trigger.currentWaypoint].position;
-		trigger.model.tag = "Trigger";
-
+		Trigger trigger = new Trigger(
+			path,
+			triggerDT.trigger.prefab,
+			0,
+			activateWaypoints
+		);
 		return trigger;
 	}
 
@@ -139,7 +150,7 @@ public static class MapController {
 
 
 	// Calculate new path
-	public static List<Waypoint> FindPath (Waypoint _source, Waypoint _target) {
+	public static List<Waypoint> GetPath (Waypoint _source, Waypoint _target) {
 		if (_source == _target) {
 			Debug.LogWarning ("Pathfinding: source == target");
 			return null;

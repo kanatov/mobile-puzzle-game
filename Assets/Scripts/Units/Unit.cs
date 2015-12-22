@@ -16,7 +16,7 @@ public class Unit : DynamicObject {
 		SetModel ();
 
 		if (prefab.Contains("Friend")) {
-			UnitBehaviour.player = this;
+			player = this;
 		}
 	}
 
@@ -30,5 +30,38 @@ public class Unit : DynamicObject {
 		model.GetComponent<Move> ().target = path [0].position;
 		model.GetComponent<Move> ().unit = this;
 		model.GetComponent<Rotate> ().target = path [0].position;
+	}
+
+	public void GoTo (Waypoint _target) {
+		List<Waypoint> newPath = MapController.GetPath (path[0], _target);
+		if (newPath != null) {
+			path = newPath;
+			Move ();
+		}
+	}
+
+	public void Move() {
+		if (path == null) {
+			Debug.LogWarning ("Path == null");
+			model.GetComponent<Move>().enabled = false;
+			model.GetComponent<Rotate>().enabled = false;
+			return;
+		}
+
+		if (path.Count < 2) {
+			return;
+		}
+		path.RemoveAt (0);
+
+		model.GetComponent<Rotate> ().target = path[0].position;
+		model.GetComponent<Rotate> ().enabled = true;
+
+		model.GetComponent<Move>().target = path[0].position;
+		model.GetComponent<Move>().enabled = true;
+
+		// Activate triggers
+		foreach (var _trigger in path [0].triggers) {
+			_trigger.Activate ();
+		}
 	}
 }

@@ -52,7 +52,6 @@
      <Compile Include="Assets\Scripts\Map\MapController.cs" />
      <Compile Include="Assets\Scripts\Map\Trigger.cs" />
      <Compile Include="Assets\Scripts\Map\TriggerDT.cs" />
-     <Compile Include="Assets\Scripts\Map\TriggerLock.cs" />
      <Compile Include="Assets\Scripts\Map\Waypoint.cs" />
      <Compile Include="Assets\Scripts\Map\WaypointCollider.cs" />
      <Compile Include="Assets\Scripts\Map\WaypointDT.cs" />
@@ -60,7 +59,6 @@
      <Compile Include="Assets\Scripts\Units\Move.cs" />
      <Compile Include="Assets\Scripts\Units\Rotate.cs" />
      <Compile Include="Assets\Scripts\Units\Unit.cs" />
-     <Compile Include="Assets\Scripts\Units\UnitBehaviour.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>/Applications/Unity/Unity.app/Contents/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>

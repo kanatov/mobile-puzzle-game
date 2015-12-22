@@ -6,4 +6,6 @@ public class DynamicObject {
 	public string prefab;
 	public List<Waypoint> path;
 	public int currentWaypoint;
+
+	public static Unit player;
 }

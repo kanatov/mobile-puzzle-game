@@ -4,6 +4,7 @@ public class Move : MonoBehaviour {
 	public Vector3 target;
 	public Transform transform;
 	public Unit unit;
+	public DynamicObject dynamicObject;
 
 	void Awake() {
 		transform = this.GetComponent<Transform> ();
@@ -15,7 +16,7 @@ public class Move : MonoBehaviour {
 
 			if (this.GetComponent<Rotate> () != null) {
 				this.GetComponent<Rotate> ().enabled = false;
-				UnitBehaviour.MakeStep (unit);
+				unit.Move();
 			}
 		}
 
