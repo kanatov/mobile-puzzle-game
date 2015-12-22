@@ -48,7 +48,9 @@
      <Compile Include="Assets\Editor\AutoSnap.cs" />
      <Compile Include="Assets\Editor\IconManager.cs" />
      <Compile Include="Assets\Editor\LevelUpdater.cs" />
+     <Compile Include="Assets\Editor\SaveOnPlay.cs" />
      <Compile Include="Assets\Editor\TriggerDTEditor.cs" />
+     <Compile Include="Assets\Editor\WaypointDTEditor.cs" />
  <Reference Include="UnityEditor.Advertisements">
  <HintPath>/Applications/Unity/Unity.app/Contents/UnityExtensions/Unity/Advertisements/Editor/UnityEditor.Advertisements.dll</HintPath>
  </Reference>

@@ -1,35 +1,28 @@
 ﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
 
 public class Move : MonoBehaviour {
-	public List<Waypoint> path;
-	public Waypoint source;
-	
-	// Update is called once per frame
+	public Vector3 target;
+	public Transform transform;
+	public Unit unit;
+
+	void Awake() {
+		transform = this.GetComponent<Transform> ();
+	}
+
 	void Update () {
-		if (this.GetComponent<Transform> ().position == source.position) {
-			if (path != null && path.Count > 1) {
-				this.GetComponent<Rotate> ().target = path[1];
-				this.GetComponent<Rotate> ().enabled = true;
+		if (transform.position == target) {
+			this.enabled = false;
 
-				foreach (var _trigger in path [1].triggers) {
-					_trigger.Launch ();
-				}
-
-				source = path[1];
-				path.RemoveAt (0);
-
-			} else {
-				this.enabled = false;
+			if (this.GetComponent<Rotate> () != null) {
 				this.GetComponent<Rotate> ().enabled = false;
+				UnitBehaviour.MakeStep (unit);
 			}
-		} else {
-			GetComponent<Transform> ().position = Vector3.MoveTowards (
-				GetComponent<Transform> ().position,
-				source.position,
-				Time.deltaTime * 2f
-			);
 		}
+
+		transform.position = Vector3.MoveTowards (
+			transform.position,
+			target,
+			Time.deltaTime * 2f
+		);
 	}
 }

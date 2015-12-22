@@ -19,27 +19,15 @@ public static class MapController {
 	public static string TAG_TRIGGER = "Trigger";
 	public static string TAG_CONTAINER = "sContainer";
 
-	public static GameObject[] tilesModels = new GameObject[] {
-		Resources.Load<GameObject>("Tiles/Tile_Grass"),
-		Resources.Load<GameObject>("Tiles/Tile_Rock")
-	};
-	public static GameObject[] triggersModels = new GameObject[] {
-		Resources.Load<GameObject>("Triggers/Trigger_Grass"),
-		Resources.Load<GameObject>("Triggers/Trigger_Rock")
-	};
 	public static GameObject waypointCollider = Resources.Load<GameObject>("Waypoint/Waypoint_Collider");
-	public static GameObject[] unitsModels = new GameObject[] {
-		Resources.Load<GameObject>("Units/Unit_Friend"),
-		Resources.Load<GameObject>("Units/Unit_Enemy")
-	};
 	static GameObject[] waypointsDT;
 	static Waypoint[] waypoints;
 
 	public static void Init () {
-		PrepareWaypoints ();
+		PrepareMap ();
 	}
 
-	static void PrepareWaypoints () {
+	static void PrepareMap () {
 		waypointsDT = GameObject.FindGameObjectsWithTag (TAG_WAYPOINT);
 		waypoints = new Waypoint[waypointsDT.Length];
 
@@ -61,7 +49,7 @@ public static class MapController {
 
 			// Prepare neighbours
 			for (int k = 0; k < waypoints [i].neighbours.Length; k++)
-				waypoints [i].neighbours [k] = GetWaypoint (waypointDT.neighbours[k]);
+				waypoints [i].neighbours [k] = GetWaypointByGO (waypointDT.neighbours[k]);
 
 			// Prepare triggers
 			for (int l = 0; l < waypoints [i].triggers.Length; l++)
@@ -84,26 +72,27 @@ public static class MapController {
 
 	static Trigger GetTrigger(GameObject _triggerDT) {
 		TriggerDT triggerDT = _triggerDT.GetComponent<TriggerDT> ();
-		Transform triggerDTTransform = _triggerDT.GetComponent<Transform> ();
+		Transform triggerDTTrans = _triggerDT.GetComponent<Transform> ();
 		Trigger trigger = triggerDT.trigger;
 
-		trigger.waypoints = new Waypoint[triggerDT.waypoints.Length];
-		for (int i = 0; i < triggerDT.waypoints.Length; i++) {
-			trigger.waypoints [i] = GetWaypoint (triggerDT.waypoints[i]);
+		// Copy data from TriggerDT
+		trigger.activateWaypoints = new Waypoint[triggerDT.activateWaypoints.Length];
+		for (int i = 0; i < triggerDT.activateWaypoints.Length; i++) {
+			trigger.activateWaypoints [i] = GetWaypointByGO (triggerDT.activateWaypoints[i]);
 		}
+		foreach(var _waypoint in triggerDT.path){
+			trigger.path.Add (GetWaypointByGO (_waypoint));
+		};
 
-		trigger.coordinates[0] = triggerDTTransform.position;
+		// Create model
+		trigger.currentWaypoint = 0;
 		trigger.model = GameObject.Instantiate (Resources.Load<GameObject>(trigger.prefab));
-		trigger.model.GetComponent<Transform> ().position = trigger.coordinates [0];
+		trigger.model.GetComponent<Transform> ().position = trigger.path [trigger.currentWaypoint].position;
 		trigger.model.tag = "Trigger";
 
 		return trigger;
 	}
 
-	static Waypoint GetWaypoint (GameObject _target) {
-		int i = System.Array.IndexOf (waypointsDT, _target);
-		return waypoints [i];
-	}
 
 	public static GameObject[] SetContainer (string _tag) {
 		GameObject container = GameObject.FindGameObjectWithTag (_tag + TAG_CONTAINER);
@@ -128,21 +117,26 @@ public static class MapController {
 	}
 
 	static void SetUnit(WaypointDT _waypointDT) {
-		if (_waypointDT.unitType == UnitsTypes.None) {
+		if (_waypointDT.unitPrefab == null || _waypointDT.unitPrefab == "") {
 			return;
 		}
-
-		Waypoint[] unitWaypoints = new Waypoint[_waypointDT.unitWaypoints.Length];
-		for (int i = 0; i < _waypointDT.unitWaypoints.Length; i++) {
-			unitWaypoints [i] = GetWaypoint (_waypointDT.unitWaypoints [i].gameObject);
-		}
-
 		new Unit (
-			_waypointDT.unitType,
+			_waypointDT.unitPrefab,
 			_waypointDT.unitRotation,
-			unitWaypoints
+			GetWaypointByGO (_waypointDT.gameObject)
 		);
 	}
+
+	static Waypoint GetWaypointByGO (GameObject _target) {
+		int i = System.Array.IndexOf (waypointsDT, _target);
+		return waypoints [i];
+	}
+
+	public static Waypoint GetWaypointByV3 (List<Waypoint> _waypoints, GameObject _target) {
+		int i = System.Array.IndexOf (waypointsDT, _target);
+		return waypoints [i];
+	}
+
 
 	// Calculate new path
 	public static List<Waypoint> FindPath (Waypoint _source, Waypoint _target) {
@@ -232,4 +226,9 @@ public static class MapController {
 	public static int GetRotationDegree (UnitRotation _unitRotation) {
 		return (int)_unitRotation * 60;
 	}
+
+	public static Vector3 GetEulerAngle (UnitRotation _rotation) {
+		return new Vector3 (0f, MapController.GetRotationDegree (_rotation), 0f);
+	}
+
  }

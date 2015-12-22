@@ -9,7 +9,7 @@ public class WaypointDT : MonoBehaviour {
 	public bool walkable;
 
 	// Unit properties
-	public UnitsTypes unitType = UnitsTypes.None;
+	public GameObject unitModel;
+	public string unitPrefab;
 	public UnitRotation unitRotation;
-	public GameObject[] unitWaypoints;
 }

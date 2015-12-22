@@ -1,9 +1,7 @@
 ﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
 
 public class Rotate : MonoBehaviour {
-	public Waypoint target;
+	public Vector3 target;
 	public Transform transform;
 	Vector3 targetDir;
 
@@ -12,7 +10,7 @@ public class Rotate : MonoBehaviour {
 	}
 
 	void Update () {
-		targetDir = target.position - transform.position;
+		targetDir = target - transform.position;
 		targetDir = new Vector3 (targetDir.x, 0f, targetDir.z);
 
 		Vector3 newDir = Vector3.RotateTowards(transform.forward, targetDir, Time.deltaTime * 7f, 0.0F);

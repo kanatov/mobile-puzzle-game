@@ -9,6 +9,8 @@ public class Waypoint {
 	public Waypoint[] neighbours;
 	public Trigger[] triggers;
 
+	WaypointCollider modelCollider;
+
 	// Pathfinding
 	public Waypoint parent;
 	public float gCost;
@@ -34,21 +36,31 @@ public class Waypoint {
 		Transform modelTransform = model.GetComponent<Transform> ();
 		modelTransform.localPosition = position;
 
-		WaypointCollider modelCollider = model.GetComponent<WaypointCollider> ();
+		modelCollider = model.GetComponent<WaypointCollider> ();
 		modelCollider.waypoint = this;
-	}
 
-	public void Click() {
-		foreach (var _trigger in triggers) {
-			foreach (var _waypoint in _trigger.waypoints) {
-				_waypoint.walkable = !_waypoint.walkable;
-			}
+		if (!walkable) {
+			modelCollider.enabled = false;
 		}
+
 	}
 
-//	public void Trigger() {
+//	public void Click() {
 //		foreach (var _trigger in triggers) {
-//			_trigger.Launch ();
+//			foreach (var _waypoint in _trigger.activateWaypoints) {
+//				_waypoint.walkable = !_waypoint.walkable;
+//			}
 //		}
 //	}
+
+	public void Activate() {
+		walkable = !walkable;
+		modelCollider.enabled = walkable;
+	}
+
+	public void Trigger() {
+		foreach (var _trigger in triggers) {
+			_trigger.Activate ();
+		}
+	}
 }

@@ -10,25 +10,32 @@ public class TriggerDTEditor : Editor {
 
 	public override void OnInspectorGUI() {
 		triggerDT = (TriggerDT) target;
+//		EditorUtility.SetDirty (triggerDT);
+
 		triggerDTTransform = triggerDT.GetComponent<Transform>();
 
 		// Draw UI
 		ModelUIControl ();
-		DefaultUIControl ("waypoints");
+		DefaultUIControl ("activateWaypoints");
+		DefaultUIControl ("path");
 		DefaultUIControl ("trigger");
 		SetCoordinates ();
 
 		// Save settings
+		EditorSceneManager.MarkAllScenesDirty ();
 		EditorUtility.SetDirty (triggerDT);
 	}
 
 	void ModelUIControl () {
 		GameObject model = (GameObject)EditorGUILayout.ObjectField ("Model:", triggerDT.trigger.model, typeof(GameObject), false);
+
 		if (model != triggerDT.trigger.model) {
 			triggerDT.trigger.model = model;
-			triggerDT.trigger.prefab = AssetDatabase.GetAssetPath(triggerDT.trigger.model);
+
+			triggerDT.trigger.prefab = AssetDatabase.GetAssetPath(model);
 			triggerDT.trigger.prefab = triggerDT.trigger.prefab.Substring(0, triggerDT.trigger.prefab.Length - 7);
 			triggerDT.trigger.prefab = triggerDT.trigger.prefab.Substring(17);
+
 			SetModel ();
 		}
 	}
@@ -47,10 +54,10 @@ public class TriggerDTEditor : Editor {
 	}
 
 	void SetCoordinates () {
-		if (triggerDT.trigger.coordinates == null) {
-			triggerDT.trigger.coordinates = new Vector3[1];
-		}
-		triggerDT.trigger.coordinates [0] = triggerDTTransform.position;
+//		if (triggerDT.trigger.path == null) {
+//			triggerDT.trigger.path = new Vector3[1];
+//		}
+//		triggerDT.trigger.path [0] = triggerDTTransform.position;
 	}
 
 	void SetModel () {

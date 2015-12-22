@@ -21,11 +21,14 @@ class LevelUpdater : EditorWindow {
 		GUIContent titleContent = new GUIContent ("Level Updater");
 		window.titleContent = titleContent;
 	}
-	
+
 	void OnGUI(){
 		if(window == null) {
 			OpenWindow();
 		}
+
+		DrawWaypointNetwork ();
+
 
 		// Draw filed for waypoint place
 		waypointField = (GameObject)EditorGUILayout.ObjectField(
@@ -90,7 +93,7 @@ class LevelUpdater : EditorWindow {
 			EditorUtility.SetDirty(_waypointDT);
 		}
 
-		DrawWaypointNetwork ();
+		EditorSceneManager.MarkAllScenesDirty ();
 	}
 
 	static void SetNeighbours (WaypointDT _waypointDT) {
@@ -180,7 +183,6 @@ class LevelUpdater : EditorWindow {
 				} else{
 					lineColor = Color.white;
 				}
-
 				Debug.DrawLine (waypointTransform.position, neigbourTransform.position, lineColor, 1f);
 			}
 

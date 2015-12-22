@@ -56,6 +56,7 @@
      <Compile Include="Assets\Scripts\Map\Waypoint.cs" />
      <Compile Include="Assets\Scripts\Map\WaypointCollider.cs" />
      <Compile Include="Assets\Scripts\Map\WaypointDT.cs" />
+     <Compile Include="Assets\Scripts\Units\DynamicObject.cs" />
      <Compile Include="Assets\Scripts\Units\Move.cs" />
      <Compile Include="Assets\Scripts\Units\Rotate.cs" />
      <Compile Include="Assets\Scripts\Units\Unit.cs" />

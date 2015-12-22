@@ -5,6 +5,6 @@ public class WaypointCollider : MonoBehaviour {
 	public Waypoint waypoint;
 	
 	void OnMouseUp() {
-		UnitBehaviour.player.GoTo (waypoint);
+		UnitBehaviour.GoTo (UnitBehaviour.player, waypoint);
 	}
 }
