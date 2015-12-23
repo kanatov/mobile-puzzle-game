@@ -16,11 +16,11 @@ public class Unit : DynamicObject {
 		SetModel ();
 
 		if (prefab.Contains("Friend")) {
-			player = this;
+			MapController.player = this;
 		}
 	}
 
-	void SetModel () {
+	public void SetModel () {
 		model = GameObject.Instantiate (Resources.Load<GameObject>(prefab));
 
 		Transform modelTransform = model.GetComponent<Transform> ();

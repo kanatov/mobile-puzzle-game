@@ -3,13 +3,14 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 using System;
 
-namespace GenericData{
+namespace GenericData {
 	
-	/// Generic Data class
+	// Generic Data class
 	public static class SaveLoad {
 		public static string namePlayerProgress = "PlayerData";
-		public static string nameGame = "LevelData";
-		public static string nameUnits = "UnitsData";
+		public static string nameGameSessionWaypoints = "GameSessionWaypoints";
+		public static string nameGameSessionUnits = "GameSessionUnits";
+		public static string nameGameSessionTriggers = "GameSessionTriggers";
 		
 		public static bool Save(System.Object _data, string _fileName) {
 			Debug.Log ("Trying to save: " + _fileName);
@@ -28,13 +29,13 @@ namespace GenericData{
 				bf.Serialize(file, _data);
 			}
 			catch {
+				Debug.LogWarning ("Unsuccesfull saving: " + _fileName);
 				file.Close();
 				File.Delete(GetFullPath(_fileName));
-				Debug.LogWarning ("Data wasn't saved: " + _fileName);
 				return false;
 			}
-			file.Close();
 			Debug.Log ("Data saved: " + _fileName);
+			file.Close();
 			return true;
 		}
 		
@@ -51,13 +52,13 @@ namespace GenericData{
 				data = bf.Deserialize(file);
 			}
 			catch {
+				Debug.LogWarning ("Unsuccesfull loading: " + _fileName);
 				file.Close();
-				Debug.LogWarning ("Data wasn't loaded: " + _fileName);
 				return null;
 			}
 			
-			file.Close();
 			Debug.Log ("Data loaded: " + _fileName);
+			file.Close();
 			return data;
 		}
 		
@@ -69,7 +70,7 @@ namespace GenericData{
 				File.Delete(GetFullPath(_fileName));
 			}
 			catch (Exception) {
-				Debug.LogWarning ("Data wasn't deleted: " + _fileName);
+				Debug.LogWarning ("Unsuccesfull removing: " + _fileName);
 				return false;
 			}
 			

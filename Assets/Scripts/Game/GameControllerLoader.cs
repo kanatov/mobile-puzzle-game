@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class Loader : MonoBehaviour {
+public class GameControllerLoader : MonoBehaviour {
 	void Start () {
 		GameController.Init ();
 	}

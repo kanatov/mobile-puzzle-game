@@ -17,7 +17,7 @@ public class Trigger : DynamicObject{
 		SetModel ();
 	}
 
-	void SetModel () {
+	public void SetModel () {
 		model = GameObject.Instantiate (Resources.Load<GameObject> (prefab));
 		model.GetComponent<Transform> ().position = path [currentWaypoint].position;
 		model.tag = "Trigger";

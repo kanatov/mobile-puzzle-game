@@ -4,12 +4,28 @@ using System.Collections;
 [System.Serializable]
 public class Waypoint {
 	public bool walkable;
-	public Vector3 position;
-	public GameObject model;
-	public Waypoint[] neighbours;
 	public Trigger[] triggers;
+	public Waypoint[] neighbours;
 
-	WaypointCollider modelCollider;
+	[System.NonSerialized] public GameObject model;
+
+	[System.NonSerialized] WaypointCollider modelCollider;
+	[System.NonSerialized] SphereCollider modelSphereCollider;
+
+	[SerializeField]float x;
+	[SerializeField]float y;
+	[SerializeField]float z;
+
+	public Vector3 position {
+		get {
+			return new Vector3 (x, y, z);
+		}
+		set {
+			x = value.x;
+			y = value.y;
+			z = value.z;
+		}
+	}
 
 	// Pathfinding
 	public Waypoint parent;
@@ -30,7 +46,7 @@ public class Waypoint {
 		SetModel ();
 	}
 
-	void SetModel () {
+	public void SetModel () {
 		model = GameObject.Instantiate (MapController.waypointCollider);
 
 		Transform modelTransform = model.GetComponent<Transform> ();
@@ -39,23 +55,13 @@ public class Waypoint {
 		modelCollider = model.GetComponent<WaypointCollider> ();
 		modelCollider.waypoint = this;
 
-		if (!walkable) {
-			modelCollider.enabled = false;
-		}
-
+		modelSphereCollider = model.GetComponent<SphereCollider>();
+		modelSphereCollider.enabled = walkable;
 	}
-
-//	public void Click() {
-//		foreach (var _trigger in triggers) {
-//			foreach (var _waypoint in _trigger.activateWaypoints) {
-//				_waypoint.walkable = !_waypoint.walkable;
-//			}
-//		}
-//	}
 
 	public void Activate() {
 		walkable = !walkable;
-		modelCollider.enabled = walkable;
+		modelSphereCollider.enabled = walkable;
 	}
 
 	public void Trigger() {

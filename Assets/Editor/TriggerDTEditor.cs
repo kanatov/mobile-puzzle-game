@@ -10,16 +10,15 @@ public class TriggerDTEditor : Editor {
 
 	public override void OnInspectorGUI() {
 		triggerDT = (TriggerDT) target;
-//		EditorUtility.SetDirty (triggerDT);
 
 		triggerDTTransform = triggerDT.GetComponent<Transform>();
 
 		// Draw UI
 		ModelUIControl ();
+		DefaultUIControl ("prefab");
+		DefaultUIControl ("noRepeat");
 		DefaultUIControl ("activateWaypoints");
 		DefaultUIControl ("path");
-		DefaultUIControl ("trigger");
-		SetCoordinates ();
 
 		// Save settings
 		EditorSceneManager.MarkAllScenesDirty ();
@@ -27,14 +26,14 @@ public class TriggerDTEditor : Editor {
 	}
 
 	void ModelUIControl () {
-		GameObject model = (GameObject)EditorGUILayout.ObjectField ("Model:", triggerDT.trigger.model, typeof(GameObject), false);
+		GameObject model = (GameObject)EditorGUILayout.ObjectField ("Model:", triggerDT.model, typeof(GameObject), false);
 
-		if (model != triggerDT.trigger.model) {
-			triggerDT.trigger.model = model;
+		if (model != triggerDT.model) {
+			triggerDT.model = model;
 
-			triggerDT.trigger.prefab = AssetDatabase.GetAssetPath(model);
-			triggerDT.trigger.prefab = triggerDT.trigger.prefab.Substring(0, triggerDT.trigger.prefab.Length - 7);
-			triggerDT.trigger.prefab = triggerDT.trigger.prefab.Substring(17);
+			triggerDT.prefab = AssetDatabase.GetAssetPath(model);
+			triggerDT.prefab = triggerDT.prefab.Substring(0, triggerDT.prefab.Length - 7);
+			triggerDT.prefab = triggerDT.prefab.Substring(17);
 
 			SetModel ();
 		}
@@ -53,13 +52,6 @@ public class TriggerDTEditor : Editor {
 		EditorGUIUtility.LookLikeControls();
 	}
 
-	void SetCoordinates () {
-//		if (triggerDT.trigger.path == null) {
-//			triggerDT.trigger.path = new Vector3[1];
-//		}
-//		triggerDT.trigger.path [0] = triggerDTTransform.position;
-	}
-
 	void SetModel () {
 		// Remove old children
 		if (triggerDTTransform.childCount > 0) {
@@ -67,7 +59,7 @@ public class TriggerDTEditor : Editor {
 		}
 
 		// Instant new children
-		GameObject newChild = (GameObject)PrefabUtility.InstantiatePrefab (triggerDT.trigger.model);
+		GameObject newChild = (GameObject)PrefabUtility.InstantiatePrefab (triggerDT.model);
 		Transform newChildTransform = newChild.GetComponent<Transform> ();
 		newChildTransform.SetParent (triggerDTTransform);
 		newChildTransform.localPosition = Vector3.zero;

@@ -1,9 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-[System.Serializable]
 public class TriggerDT : MonoBehaviour {
-	public Trigger trigger;
 	public GameObject[] activateWaypoints;
+	public string prefab;
+	public bool noRepeat;
 	public GameObject[] path;
+	[SerializeField]
+	public GameObject model;
 }

@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using GenericData;
 
 public enum UnitRotation {
 	Forward = 0,
@@ -29,16 +30,47 @@ public static class MapController {
 	public static string TAG_CONTAINER = "sContainer";
 
 	public static GameObject waypointCollider = Resources.Load<GameObject>("Waypoint/Waypoint_Collider");
+	public static Waypoint[] waypoints;
+	public static Unit[] units;
+	public static Trigger[] triggers;
+
+	public static Unit player;
+
 	static GameObject[] waypointsDT;
-	static Waypoint[] waypoints;
 
 	public static void Init () {
-		PrepareMap ();
+		Debug.Log ("Map init");
+
+		waypointsDT = GameObject.FindGameObjectsWithTag (TAG_WAYPOINT);
+
+		waypoints = (Waypoint[])SaveLoad.Load (SaveLoad.nameGameSessionWaypoints);
+		units = (Unit[])SaveLoad.Load (SaveLoad.nameGameSessionUnits);
+		triggers = (Trigger[])SaveLoad.Load (SaveLoad.nameGameSessionTriggers);
+
+		if (waypoints == null || units == null || triggers == null) {
+			Debug.Log ("Map init: Prepare New Level: Waypoints == " + waypoints + ", Units == " + units + ", Triggers == " + triggers);
+			PrepareNewLevel ();
+		} else {
+			Debug.Log ("Map init: Prepare Game Session");
+			PrepareGameSession ();
+		}
+
+		// Remove references and objects
+		waypointsDT = null;
+		GameObject.DestroyImmediate (GameObject.FindGameObjectWithTag (TAG_TRIGGER + TAG_CONTAINER));
+		GameObject.DestroyImmediate (GameObject.FindGameObjectWithTag (TAG_WAYPOINT + TAG_CONTAINER));
+
+		// Organise scene
+		SetContainer (TAG_WAYPOINT);
+		SetContainer (TAG_TRIGGER);
+		SetContainer (TAG_UNIT);
 	}
 
-	static void PrepareMap () {
-		waypointsDT = GameObject.FindGameObjectsWithTag (TAG_WAYPOINT);
+
+	static void PrepareNewLevel () {
 		waypoints = new Waypoint[waypointsDT.Length];
+		List <Unit> newUnits = new List<Unit> ();
+		List <Trigger> newTriggers = new List<Trigger> ();
 
 		// Populate empty waypoints
 		for (int i = 0; i < waypoints.Length; i++) {
@@ -61,23 +93,33 @@ public static class MapController {
 				waypoints [i].neighbours [k] = GetWaypointByGO (waypointDT.neighbours[k]);
 
 			// Prepare triggers
-			for (int l = 0; l < waypoints [i].triggers.Length; l++)
-				waypoints [i].triggers [l] = GetTrigger (waypointDT.triggers[l]);
-
+			for (int l = 0; l < waypoints [i].triggers.Length; l++) {
+				waypoints [i].triggers [l] = GetTrigger (waypointDT.triggers [l]);
+				newTriggers.Add (waypoints [i].triggers [l]);
+			}
+			
 			// Prepare units
-			SetUnit (waypointDT);
+			if (waypointDT.unitPrefab != null && waypointDT.unitPrefab != "") {
+				newUnits.Add(GetUnit (waypointDT));
+			}
 		}
 
-		// Remove links
-		waypointsDT = null;
-		GameObject.DestroyImmediate (GameObject.FindGameObjectWithTag (TAG_TRIGGER + TAG_CONTAINER));
-		GameObject.DestroyImmediate (GameObject.FindGameObjectWithTag (TAG_WAYPOINT + TAG_CONTAINER));
+		// Copy new dynamic objects
+		units = new Unit[newUnits.Count];
+		for (int i = 0; i < units.Length; i++) {
+			units [i] = newUnits [i];
+		}
 
-		// Organise scene
-		SetContainer (TAG_WAYPOINT);
-		SetContainer (TAG_TRIGGER);
-		SetContainer (TAG_UNIT);
+		triggers = new Trigger[newTriggers.Count];
+		for (int i = 0; i < triggers.Length; i++) {
+			triggers [i] = newTriggers [i];
+		}
+
+		SaveLoad.Save (waypoints, SaveLoad.nameGameSessionWaypoints);
+		SaveLoad.Save (units, SaveLoad.nameGameSessionUnits);
+		SaveLoad.Save (triggers, SaveLoad.nameGameSessionTriggers);
 	}
+
 
 	static Trigger GetTrigger(GameObject _triggerDT) {
 		TriggerDT triggerDT = _triggerDT.GetComponent<TriggerDT> ();
@@ -97,7 +139,7 @@ public static class MapController {
 
 		Trigger trigger = new Trigger(
 			path,
-			triggerDT.trigger.prefab,
+			triggerDT.prefab,
 			0,
 			activateWaypoints
 		);
@@ -105,47 +147,27 @@ public static class MapController {
 	}
 
 
-	public static GameObject[] SetContainer (string _tag) {
-		GameObject container = GameObject.FindGameObjectWithTag (_tag + TAG_CONTAINER);
-
-		if (container == null) {
-			container = new GameObject ();
-			container.GetComponent<Transform> ().position = Vector3.zero;
-			string tag = _tag + TAG_CONTAINER;
-			container.tag = tag;
-			container.name = tag;
-		}
-
-		Transform containerTransform = container.GetComponent<Transform> ();
-
-		GameObject[] items = GameObject.FindGameObjectsWithTag (_tag);
-
-		foreach (var _item in items) {
-			_item.GetComponent<Transform> ().SetParent (containerTransform);
-		}
-
-		return items;
-	}
-
-	static void SetUnit(WaypointDT _waypointDT) {
-		if (_waypointDT.unitPrefab == null || _waypointDT.unitPrefab == "") {
-			return;
-		}
-		new Unit (
+	static Unit GetUnit(WaypointDT _waypointDT) {
+		Unit unit = new Unit (
 			_waypointDT.unitPrefab,
 			_waypointDT.unitRotation,
 			GetWaypointByGO (_waypointDT.gameObject)
 		);
+
+		return unit;
 	}
 
-	static Waypoint GetWaypointByGO (GameObject _target) {
-		int i = System.Array.IndexOf (waypointsDT, _target);
-		return waypoints [i];
-	}
 
-	public static Waypoint GetWaypointByV3 (List<Waypoint> _waypoints, GameObject _target) {
-		int i = System.Array.IndexOf (waypointsDT, _target);
-		return waypoints [i];
+	static void PrepareGameSession () {
+		foreach (var _waypoint in waypoints) {
+			_waypoint.SetModel ();
+		}
+		foreach (var _unit in units) {
+			_unit.SetModel ();
+		}
+		foreach (var _trigger in triggers) {
+			_trigger.SetModel ();
+		}
 	}
 
 
@@ -242,4 +264,37 @@ public static class MapController {
 		return new Vector3 (0f, MapController.GetRotationDegree (_rotation), 0f);
 	}
 
+	// Helpers
+	static Waypoint GetWaypointByGO (GameObject _target) {
+		int i = System.Array.IndexOf (waypointsDT, _target);
+		return waypoints [i];
+	}
+
+	public static Waypoint GetWaypointByV3 (List<Waypoint> _waypoints, GameObject _target) {
+		int i = System.Array.IndexOf (waypointsDT, _target);
+		return waypoints [i];
+	}
+
+	// Scene clear
+	public static GameObject[] SetContainer (string _tag) {
+		GameObject container = GameObject.FindGameObjectWithTag (_tag + TAG_CONTAINER);
+		
+		if (container == null) {
+			container = new GameObject ();
+			container.GetComponent<Transform> ().position = Vector3.zero;
+			string tag = _tag + TAG_CONTAINER;
+			container.tag = tag;
+			container.name = tag;
+		}
+		
+		Transform containerTransform = container.GetComponent<Transform> ();
+		
+		GameObject[] items = GameObject.FindGameObjectsWithTag (_tag);
+		
+		foreach (var _item in items) {
+			_item.GetComponent<Transform> ().SetParent (containerTransform);
+		}
+		
+		return items;
+	}
  }

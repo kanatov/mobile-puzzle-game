@@ -1,11 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
+[System.Serializable]
 public class DynamicObject {
-	public GameObject model;
 	public string prefab;
 	public List<Waypoint> path;
 	public int currentWaypoint;
 
-	public static Unit player;
+	[System.NonSerialized]
+	public GameObject model;
 }
