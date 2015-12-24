@@ -2,9 +2,9 @@
 using System.Collections;
 
 public class WaypointCollider : MonoBehaviour {
-	public Waypoint waypoint;
+	public int waypoint;
 	
 	void OnMouseUp() {
-		MapController.player.GoTo(waypoint);
+		MapController.player.GoTo (MapController.waypoints [waypoint]);
 	}
 }

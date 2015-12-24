@@ -16,5 +16,4 @@ public class Rotate : MonoBehaviour {
 		Vector3 newDir = Vector3.RotateTowards(transform.forward, targetDir, Time.deltaTime * 7f, 0.0F);
 		transform.rotation = Quaternion.LookRotation(newDir);
 	}
-
 }

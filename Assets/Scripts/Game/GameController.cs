@@ -6,11 +6,7 @@ public static class GameController {
 	public static PlayerData playerData;
 
 	public static void Init () {
-
-		SaveLoad.Delete (SaveLoad.namePlayerProgress);
-		SaveLoad.Delete (SaveLoad.nameGameSessionWaypoints);
-		SaveLoad.Delete (SaveLoad.nameGameSessionTriggers);
-		SaveLoad.Delete (SaveLoad.nameGameSessionUnits);
+		ClearSavedData ();
 
 		Debug.Log ("Init: Loading Player data");
 		playerData = (PlayerData)SaveLoad.Load(SaveLoad.namePlayerProgress);
@@ -44,5 +40,24 @@ public static class GameController {
 		SaveLoad.Save (playerData, SaveLoad.namePlayerProgress);
 
 		SceneManager.LoadScene (_scene);
+	}
+
+	static void ClearSavedData() {
+		SaveLoad.Delete (SaveLoad.namePlayerProgress);
+		SaveLoad.Delete (SaveLoad.nameGameSessionWaypoints);
+		SaveLoad.Delete (SaveLoad.nameGameSessionTriggers);
+		SaveLoad.Delete (SaveLoad.nameGameSessionUnits);
+	}
+
+	public static void SaveGameSession () {
+		SaveLoad.Save (MapController.waypoints, SaveLoad.nameGameSessionWaypoints);
+		SaveLoad.Save (MapController.units, SaveLoad.nameGameSessionUnits);
+		SaveLoad.Save (MapController.triggers, SaveLoad.nameGameSessionTriggers);
+	}
+
+	public static void LoadGameSession () {
+		MapController.waypoints = (Waypoint[])SaveLoad.Load (SaveLoad.nameGameSessionWaypoints);
+		MapController.units = (Unit[])SaveLoad.Load (SaveLoad.nameGameSessionUnits);
+		MapController.triggers = (Trigger[])SaveLoad.Load (SaveLoad.nameGameSessionTriggers);
 	}
 }

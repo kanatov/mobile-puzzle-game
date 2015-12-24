@@ -1,24 +1,25 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj" RefactoringSettings.EnableRefactorings="True">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Units/DynamicObject.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Map/Trigger.cs">
     <Files>
       <File FileName="Assets/Scripts/Game/SaveLoad.cs" Line="1" Column="1" />
-      <File FileName="Assets/Scripts/Game/GameController.cs" Line="14" Column="3" />
-      <File FileName="Assets/Scripts/Map/MapController.cs" Line="134" Column="15" />
+      <File FileName="Assets/Scripts/Game/GameController.cs" Line="52" Column="36" />
+      <File FileName="Assets/Scripts/Map/MapController.cs" Line="35" Column="20" />
       <File FileName="Assets/Scripts/Game/PlayerData.cs" Line="16" Column="3" />
       <File FileName="Assets/Scripts/Map/TriggerDT.cs" Line="5" Column="1" />
-      <File FileName="Assets/Scripts/Map/Trigger.cs" Line="5" Column="1" />
-      <File FileName="Assets/Scripts/Units/DynamicObject.cs" Line="12" Column="2" />
-      <File FileName="Assets/Scripts/Units/Unit.cs" Line="19" Column="17" />
-      <File FileName="Assets/Scripts/Map/Waypoint.cs" Line="5" Column="22" />
-      <File FileName="Assets/Editor/LevelUpdater.cs" Line="1" Column="1" />
-      <File FileName="Assets/Scripts/Map/WaypointDT.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/Map/Trigger.cs" Line="63" Column="2" />
+      <File FileName="Assets/Scripts/Units/DynamicObject.cs" Line="63" Column="2" />
+      <File FileName="Assets/Scripts/Map/Waypoint.cs" Line="107" Column="30" />
+      <File FileName="Assets/Editor/LevelUpdater.cs" Line="91" Column="4" />
+      <File FileName="Assets/Scripts/Map/WaypointDT.cs" Line="14" Column="35" />
       <File FileName="Assets/Editor/TriggerDTEditor.cs" Line="22" Column="1" />
-      <File FileName="Assets/Scripts/Map/WaypointCollider.cs" Line="8" Column="16" />
-      <File FileName="Assets/Scripts/Units/Rotate.cs" Line="1" Column="1" />
-      <File FileName="Assets/Scripts/Units/Move.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/Map/WaypointCollider.cs" Line="8" Column="19" />
+      <File FileName="Assets/Scripts/Units/Rotate.cs" Line="13" Column="4" />
+      <File FileName="Assets/Scripts/Units/Move.cs" Line="6" Column="18" />
       <File FileName="Assets/Editor/WaypointDTEditor.cs" Line="1" Column="1" />
       <File FileName="Assets/Scripts/UI/UIController.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/Game/MapControllerLoader.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/Units/Unit.cs" Line="47" Column="11" NotebookId="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

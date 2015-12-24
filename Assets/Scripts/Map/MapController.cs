@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using GenericData;
+using System.Linq;
 
 public enum UnitRotation {
 	Forward = 0,
@@ -43,9 +44,7 @@ public static class MapController {
 
 		waypointsDT = GameObject.FindGameObjectsWithTag (TAG_WAYPOINT);
 
-		waypoints = (Waypoint[])SaveLoad.Load (SaveLoad.nameGameSessionWaypoints);
-		units = (Unit[])SaveLoad.Load (SaveLoad.nameGameSessionUnits);
-		triggers = (Trigger[])SaveLoad.Load (SaveLoad.nameGameSessionTriggers);
+		GameController.LoadGameSession ();
 
 		if (waypoints == null || units == null || triggers == null) {
 			Debug.Log ("Map init: Prepare New Level: Waypoints == " + waypoints + ", Units == " + units + ", Triggers == " + triggers);
@@ -77,10 +76,11 @@ public static class MapController {
 			WaypointDT waypointDT = waypointsDT [i].GetComponent<WaypointDT> ();
 
 			waypoints [i] = new Waypoint (
+				i,
 				waypointDT.walkable,
 				waypointDT.GetComponent<Transform> ().position,
-				new Waypoint[waypointDT.neighbours.Count],
-				new Trigger[waypointDT.triggers.Count]
+				new int[waypointDT.neighbours.Count],
+				new int[waypointDT.triggers.Count]
 			);
 		}
 
@@ -89,13 +89,13 @@ public static class MapController {
 			WaypointDT waypointDT = waypointsDT [i].GetComponent<WaypointDT> ();
 
 			// Prepare neighbours
-			for (int k = 0; k < waypoints [i].neighbours.Length; k++)
-				waypoints [i].neighbours [k] = GetWaypointByGO (waypointDT.neighbours[k]);
+			for (int k = 0; k < waypoints [i].Neighbours.Length; k++)
+				waypoints [i].Neighbours [k] = GetWaypointByGO (waypointDT.neighbours[k]);
 
 			// Prepare triggers
-			for (int l = 0; l < waypoints [i].triggers.Length; l++) {
-				waypoints [i].triggers [l] = GetTrigger (waypointDT.triggers [l]);
-				newTriggers.Add (waypoints [i].triggers [l]);
+			for (int l = 0; l < waypoints [i].Triggers.Length; l++) {
+				newTriggers.Add (GetTrigger (waypointDT.triggers [l]));
+				waypoints [i].Triggers [l] = newTriggers.Last();
 			}
 			
 			// Prepare units
@@ -115,9 +115,7 @@ public static class MapController {
 			triggers [i] = newTriggers [i];
 		}
 
-		SaveLoad.Save (waypoints, SaveLoad.nameGameSessionWaypoints);
-		SaveLoad.Save (units, SaveLoad.nameGameSessionUnits);
-		SaveLoad.Save (triggers, SaveLoad.nameGameSessionTriggers);
+		GameController.SaveGameSession ();
 	}
 
 
@@ -126,9 +124,9 @@ public static class MapController {
 		Transform triggerDTTrans = _triggerDT.GetComponent<Transform> ();
 
 		// Copy activateWaypoints
-		Waypoint[] activateWaypoints = new Waypoint[triggerDT.activateWaypoints.Length];
+		int[] activateWaypoints = new int[triggerDT.activateWaypoints.Length];
 		for (int i = 0; i < triggerDT.activateWaypoints.Length; i++) {
-			activateWaypoints [i] = GetWaypointByGO (triggerDT.activateWaypoints[i]);
+			activateWaypoints [i] = GetWaypointByGO (triggerDT.activateWaypoints[i]).id;
 		}
 
 		// Copy path
@@ -206,23 +204,23 @@ public static class MapController {
 				break;
 
 			// For every neighbour of current cell
-			for (int i = 0; i < currentWaypoint.neighbours.Length; i++) {
-				if (closed.Contains (currentWaypoint.neighbours [i]))
+			for (int i = 0; i < currentWaypoint.Neighbours.Length; i++) {
+				if (closed.Contains (currentWaypoint.Neighbours [i]))
 					continue;
 				
-				if (!currentWaypoint.neighbours [i].walkable)
+				if (!currentWaypoint.Neighbours [i].walkable)
 					continue;
 
-				float newMovementCostToNeghbour = currentWaypoint.gCost + Vector3.Distance (currentWaypoint.position, currentWaypoint.neighbours [i].position);
+				float newMovementCostToNeghbour = currentWaypoint.gCost + Vector3.Distance (currentWaypoint.Position, currentWaypoint.Neighbours [i].Position);
 
-				if (newMovementCostToNeghbour < currentWaypoint.neighbours [i].gCost || !opened.Contains (currentWaypoint.neighbours [i])) {
-					currentWaypoint.neighbours [i].gCost = newMovementCostToNeghbour;
-					currentWaypoint.neighbours [i].hCost = Vector3.Distance (currentWaypoint.neighbours[i].position, _target.position);
+				if (newMovementCostToNeghbour < currentWaypoint.Neighbours [i].gCost || !opened.Contains (currentWaypoint.Neighbours [i])) {
+					currentWaypoint.Neighbours [i].gCost = newMovementCostToNeghbour;
+					currentWaypoint.Neighbours [i].hCost = Vector3.Distance (currentWaypoint.Neighbours[i].Position, _target.Position);
 
-					currentWaypoint.neighbours [i].parent = currentWaypoint;
+					currentWaypoint.Neighbours [i].parent = currentWaypoint;
 
-					if (!opened.Contains (currentWaypoint.neighbours [i])) {
-						opened.Add (currentWaypoint.neighbours [i]);
+					if (!opened.Contains (currentWaypoint.Neighbours [i])) {
+						opened.Add (currentWaypoint.Neighbours [i]);
 					}
 				}
 			}
@@ -233,7 +231,7 @@ public static class MapController {
 			float distance = 0;
 
 			foreach (var cell in closed) {
-				float altDistance = Vector3.Distance(cell.position, _target.position);
+				float altDistance = Vector3.Distance(cell.Position, _target.Position);
 				if (distance == 0 || altDistance < distance){
 					closestCell = cell;
 					distance = altDistance;
@@ -261,16 +259,11 @@ public static class MapController {
 	}
 
 	public static Vector3 GetEulerAngle (UnitRotation _rotation) {
-		return new Vector3 (0f, MapController.GetRotationDegree (_rotation), 0f);
+		return new Vector3 (0f, GetRotationDegree (_rotation), 0f);
 	}
 
 	// Helpers
 	static Waypoint GetWaypointByGO (GameObject _target) {
-		int i = System.Array.IndexOf (waypointsDT, _target);
-		return waypoints [i];
-	}
-
-	public static Waypoint GetWaypointByV3 (List<Waypoint> _waypoints, GameObject _target) {
 		int i = System.Array.IndexOf (waypointsDT, _target);
 		return waypoints [i];
 	}
