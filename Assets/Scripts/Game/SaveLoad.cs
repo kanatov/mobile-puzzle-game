@@ -13,7 +13,7 @@ namespace GenericData {
 		public static string nameGameSessionTriggers = "GameSessionTriggers";
 		
 		public static bool Save(System.Object _data, string _fileName) {
-			Debug.Log ("Trying to save: " + _fileName);
+			Debug.Log ("SL: Trying to save: " + _fileName);
 			_data = Clone(_data);
 			FileStream file;
 			try {
@@ -29,18 +29,18 @@ namespace GenericData {
 				bf.Serialize(file, _data);
 			}
 			catch {
-				Debug.LogWarning ("Unsuccesfull saving: " + _fileName);
+				Debug.LogWarning ("SL: Unsuccesfull saving: " + _fileName);
 				file.Close();
 				File.Delete(GetFullPath(_fileName));
 				return false;
 			}
-			Debug.Log ("Data saved: " + _fileName);
+			Debug.Log ("SL: Data saved: " + _fileName);
 			file.Close();
 			return true;
 		}
 		
 		public static System.Object Load(string _fileName) {
-			Debug.Log ("Trying to load: " + _fileName);
+			Debug.Log ("SL: Trying to load: " + _fileName);
 			if(!File.Exists(GetFullPath(_fileName))) return null;
 			
 			BinaryFormatter bf = new BinaryFormatter();
@@ -52,29 +52,29 @@ namespace GenericData {
 				data = bf.Deserialize(file);
 			}
 			catch {
-				Debug.LogWarning ("Unsuccesfull loading: " + _fileName);
+				Debug.LogWarning ("SL: Unsuccesfull loading: " + _fileName);
 				file.Close();
 				return null;
 			}
 			
-			Debug.Log ("Data loaded: " + _fileName);
+			Debug.Log ("SL: Data loaded: " + _fileName);
 			file.Close();
 			return data;
 		}
 		
 		
 		public static bool Delete(string _fileName) {
-			Debug.Log ("Trying to delete: " + _fileName);
+			Debug.Log ("SL: Trying to delete: " + _fileName);
 			
 			try {
 				File.Delete(GetFullPath(_fileName));
 			}
 			catch (Exception) {
-				Debug.LogWarning ("Unsuccesfull removing: " + _fileName);
+				Debug.LogWarning ("SL: Unsuccesfull removing: " + _fileName);
 				return false;
 			}
 			
-			Debug.Log ("Data deleted: " + _fileName);
+			Debug.Log ("SL: Data deleted: " + _fileName);
 			return true;
 		}
 		

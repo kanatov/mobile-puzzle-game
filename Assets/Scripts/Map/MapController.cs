@@ -40,17 +40,17 @@ public static class MapController {
 	static GameObject[] waypointsDT;
 
 	public static void Init () {
-		Debug.Log ("Map init");
+		Debug.Log ("___Map init");
 
 		waypointsDT = GameObject.FindGameObjectsWithTag (TAG_WAYPOINT);
 
 		GameController.LoadGameSession ();
 
 		if (waypoints == null || units == null || triggers == null) {
-			Debug.Log ("Map init: Prepare New Level: Waypoints == " + waypoints + ", Units == " + units + ", Triggers == " + triggers);
+			Debug.Log ("___Map init: Prepare New Level: Waypoints == " + waypoints + ", Units == " + units + ", Triggers == " + triggers);
 			PrepareNewLevel ();
 		} else {
-			Debug.Log ("Map init: Prepare Game Session");
+			Debug.Log ("___Map init: Prepare Game Session");
 			PrepareGameSession ();
 		}
 
