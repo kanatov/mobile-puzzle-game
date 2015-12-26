@@ -4,13 +4,19 @@ using System.Collections.Generic;
 using GenericData;
 using System.Linq;
 
-public enum UnitRotation {
+public enum Direction {
 	Forward = 0,
 	ForwardRight,
 	BackwardRight,
 	Backward,
 	BackwardLeft,
 	ForwardLeft
+}
+
+public enum WaypointsTypes {
+	Horisontal = 0,
+	Ladder,
+	Vertical
 }
 
 public enum TriggersTypes {
@@ -47,7 +53,7 @@ public static class MapController {
 		GameController.LoadGameSession ();
 
 		if (waypoints == null || units == null || triggers == null) {
-			Debug.Log ("___Map init: Prepare New Level: Waypoints == " + waypoints + ", Units == " + units + ", Triggers == " + triggers);
+			Debug.Log ("___Map init: Prepare New Level");
 			PrepareNewLevel ();
 		} else {
 			Debug.Log ("___Map init: Prepare Game Session");
@@ -71,6 +77,7 @@ public static class MapController {
 		List <Unit> newUnits = new List<Unit> ();
 		List <Trigger> newTriggers = new List<Trigger> ();
 
+		Debug.Log ("Map Init: Populate empty waypoints");
 		// Populate empty waypoints
 		for (int i = 0; i < waypoints.Length; i++) {
 			WaypointDT waypointDT = waypointsDT [i].GetComponent<WaypointDT> ();
@@ -84,26 +91,33 @@ public static class MapController {
 			);
 		}
 
+		Debug.Log ("Map Init: Fill waypoints");
 		// Fill waypoints
 		for (int i = 0; i < waypoints.Length; i++) {
 			WaypointDT waypointDT = waypointsDT [i].GetComponent<WaypointDT> ();
 
+			Debug.Log ("Map Init: Fill neighbours: " + i);
 			// Prepare neighbours
-			for (int k = 0; k < waypoints [i].Neighbours.Length; k++)
-				waypoints [i].Neighbours [k] = GetWaypointByGO (waypointDT.neighbours[k]);
+			for (int k = 0; k < waypoints [i].Neighbours.Length; k++) {
+				waypoints [i].Neighbours [k] = GetWaypointByGO (waypointDT.neighbours [k]);
+			}
 
+			Debug.Log ("Map Init: Fill triggers: " + i);
 			// Prepare triggers
 			for (int l = 0; l < waypoints [i].Triggers.Length; l++) {
 				newTriggers.Add (GetTrigger (waypointDT.triggers [l]));
 				waypoints [i].Triggers [l] = newTriggers.Last();
 			}
-			
+
+			Debug.Log ("Map Init: Fill units: " + i);
 			// Prepare units
 			if (waypointDT.unitPrefab != null && waypointDT.unitPrefab != "") {
+
 				newUnits.Add(GetUnit (waypointDT));
 			}
 		}
 
+		Debug.Log ("Map Init: Copy dynamic objects");
 		// Copy new dynamic objects
 		units = new Unit[newUnits.Count];
 		for (int i = 0; i < units.Length; i++) {
@@ -122,11 +136,10 @@ public static class MapController {
 	static Trigger GetTrigger(GameObject _triggerDT) {
 		TriggerDT triggerDT = _triggerDT.GetComponent<TriggerDT> ();
 		Transform triggerDTTrans = _triggerDT.GetComponent<Transform> ();
-
 		// Copy activateWaypoints
 		int[] activateWaypoints = new int[triggerDT.activateWaypoints.Length];
 		for (int i = 0; i < triggerDT.activateWaypoints.Length; i++) {
-			activateWaypoints [i] = GetWaypointByGO (triggerDT.activateWaypoints[i]).id;
+			activateWaypoints [i] = GetWaypointByGO (triggerDT.activateWaypoints [i]).id;
 		}
 
 		// Copy path
@@ -148,7 +161,7 @@ public static class MapController {
 	static Unit GetUnit(WaypointDT _waypointDT) {
 		Unit unit = new Unit (
 			_waypointDT.unitPrefab,
-			_waypointDT.unitRotation,
+			_waypointDT.unitDirection,
 			GetWaypointByGO (_waypointDT.gameObject)
 		);
 
@@ -254,11 +267,11 @@ public static class MapController {
 		return path;
 	}
 		
-	public static int GetRotationDegree (UnitRotation _unitRotation) {
+	public static int GetRotationDegree (Direction _unitRotation) {
 		return (int)_unitRotation * 60;
 	}
 
-	public static Vector3 GetEulerAngle (UnitRotation _rotation) {
+	public static Vector3 GetEulerAngle (Direction _rotation) {
 		return new Vector3 (0f, GetRotationDegree (_rotation), 0f);
 	}
 
@@ -290,4 +303,43 @@ public static class MapController {
 		
 		return items;
 	}
- }
+
+	public static Direction GetOppositeDirection (Direction _direction) {
+		int directionNumber = (int)_direction;
+		int directionsCount = System.Enum.GetValues (typeof(Direction)).Length;
+		if (directionNumber < 3) {
+			int oppositeDirection = directionNumber + directionsCount / 2;
+			return (Direction)oppositeDirection;
+		} else {
+			int oppositeDirection = directionNumber - directionsCount / 2;
+			return (Direction)oppositeDirection;
+		}
+	}
+
+	public static Direction GetPointDirection (Vector3 _source, Vector3 _target) {
+		Vector3 difference = _target - _source;
+
+		float x = difference.x;
+		float y = difference.z;
+
+		if (y > 0) {
+			if (x > 0) {
+				return Direction.ForwardRight;
+			}
+			if (x < 0) {
+				return Direction.ForwardLeft;
+			}
+
+			return Direction.Forward;
+		} else {
+			if (x > 0) {
+				return Direction.ForwardRight;
+			}
+			if (x < 0) {
+				return Direction.BackwardLeft;
+			}
+
+			return Direction.Backward;
+		}
+	}
+}

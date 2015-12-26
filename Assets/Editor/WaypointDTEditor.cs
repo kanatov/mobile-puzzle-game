@@ -14,10 +14,10 @@ public class WaypointDTEditor : Editor {
 
 		// Draw UI
 		UnitModelUIControl ();
-		UnitRotationUIControl ();
 		DefaultUIControl ("neighbours");
 		DefaultUIControl ("triggers");
 		DefaultUIControl ("walkable");
+		WaypointTypeUIControl ();
 
 		// Save settings
 		EditorSceneManager.MarkAllScenesDirty ();
@@ -26,7 +26,6 @@ public class WaypointDTEditor : Editor {
 
 	void UnitModelUIControl () {
 		GameObject model = (GameObject)EditorGUILayout.ObjectField ("Unit Model:", waypointDT.unitModel, typeof(GameObject), false);
-
 		if (model != waypointDT.unitModel) {
 			waypointDT.unitModel = model;
 
@@ -39,6 +38,10 @@ public class WaypointDTEditor : Editor {
 			waypointDT.unitPrefab = waypointDT.unitPrefab.Substring(0, waypointDT.unitPrefab.Length - 7);
 			waypointDT.unitPrefab = waypointDT.unitPrefab.Substring(17);
 			SetModel ();
+		}
+
+		if (waypointDT.unitModel != null) {
+			UnitRotationUIControl ();
 		}
 	}
 
@@ -56,7 +59,7 @@ public class WaypointDTEditor : Editor {
 		Transform newChildTransform = newChild.GetComponent<Transform> ();
 		newChildTransform.SetParent (waypointDTTransform);
 		newChildTransform.localPosition = Vector3.zero;
-		newChildTransform.eulerAngles = MapController.GetEulerAngle(waypointDT.unitRotation);
+		newChildTransform.eulerAngles = MapController.GetEulerAngle(waypointDT.unitDirection);
 		newChildTransform.tag = "Untagged";
 	}
 
@@ -74,11 +77,27 @@ public class WaypointDTEditor : Editor {
 	}
 
 	void UnitRotationUIControl () {
-		UnitRotation rotation = (UnitRotation)EditorGUILayout.EnumPopup ("Unit Rotation:", waypointDT.unitRotation);
+		Direction rotation = (Direction)EditorGUILayout.EnumPopup ("Unit Rotation:", waypointDT.unitDirection);
 
-		if (rotation != waypointDT.unitRotation) {
-			waypointDT.unitRotation = rotation;
+		if (rotation != waypointDT.unitDirection) {
+			waypointDT.unitDirection = rotation;
 			SetModel ();
+		}
+	}
+
+	void WaypointTypeUIControl () {
+		WaypointsTypes waypointType = (WaypointsTypes)EditorGUILayout.EnumPopup ("Waypoint Type:", waypointDT.waypointType);
+
+		if (waypointType != waypointDT.waypointType) {
+			waypointDT.waypointType = waypointType;
+		}
+
+		if (waypointDT.waypointType == WaypointsTypes.Ladder) {
+			Direction ladderDirection = (Direction)EditorGUILayout.EnumPopup ("Ladder Bottom:", waypointDT.ladderDirection);
+
+			if (ladderDirection != waypointDT.ladderDirection) {
+				waypointDT.ladderDirection = ladderDirection;
+			}
 		}
 	}
 }

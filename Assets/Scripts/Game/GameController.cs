@@ -6,7 +6,7 @@ public static class GameController {
 	public static PlayerData playerData;
 
 	public static void Init () {
-//		ClearSavedData ();
+		ClearSavedData ();
 		Debug.Log ("___Init: Loading Player data");
 		playerData = (PlayerData)SaveLoad.Load(SaveLoad.namePlayerProgress);
 

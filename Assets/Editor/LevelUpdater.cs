@@ -6,76 +6,33 @@ using System.Collections;
 using System.Collections.Generic;
 
 [System.Serializable]
-class LevelUpdater : EditorWindow {
-	static LevelUpdater window;
-
+[CustomEditor(typeof(MapControllerLoader))]
+class LevelUpdater : Editor {
 	// Waypoints
-	static GameObject[] waypoints;
-	public GameObject waypointField;
-	static float neighbourDistance = 1.2f;
+	[SerializeField] static GameObject[] waypoints;
+	static float neighbourDistance = 0.9f;
 
-	// Window
-	[MenuItem ("Tools/Level Updater")]
-	public static void OpenWindow(){
-		window = (LevelUpdater)EditorWindow.GetWindow(typeof(LevelUpdater));
-		GUIContent titleContent = new GUIContent ("Level Updater");
-		window.titleContent = titleContent;
-	}
-
-	void OnGUI(){
-		if(window == null) {
-			OpenWindow();
-		}
-
+	void OnSceneGUI() {
 		DrawWaypointNetwork ();
-
-
-		// Draw filed for waypoint place
-		waypointField = (GameObject)EditorGUILayout.ObjectField(
-			"WaypointDT",
-			waypointField, 
-			typeof(GameObject),
-			false
-		);
-
-		// Create waypoints button
-		if (GUILayout.Button ("Create waypoints")) {
-			if (Selection.gameObjects.Length == 0) {
-				return;
-			}
-			if (waypointField == null) {
-				return;
-			}
-
-			CreateWaypoints ();
-			UpdateWaypoints ();
-		}
-
-		// Update level button
-		if (GUILayout.Button ("Update level")) {
-			UpdateTiles ();
-			UpdateWaypoints ();
-			UpdateTriggers ();
-		}
 	}
 
-	void CreateWaypoints () {
+	public static void CreateWaypoints (GameObject _instanceObject) {
 		GameObject[] items = Selection.gameObjects;
 
 		foreach (var _item in items) {
-			GameObject waypoint = GameObject.Instantiate (waypointField);
+			GameObject waypoint = GameObject.Instantiate (_instanceObject);
 			waypoint.GetComponent<Transform> ().position = _item.GetComponent<Transform> ().position;
 		}
 	}
 
 	// Place tiles to container
-	static void UpdateTiles () {
+	public static void UpdateTiles () {
 		MapController.SetContainer (MapController.TAG_TILE);
 	}
 
 	// Place waypoint to container
 	// Update waypoint data
-	static void UpdateWaypoints () {
+	public static void UpdateWaypoints () {
 		waypoints = MapController.SetContainer (MapController.TAG_WAYPOINT);
 
 		for (int a = 0; a < waypoints.Length; a++) {
@@ -97,26 +54,101 @@ class LevelUpdater : EditorWindow {
 	}
 
 	static void SetNeighbours (WaypointDT _waypointDT) {
-		Transform pointATransform = _waypointDT.GetComponent<Transform> ();
-		Vector3 pointAPosition = pointATransform.position;
-
+		Vector3 waypointDTPos = _waypointDT.GetComponent<Transform> ().position;
 		_waypointDT.neighbours = new List<GameObject> ();
 
-		for (int b = 0; b < waypoints.Length; b++) {
-			WaypointDT pointB = waypoints [b].GetComponent<WaypointDT> ();
+		_waypointDT.GetComponent<SphereCollider> ().enabled = false;
+		Collider[] hitColliders = Physics.OverlapSphere(waypointDTPos, neighbourDistance);
+		_waypointDT.GetComponent<SphereCollider> ().enabled = true;
 
-			if (_waypointDT == pointB) {
-				continue;
+		for (int i = 0; i < hitColliders.Length; i++) {
+			WaypointDT neighbourDT = hitColliders [i].GetComponent<WaypointDT> ();
+			Vector3 neighbourPos = hitColliders [i].GetComponent<Transform> ().position;
+
+			// Hor
+			if (_waypointDT.waypointType == WaypointsTypes.Horisontal) {
+				// Hor to Hor
+				if (neighbourDT.waypointType == WaypointsTypes.Horisontal) {
+					if (waypointDTPos.y == neighbourPos.y) {
+						_waypointDT.neighbours.Add (hitColliders [i].gameObject);
+					}
+				}
+
+				// Hor to Ladder
+				if (neighbourDT.waypointType == WaypointsTypes.Ladder) {
+					if (waypointDTPos.y > neighbourPos.y) {
+						if (CheckStraightConnection (_waypointDT, neighbourDT)) {
+							_waypointDT.neighbours.Add (hitColliders [i].gameObject);
+						}
+					}
+					if (waypointDTPos.y == neighbourPos.y) {
+						if (CheckOppositConnection(_waypointDT, neighbourDT)) {
+							_waypointDT.neighbours.Add (hitColliders [i].gameObject);
+						}
+					}
+				}
 			}
 
-			Transform pointBTransform = pointB.GetComponent<Transform> ();
-			Vector3 pointBPosition = pointBTransform.position;
-			float distance = Vector3.Distance (pointAPosition, pointBPosition);
+			// Ladder
+			if (_waypointDT.waypointType == WaypointsTypes.Ladder) {
 
-			if (distance < neighbourDistance) {
-				_waypointDT.neighbours.Add (waypoints [b]);
+				// Ladder to Hor
+				if (neighbourDT.waypointType == WaypointsTypes.Horisontal) {
+					
+					if (waypointDTPos.y < neighbourPos.y) {
+						if (CheckStraightConnection (neighbourDT, _waypointDT)) {
+							_waypointDT.neighbours.Add (hitColliders [i].gameObject);
+						}
+					}
+					if (waypointDTPos.y == neighbourPos.y) {
+						if (CheckOppositConnection(neighbourDT, _waypointDT)) {
+							_waypointDT.neighbours.Add (hitColliders [i].gameObject);
+						}
+					}
+				}
+
+				// Ladder to Ladder
+				if (neighbourDT.waypointType == WaypointsTypes.Ladder) {
+					
+					if (waypointDTPos.y > neighbourPos.y) {
+						if (CheckStraightConnection (_waypointDT, neighbourDT)) {
+							_waypointDT.neighbours.Add (hitColliders [i].gameObject);
+						}
+					}
+					if (waypointDTPos.y < neighbourPos.y) {
+						if (CheckOppositConnection (_waypointDT, neighbourDT)) {
+							_waypointDT.neighbours.Add (hitColliders [i].gameObject);
+						}
+					}
+				}
 			}
 		}
+	}
+
+	static bool CheckStraightConnection (WaypointDT _waypointDT, WaypointDT _neighbourDT) {
+		Vector3 waypointDTPos = _waypointDT.GetComponent<Transform> ().position;
+		WaypointDT neighbourDT = _neighbourDT.GetComponent<WaypointDT> ();
+		Vector3 neighbourPos = _neighbourDT.GetComponent<Transform> ().position;
+
+		if (neighbourDT.ladderDirection == MapController.GetPointDirection(waypointDTPos, neighbourPos)) {
+			return true;
+		}
+		return false;
+	}
+
+	static bool CheckOppositConnection (WaypointDT _waypointDT, WaypointDT _neighbourDT) {
+		Vector3 waypointDTPos = _waypointDT.GetComponent<Transform> ().position;
+		WaypointDT neighbourDT = _neighbourDT.GetComponent<WaypointDT> ();
+		Vector3 neighbourPos = _neighbourDT.GetComponent<Transform> ().position;
+
+		Direction suitableDirection = MapController.GetPointDirection(waypointDTPos, neighbourPos);
+		suitableDirection = MapController.GetOppositeDirection (suitableDirection);
+
+		if (suitableDirection == neighbourDT.ladderDirection) {
+			return true;
+		}
+
+		return false;
 	}
 
 	static void SetIcon (GameObject _waypointDTInstance) {
@@ -143,13 +175,26 @@ class LevelUpdater : EditorWindow {
 		}
 	}
 
-	static void UpdateTriggers () {
+	public static void UpdateTriggers () {
 		GameObject[] items = MapController.SetContainer (MapController.TAG_TRIGGER);
 
 		foreach (var item in items) {
 			TriggerDT triggerDT = item.GetComponent<TriggerDT> ();
 
-			// Remove empties
+			if (triggerDT.activateWaypoints.Length == 0) {
+				Debug.LogError ("No activate waypoints in trigger: " + triggerDT.GetComponent<Transform> ().position);
+			}
+			if (triggerDT.path.Length == 0) {
+				triggerDT.path = new GameObject[1];
+			}
+			Vector3 triggerDTPos = triggerDT.GetComponent<Transform> ().position;
+			foreach (var _waypoint in waypoints) {
+				Vector3 waypointDTPos = _waypoint.GetComponent<Transform> ().position;
+				if (triggerDTPos == waypointDTPos) {
+					triggerDT.path [0] = _waypoint.gameObject;
+				}
+			}
+
 			EditorUtility.SetDirty (triggerDT);
 		}
 	}
@@ -159,34 +204,27 @@ class LevelUpdater : EditorWindow {
 			return;
 		}
 
-		List<GameObject> completed = new List<GameObject>();
-
 		foreach (var _waypoint in waypoints) {
 			if (_waypoint == null) {
 				continue;
 			}
-
 			WaypointDT waypointObject = _waypoint.GetComponent<WaypointDT> ();
 			Transform waypointTransform = _waypoint.GetComponent<Transform> ();
 
 			foreach (var _neigbour in _waypoint.GetComponent<WaypointDT> ().neighbours) {
-				if (completed.Contains(_neigbour)) {
-					continue;
-				}
 
 				WaypointDT neigbourObject = _neigbour.GetComponent<WaypointDT> ();
 				Transform neigbourTransform = _neigbour.GetComponent<Transform> ();
-				Color lineColor;
 
 				if (!waypointObject.walkable || !neigbourObject.walkable ) {
-					lineColor = Color.red;
+					Handles.color = Color.red;
 				} else{
-					lineColor = Color.white;
+					Handles.color = Color.white;
 				}
-				Debug.DrawLine (waypointTransform.position, neigbourTransform.position, lineColor, 1f);
-			}
 
-			completed.Add(_waypoint);
+				Vector3 middlePoint = Vector3.Lerp(waypointTransform.position, neigbourTransform.position, 0.45f);
+				Handles.DrawLine (waypointTransform.position, middlePoint);
+			}
 		}
 	}
 

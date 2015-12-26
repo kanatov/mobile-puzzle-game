@@ -48,6 +48,7 @@
      <Compile Include="Assets\Editor\AutoSnap.cs" />
      <Compile Include="Assets\Editor\IconManager.cs" />
      <Compile Include="Assets\Editor\LevelUpdater.cs" />
+     <Compile Include="Assets\Editor\LevelUpdaterWindow.cs" />
      <Compile Include="Assets\Editor\SaveOnPlay.cs" />
      <Compile Include="Assets\Editor\TriggerDTEditor.cs" />
      <Compile Include="Assets\Editor\WaypointDTEditor.cs" />

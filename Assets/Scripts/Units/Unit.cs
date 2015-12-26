@@ -4,9 +4,9 @@ using System.Collections.Generic;
 
 [System.Serializable]
 public class Unit : DynamicObject {
-	public UnitRotation rotation;
+	public Direction rotation;
 
-	public Unit (string _prefab, UnitRotation _rotation, Waypoint _source) {
+	public Unit (string _prefab, Direction _rotation, Waypoint _source) {
 		prefab = _prefab;
 		rotation = _rotation;
 
