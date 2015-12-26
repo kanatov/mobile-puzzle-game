@@ -64,4 +64,6 @@ public class DynamicObject {
 	[SerializeField] protected int currentWaypoint;
 
 	[System.NonSerialized] public GameObject model;
+
+	public virtual void Move(){}
 }

@@ -86,13 +86,13 @@ public class WaypointDTEditor : Editor {
 	}
 
 	void WaypointTypeUIControl () {
-		WaypointsTypes waypointType = (WaypointsTypes)EditorGUILayout.EnumPopup ("Waypoint Type:", waypointDT.waypointType);
+		WaypointsTypes waypointType = (WaypointsTypes)EditorGUILayout.EnumPopup ("Waypoint Type:", waypointDT.Type);
 
-		if (waypointType != waypointDT.waypointType) {
-			waypointDT.waypointType = waypointType;
+		if (waypointType != waypointDT.Type) {
+			waypointDT.Type = waypointType;
 		}
 
-		if (waypointDT.waypointType == WaypointsTypes.Ladder) {
+		if (waypointDT.Type == WaypointsTypes.Ladder) {
 			Direction ladderDirection = (Direction)EditorGUILayout.EnumPopup ("Ladder Bottom:", waypointDT.ladderDirection);
 
 			if (ladderDirection != waypointDT.ladderDirection) {

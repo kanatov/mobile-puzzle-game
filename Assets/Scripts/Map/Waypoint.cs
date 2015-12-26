@@ -52,6 +52,16 @@ public class Waypoint {
 		}
 	}
 
+	public int type;
+	public WaypointsTypes Type {
+		get {
+			return (WaypointsTypes)type;
+		}
+		set {
+			type = (int)value;
+		}
+	}
+
 	public int id;
 	public bool walkable;
 	public NeighboursReferenceIndexer Neighbours;
@@ -87,8 +97,9 @@ public class Waypoint {
 	}
 
 	// Constructor
-	public Waypoint(int _id, bool _walkable, Vector3 _position, int[] _neighbours, int[] _triggers) {
+	public Waypoint(int _id, WaypointsTypes _type, bool _walkable, Vector3 _position, int[] _neighbours, int[] _triggers) {
 		id = _id;
+		Type = _type;
 		walkable = _walkable;
 		Position = _position;
 		Neighbours = new NeighboursReferenceIndexer(_neighbours);

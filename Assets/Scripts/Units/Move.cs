@@ -1,9 +1,19 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 
 public class Move : MonoBehaviour {
-	public Vector3 target;
+	int currentStep;
+	List<Vector3> path;
+	public List<Vector3> Path {
+		get {
+			return path;
+		}
+		set {
+			path = value;
+			this.enabled = true;
+		}
+	}
 	public Transform transform;
-	public Unit unit;
 	public DynamicObject dynamicObject;
 
 	void Awake() {
@@ -11,18 +21,20 @@ public class Move : MonoBehaviour {
 	}
 
 	void Update () {
-		if (transform.position == target) {
-			this.enabled = false;
+		if (transform.position == Path[0]) {
+			if (Path.Count == 1) {
+				this.enabled = false;
+				dynamicObject.Move ();
 
-			if (this.GetComponent<Rotate> () != null) {
-				this.GetComponent<Rotate> ().enabled = false;
-				unit.Move();
+				return;
 			}
+
+			Path.RemoveAt (0);
 		}
 
 		transform.position = Vector3.MoveTowards (
 			transform.position,
-			target,
+			Path[0],
 			Time.deltaTime * 2f
 		);
 	}

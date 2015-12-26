@@ -30,6 +30,7 @@ public enum TerrainsTypes {
 }
 
 public static class MapController {
+	public static float tileHeight = 0.5f;
 	public static string TAG_UNIT = "Unit";
 	public static string TAG_TILE = "Tile";
 	public static string TAG_WAYPOINT = "Waypoint";
@@ -84,6 +85,7 @@ public static class MapController {
 
 			waypoints [i] = new Waypoint (
 				i,
+				waypointDT.Type,
 				waypointDT.walkable,
 				waypointDT.GetComponent<Transform> ().position,
 				new int[waypointDT.neighbours.Count],
@@ -96,20 +98,17 @@ public static class MapController {
 		for (int i = 0; i < waypoints.Length; i++) {
 			WaypointDT waypointDT = waypointsDT [i].GetComponent<WaypointDT> ();
 
-			Debug.Log ("Map Init: Fill neighbours: " + i);
 			// Prepare neighbours
 			for (int k = 0; k < waypoints [i].Neighbours.Length; k++) {
 				waypoints [i].Neighbours [k] = GetWaypointByGO (waypointDT.neighbours [k]);
 			}
 
-			Debug.Log ("Map Init: Fill triggers: " + i);
 			// Prepare triggers
 			for (int l = 0; l < waypoints [i].Triggers.Length; l++) {
 				newTriggers.Add (GetTrigger (waypointDT.triggers [l]));
 				waypoints [i].Triggers [l] = newTriggers.Last();
 			}
 
-			Debug.Log ("Map Init: Fill units: " + i);
 			// Prepare units
 			if (waypointDT.unitPrefab != null && waypointDT.unitPrefab != "") {
 

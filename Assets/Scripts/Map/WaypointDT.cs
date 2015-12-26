@@ -7,7 +7,15 @@ public class WaypointDT : MonoBehaviour {
 	public List<GameObject> triggers;
 	public List<GameObject> neighbours;
 	public bool walkable;
-	public WaypointsTypes waypointType;
+	public int type;
+	public WaypointsTypes Type {
+		get {
+			return (WaypointsTypes)type;
+		}
+		set {
+			type = (int)value;
+		}
+	}
 	public Direction ladderDirection;
 
 	// Unit properties

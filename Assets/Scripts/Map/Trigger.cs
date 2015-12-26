@@ -61,7 +61,7 @@ public class Trigger : DynamicObject{
 		}
 	}
 
-	void Move () {
+	public void Move () {
 		if (model == null) {
 			return;
 		}
@@ -70,8 +70,6 @@ public class Trigger : DynamicObject{
 		if (modelMove == null) {
 			modelMove = model.AddComponent<Move> ();
 			modelMove.enabled = false;
-
-			modelMove.target = Path[PositionInPath].Position;
 			modelMove.dynamicObject = this;
 		}
 
@@ -81,7 +79,7 @@ public class Trigger : DynamicObject{
 
 		PositionInPath = PositionInPath + 1;
 
-		modelMove.target = Path[PositionInPath].Position;
+		modelMove.Path = new List<Vector3> { Path [PositionInPath].Position };
 		modelMove.enabled = true;
 	}
 }

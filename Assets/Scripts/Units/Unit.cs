@@ -26,8 +26,8 @@ public class Unit : DynamicObject {
 		modelTransform.localPosition = Path[0].Position;
 		modelTransform.eulerAngles = MapController.GetEulerAngle (rotation);
 
-		model.GetComponent<Move> ().target = Path[0].Position;
-		model.GetComponent<Move> ().unit = this;
+		model.GetComponent<Move> ().Path = new List<Vector3> { Path [0].Position };
+		model.GetComponent<Move> ().dynamicObject = this;
 		model.GetComponent<Rotate> ().target = Path[0].Position;
 	}
 
@@ -35,11 +35,11 @@ public class Unit : DynamicObject {
 		List<Waypoint> newPath = MapController.GetPath (Path[0], _target);
 		if (newPath != null) {
 			Path = new PathIndexer (newPath);
-			Move ();
+			model.GetComponent<Move>().enabled = true;
 		}
 	}
 
-	public void Move() {
+	public override void Move() {
 		if (Path == null) {
 			Debug.LogWarning ("Path == null");
 			model.GetComponent<Move>().enabled = false;
@@ -51,17 +51,56 @@ public class Unit : DynamicObject {
 			GameController.SaveGameSession ();
 			return;
 		}
-		Path.RemoveAt (0);
 
-		model.GetComponent<Rotate> ().target = Path[0].Position;
-		model.GetComponent<Rotate> ().enabled = true;
+		List<Vector3> newPath = new List<Vector3> ();
 
-		model.GetComponent<Move>().target = Path[0].Position;
-		model.GetComponent<Move>().enabled = true;
+		if (Path[0].Type == WaypointsTypes.Horisontal) {
+			if (Path [1].Type == WaypointsTypes.Horisontal) {
+				newPath.Add (Path [1].Position);
+			}
+			if (Path [1].Type == WaypointsTypes.Ladder) {
+				newPath.Add (GetHorisontalSide (Path [0].Position, Path [1].Position));
+				newPath.Add (GetLadderMiddle (Path [1].Position));
+			}
+		}
+
+		if (Path [0].Type == WaypointsTypes.Ladder) {
+			if (Path [1].Type == WaypointsTypes.Horisontal) {
+				if (Path [0].Position.y > Path [1].Position.y) {
+					newPath.Add (GetHorisontalSide (Path [0].Position, Path [1].Position));
+				} else {
+					newPath.Add (GetHorisontalSide (Path [1].Position, Path [0].Position));
+				}
+				newPath.Add (Path [1].Position);
+			}
+
+			if (Path [1].Type == WaypointsTypes.Ladder) {
+				newPath.Add (GetLadderMiddle (Path [1].Position));
+			}
+		}
 
 		// Activate triggers
-		for (int i = 0; i < Path [0].Triggers.Length; i++) {
-			Path [0].Triggers[i].Activate ();
+		for (int i = 0; i < Path [1].Triggers.Length; i++) {
+			Path [1].Triggers[i].Activate ();
 		}
+
+		model.GetComponent<Move> ().Path = newPath;
+		model.GetComponent<Move>().enabled = true;
+		model.GetComponent<Rotate> ().target = Path[1].Position;
+		model.GetComponent<Rotate> ().enabled = true;
+
+		Path.RemoveAt (0);
+	}
+
+	static Vector3 GetHorisontalSide (Vector3 _source, Vector3 _target) {
+		_target.y = _source.y;
+		Vector3 sidepoint;
+		sidepoint = Vector3.Lerp(_source, _target, 0.5f);
+		return sidepoint;
+	}
+
+	static Vector3 GetLadderMiddle (Vector3 _source) {
+		_source.y += MapController.tileHeight / 2;
+		return _source;
 	}
 }

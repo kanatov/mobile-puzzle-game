@@ -66,16 +66,16 @@ class LevelUpdater : Editor {
 			Vector3 neighbourPos = hitColliders [i].GetComponent<Transform> ().position;
 
 			// Hor
-			if (_waypointDT.waypointType == WaypointsTypes.Horisontal) {
+			if (_waypointDT.Type == WaypointsTypes.Horisontal) {
 				// Hor to Hor
-				if (neighbourDT.waypointType == WaypointsTypes.Horisontal) {
+				if (neighbourDT.Type == WaypointsTypes.Horisontal) {
 					if (waypointDTPos.y == neighbourPos.y) {
 						_waypointDT.neighbours.Add (hitColliders [i].gameObject);
 					}
 				}
 
 				// Hor to Ladder
-				if (neighbourDT.waypointType == WaypointsTypes.Ladder) {
+				if (neighbourDT.Type == WaypointsTypes.Ladder) {
 					if (waypointDTPos.y > neighbourPos.y) {
 						if (CheckStraightConnection (_waypointDT, neighbourDT)) {
 							_waypointDT.neighbours.Add (hitColliders [i].gameObject);
@@ -90,10 +90,10 @@ class LevelUpdater : Editor {
 			}
 
 			// Ladder
-			if (_waypointDT.waypointType == WaypointsTypes.Ladder) {
+			if (_waypointDT.Type == WaypointsTypes.Ladder) {
 
 				// Ladder to Hor
-				if (neighbourDT.waypointType == WaypointsTypes.Horisontal) {
+				if (neighbourDT.Type == WaypointsTypes.Horisontal) {
 					
 					if (waypointDTPos.y < neighbourPos.y) {
 						if (CheckStraightConnection (neighbourDT, _waypointDT)) {
@@ -108,7 +108,7 @@ class LevelUpdater : Editor {
 				}
 
 				// Ladder to Ladder
-				if (neighbourDT.waypointType == WaypointsTypes.Ladder) {
+				if (neighbourDT.Type == WaypointsTypes.Ladder) {
 					
 					if (waypointDTPos.y > neighbourPos.y) {
 						if (CheckStraightConnection (_waypointDT, neighbourDT)) {
