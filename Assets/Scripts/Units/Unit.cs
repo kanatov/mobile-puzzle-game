@@ -4,11 +4,9 @@ using System.Collections.Generic;
 
 [System.Serializable]
 public class Unit : DynamicObject {
-	public Direction rotation;
-
 	public Unit (string _prefab, Direction _rotation, Waypoint _source) {
 		prefab = _prefab;
-		rotation = _rotation;
+		modelRotation = _rotation;
 
 		Path = new PathIndexer (new List<Waypoint>{ _source });
 
@@ -24,7 +22,7 @@ public class Unit : DynamicObject {
 
 		Transform modelTransform = model.GetComponent<Transform> ();
 		modelTransform.localPosition = Path[0].Position;
-		modelTransform.eulerAngles = MapController.GetEulerAngle (rotation);
+		modelTransform.eulerAngles = MapController.GetEulerAngle (modelRotation);
 
 		model.GetComponent<Move> ().Path = new List<Vector3> { Path [0].Position };
 		model.GetComponent<Move> ().dynamicObject = this;
@@ -64,6 +62,7 @@ public class Unit : DynamicObject {
 			}
 		}
 
+		// Set path
 		if (Path [0].Type == WaypointsTypes.Ladder) {
 			if (Path [1].Type == WaypointsTypes.Horisontal) {
 				if (Path [0].Position.y > Path [1].Position.y) {
@@ -79,16 +78,13 @@ public class Unit : DynamicObject {
 			}
 		}
 
-		// Activate triggers
-		for (int i = 0; i < Path [1].Triggers.Length; i++) {
-			Path [1].Triggers[i].Activate ();
-		}
-
 		model.GetComponent<Move> ().Path = newPath;
 		model.GetComponent<Move>().enabled = true;
 		model.GetComponent<Rotate> ().target = Path[1].Position;
 		model.GetComponent<Rotate> ().enabled = true;
 
+		// Activate triggers
+		Path [1].ActivateTriggers ();
 		Path.RemoveAt (0);
 	}
 

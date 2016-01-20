@@ -2,7 +2,7 @@
 
 public class Rotate : MonoBehaviour {
 	public Vector3 target;
-	public Transform transform;
+	Transform transform;
 	Vector3 targetDir;
 
 	void Awake() {

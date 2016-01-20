@@ -6,7 +6,6 @@ public static class GameController {
 	public static PlayerData playerData;
 
 	public static void Init () {
-//		ClearSavedData ();
 		Debug.Log ("___Init: Loading Player data");
 		playerData = (PlayerData)SaveLoad.Load(SaveLoad.namePlayerProgress);
 
@@ -47,7 +46,7 @@ public static class GameController {
 		SceneManager.LoadScene (_scene);
 	}
 
-	static void ClearSavedData() {
+	public static void ClearSavedData() {
 		SaveLoad.Delete (SaveLoad.namePlayerProgress);
 		SaveLoad.Delete (SaveLoad.nameGameSessionWaypoints);
 		SaveLoad.Delete (SaveLoad.nameGameSessionTriggers);

@@ -62,14 +62,28 @@ public class Waypoint {
 		}
 	}
 
+	[SerializeField] bool colliderEnabled;
+	public bool ColliderEnabled {
+		get {
+			return colliderEnabled;
+		}
+		set {
+			colliderEnabled = value;
+			collider.enabled = value;
+		}
+	}
+
 	public int id;
-	public bool walkable;
+	public bool activated;
+	public bool activateOnTouch;
+	public bool noRepeat;
+
 	public NeighboursReferenceIndexer Neighbours;
 	public TriggersReferenceIndexer Triggers;
 
 	[System.NonSerialized] public GameObject model;
 	[System.NonSerialized] WaypointCollider modelCollider;
-	[System.NonSerialized] SphereCollider modelSphereCollider;
+	[System.NonSerialized] SphereCollider collider;
 
 	[SerializeField]float x;
 	[SerializeField]float y;
@@ -97,36 +111,54 @@ public class Waypoint {
 	}
 
 	// Constructor
-	public Waypoint(int _id, WaypointsTypes _type, bool _walkable, Vector3 _position, int[] _neighbours, int[] _triggers) {
+	public Waypoint(int _id, WaypointsTypes _type, bool _enabled, bool _noRepeat, bool _activateOnTouch, Vector3 _position, int[] _neighbours, int[] _triggers) {
 		id = _id;
 		Type = _type;
-		walkable = _walkable;
+		noRepeat = _noRepeat;
+		activateOnTouch = _activateOnTouch;
 		Position = _position;
 		Neighbours = new NeighboursReferenceIndexer(_neighbours);
 		Triggers = new TriggersReferenceIndexer(_triggers);
 
-		SetModel ();
+		SetModel (_enabled);
 	}
 
-	public void SetModel () {
+	public void SetModel (bool _enabled) {
 		model = GameObject.Instantiate (MapController.waypointCollider);
 
 		Transform modelTransform = model.GetComponent<Transform> ();
 		modelTransform.localPosition = Position;
 
 		modelCollider = model.GetComponent<WaypointCollider> ();
-		modelCollider.waypoint = id;
+		modelCollider.waypoint = this;
 
-		modelSphereCollider = model.GetComponent<SphereCollider>();
-		modelSphereCollider.enabled = walkable;
+		collider = model.GetComponent<SphereCollider>();
+
+		ColliderEnabled = _enabled;
+		activated = false;
 	}
 
-	public void ActivateWaypoints() {
-		walkable = !walkable;
-		modelSphereCollider.enabled = walkable;
+	bool SetWaypointAsActivatedOnce () {
+		if (noRepeat && activated) {
+			return true;
+		}
+		activated = !activated;
+		return false;
+	}
+
+	public void ActivateWalkable() {
+		if (SetWaypointAsActivatedOnce ()) {
+			return;
+		}
+
+		ColliderEnabled = !ColliderEnabled;
 	}
 
 	public void ActivateTriggers() {
+		if (SetWaypointAsActivatedOnce ()) {
+			return;
+		}
+
 		for (int i = 0; i < Triggers.Length; i++) {
 			Triggers [i].Activate ();
 		}

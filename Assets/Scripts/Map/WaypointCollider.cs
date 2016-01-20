@@ -2,9 +2,13 @@
 using System.Collections;
 
 public class WaypointCollider : MonoBehaviour {
-	public int waypoint;
+	public Waypoint waypoint;
 	
 	void OnMouseUp() {
-		MapController.player.GoTo (MapController.waypoints [waypoint]);
+		if (waypoint.activateOnTouch) {
+			waypoint.ActivateTriggers ();
+		} else {
+			MapController.player.GoTo (MapController.waypoints [waypoint.id]);
+		}
 	}
 }

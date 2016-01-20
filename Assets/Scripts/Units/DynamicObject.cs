@@ -58,9 +58,9 @@ public class DynamicObject {
 	}
 
 	public PathIndexer Path;
+	public Direction modelRotation;
 	public int id;
 	public string prefab;
-
 	[SerializeField] protected int currentWaypoint;
 
 	[System.NonSerialized] public GameObject model;

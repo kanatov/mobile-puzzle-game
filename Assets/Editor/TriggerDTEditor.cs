@@ -16,9 +16,9 @@ public class TriggerDTEditor : Editor {
 		// Draw UI
 		ModelUIControl ();
 		DefaultUIControl ("prefab");
-		DefaultUIControl ("noRepeat");
 		DefaultUIControl ("activateWaypoints");
 		DefaultUIControl ("path");
+		DefaultUIControl ("removeOnActivation");
 
 		// Save settings
 		EditorSceneManager.MarkAllScenesDirty ();
@@ -36,6 +36,10 @@ public class TriggerDTEditor : Editor {
 			triggerDT.prefab = triggerDT.prefab.Substring(17);
 
 			SetModel ();
+		}
+
+		if (triggerDT.model != null) {
+			TriggerRotationUIControl ();
 		}
 	}
 
@@ -63,6 +67,16 @@ public class TriggerDTEditor : Editor {
 		Transform newChildTransform = newChild.GetComponent<Transform> ();
 		newChildTransform.SetParent (triggerDTTransform);
 		newChildTransform.localPosition = Vector3.zero;
+		newChildTransform.eulerAngles = MapController.GetEulerAngle(triggerDT.tileDirection);
 		newChildTransform.tag = "Untagged";
+	}
+
+	void TriggerRotationUIControl () {
+		Direction rotation = (Direction)EditorGUILayout.EnumPopup ("Trigger Rotation:", triggerDT.tileDirection);
+
+		if (rotation != triggerDT.tileDirection) {
+			triggerDT.tileDirection = rotation;
+			SetModel ();
+		}
 	}
 }

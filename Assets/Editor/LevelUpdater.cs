@@ -155,7 +155,7 @@ class LevelUpdater : Editor {
 		IconManager.SetIcon (_waypointDTInstance, IconManager.Icon.DiamondGray);
 		WaypointDT _waypointDT = _waypointDTInstance.GetComponent<WaypointDT>();
 
-		if (!_waypointDT.walkable)
+		if (!_waypointDT.GetComponent<SphereCollider>().enabled)
 			IconManager.SetIcon (_waypointDTInstance, IconManager.Icon.DiamondRed);
 		
 		if (_waypointDT.triggers != null && _waypointDT.triggers.Count > 0)
@@ -216,7 +216,7 @@ class LevelUpdater : Editor {
 				WaypointDT neigbourObject = _neigbour.GetComponent<WaypointDT> ();
 				Transform neigbourTransform = _neigbour.GetComponent<Transform> ();
 
-				if (!waypointObject.walkable || !neigbourObject.walkable ) {
+				if (!waypointObject.GetComponent<SphereCollider>().enabled || !neigbourObject.GetComponent<SphereCollider>().enabled ) {
 					Handles.color = Color.red;
 				} else{
 					Handles.color = Color.white;

@@ -52,5 +52,10 @@ class LevelUpdaterWindow : EditorWindow {
 			LevelUpdater.UpdateWaypoints ();
 			LevelUpdater.UpdateTriggers ();
 		}
+
+		// Save game button
+		if (GUILayout.Button ("Save scene")) {
+			EditorApplication.SaveCurrentSceneIfUserWantsTo ();
+		}
 	}
 }

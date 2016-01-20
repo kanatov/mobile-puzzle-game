@@ -29,35 +29,49 @@ public class Trigger : DynamicObject{
 		}
 	}
 
-	public bool activated;
-	public bool noRepeat;
 	public ActivateWaypointsIndexer ActivateWaypoints;
+	public bool removeOnActivation;
 
-	public Trigger (List<Waypoint> _path, string _prefab, int _currentWaypoint, int[] _activateWaypoints) {
+	public Trigger (
+		int _id, 
+		List<Waypoint> _path,
+		string _prefab,
+		Direction _tileDirection,
+		int _currentWaypoint,
+		int[] _activateWaypoints,
+		bool _removeOnActivation
+	) {
+		id = _id;
 		prefab = _prefab;
+		modelRotation = _tileDirection;
 		Path = new PathIndexer (_path);
 		ActivateWaypoints = new ActivateWaypointsIndexer (_activateWaypoints);
 		currentWaypoint = _currentWaypoint;
+		removeOnActivation = _removeOnActivation;
 
 		SetModel ();
 	}
 
 	public void SetModel () {
+		if (prefab == "") {
+			return;
+		}
+
 		model = GameObject.Instantiate (Resources.Load<GameObject> (prefab));
 		model.GetComponent<Transform> ().position = Path [PositionInPath].Position;
+		model.GetComponent<Transform> ().eulerAngles = MapController.GetEulerAngle(modelRotation);
 		model.tag = "Trigger";
 	}
 
 	public void Activate() {
-		if (noRepeat && activated) {
+		if (removeOnActivation) {
+			GameObject.Destroy (model.gameObject);
 			return;
 		}
-		
-		activated = true;
-		
+
 		Move ();
 		for (int i = 0; i < ActivateWaypoints.Length; i++) {
-			ActivateWaypoints[i].ActivateWaypoints();
+			ActivateWaypoints [i].ActivateWalkable ();
 		}
 	}
 

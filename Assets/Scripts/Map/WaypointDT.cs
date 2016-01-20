@@ -6,7 +6,9 @@ public class WaypointDT : MonoBehaviour {
 	// Cell properties
 	public List<GameObject> triggers;
 	public List<GameObject> neighbours;
-	public bool walkable;
+	public bool noRepeat;
+	public bool activateOnTouch;
+	public bool modelColliderEnabled;
 	public int type;
 	public WaypointsTypes Type {
 		get {

@@ -37,5 +37,8 @@ public class Move : MonoBehaviour {
 			Path[0],
 			Time.deltaTime * 2f
 		);
+
+//		GameObject cameraContainer = GameObject.FindGameObjectWithTag ("CameraContainer");
+//		cameraContainer.GetComponent<Transform> ().position = transform.position;
 	}
 }

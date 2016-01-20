@@ -20,8 +20,9 @@ public enum WaypointsTypes {
 }
 
 public enum TriggersTypes {
-	Button = 0,
-	Lock
+	Move = 0,
+	Destroy,
+	Swap
 }
 
 public enum TerrainsTypes {
@@ -41,28 +42,34 @@ public static class MapController {
 	public static Waypoint[] waypoints;
 	public static Unit[] units;
 	public static Trigger[] triggers;
-
 	public static Unit player;
 
+	public static List<Trigger> triggersList;
 	static GameObject[] waypointsDT;
+	static List<GameObject> triggersDT;
 
 	public static void Init () {
-		Debug.Log ("___Map init");
+		D.Log ("___Map init");
+		GameController.ClearSavedData ();
 
 		waypointsDT = GameObject.FindGameObjectsWithTag (TAG_WAYPOINT);
+		triggersDT = new List<GameObject> ();
+		triggersList = new List<Trigger> ();
 
 		GameController.LoadGameSession ();
 
 		if (waypoints == null || units == null || triggers == null) {
-			Debug.Log ("___Map init: Prepare New Level");
+			D.Log ("___Map init: Prepare New Level");
 			PrepareNewLevel ();
 		} else {
-			Debug.Log ("___Map init: Prepare Game Session");
+			D.Log ("___Map init: Prepare Game Session");
 			PrepareGameSession ();
 		}
 
 		// Remove references and objects
 		waypointsDT = null;
+		triggersDT = null;
+		triggersList = null;
 		GameObject.DestroyImmediate (GameObject.FindGameObjectWithTag (TAG_TRIGGER + TAG_CONTAINER));
 		GameObject.DestroyImmediate (GameObject.FindGameObjectWithTag (TAG_WAYPOINT + TAG_CONTAINER));
 
@@ -76,24 +83,24 @@ public static class MapController {
 	static void PrepareNewLevel () {
 		waypoints = new Waypoint[waypointsDT.Length];
 		List <Unit> newUnits = new List<Unit> ();
-		List <Trigger> newTriggers = new List<Trigger> ();
 
-		Debug.Log ("Map Init: Populate empty waypoints");
+		D.Log ("Map Init: Populate empty waypoints");
 		// Populate empty waypoints
 		for (int i = 0; i < waypoints.Length; i++) {
 			WaypointDT waypointDT = waypointsDT [i].GetComponent<WaypointDT> ();
-
 			waypoints [i] = new Waypoint (
 				i,
 				waypointDT.Type,
-				waypointDT.walkable,
+				waypointDT.modelColliderEnabled,
+				waypointDT.noRepeat,
+				waypointDT.activateOnTouch,
 				waypointDT.GetComponent<Transform> ().position,
 				new int[waypointDT.neighbours.Count],
 				new int[waypointDT.triggers.Count]
 			);
 		}
 
-		Debug.Log ("Map Init: Fill waypoints");
+		D.Log ("Map Init: Fill waypoints");
 		// Fill waypoints
 		for (int i = 0; i < waypoints.Length; i++) {
 			WaypointDT waypointDT = waypointsDT [i].GetComponent<WaypointDT> ();
@@ -105,8 +112,7 @@ public static class MapController {
 
 			// Prepare triggers
 			for (int l = 0; l < waypoints [i].Triggers.Length; l++) {
-				newTriggers.Add (GetTrigger (waypointDT.triggers [l]));
-				waypoints [i].Triggers [l] = newTriggers.Last();
+				waypoints [i].Triggers [l] = GetTrigger (waypointDT.triggers [l]);
 			}
 
 			// Prepare units
@@ -116,16 +122,17 @@ public static class MapController {
 			}
 		}
 
-		Debug.Log ("Map Init: Copy dynamic objects");
+		D.Log ("Map Init: Copy dynamic objects");
 		// Copy new dynamic objects
 		units = new Unit[newUnits.Count];
 		for (int i = 0; i < units.Length; i++) {
 			units [i] = newUnits [i];
 		}
 
-		triggers = new Trigger[newTriggers.Count];
+		// Copy Trigger List to Array
+		triggers = new Trigger[triggersList.Count];
 		for (int i = 0; i < triggers.Length; i++) {
-			triggers [i] = newTriggers [i];
+			triggers [i] = triggersList [i];
 		}
 
 		GameController.SaveGameSession ();
@@ -133,8 +140,17 @@ public static class MapController {
 
 
 	static Trigger GetTrigger(GameObject _triggerDT) {
+		// Check for duplicate
+		int triggerIndex = triggersDT.IndexOf (_triggerDT);
+		if (triggerIndex != -1) {
+			return triggersList [triggerIndex];
+		}
+
+		// Prepare new Trigger
+		triggersDT.Add (_triggerDT);
 		TriggerDT triggerDT = _triggerDT.GetComponent<TriggerDT> ();
 		Transform triggerDTTrans = _triggerDT.GetComponent<Transform> ();
+
 		// Copy activateWaypoints
 		int[] activateWaypoints = new int[triggerDT.activateWaypoints.Length];
 		for (int i = 0; i < triggerDT.activateWaypoints.Length; i++) {
@@ -147,13 +163,16 @@ public static class MapController {
 			path.Add (GetWaypointByGO (_waypoint));
 		};
 
-		Trigger trigger = new Trigger(
+		triggersList.Add (new Trigger(
+			triggersList.Count,
 			path,
 			triggerDT.prefab,
+			triggerDT.tileDirection,
 			0,
-			activateWaypoints
-		);
-		return trigger;
+			activateWaypoints,
+			triggerDT.removeOnActivation
+		));
+		return triggersList.Last();
 	}
 
 
@@ -170,7 +189,7 @@ public static class MapController {
 
 	static void PrepareGameSession () {
 		foreach (var _waypoint in waypoints) {
-			_waypoint.SetModel ();
+			_waypoint.SetModel (_waypoint.ColliderEnabled);
 		}
 		foreach (var _unit in units) {
 			_unit.SetModel ();
@@ -180,11 +199,16 @@ public static class MapController {
 		}
 	}
 
+	public static void RotateCamera(SwipeDirection _swipeDir) {
+		GameObject cameraContainer = GameObject.FindGameObjectWithTag ("CameraContainer");
+		cameraContainer.GetComponent<Rotate1>().Target = _swipeDir;
+		cameraContainer.GetComponent<Rotate1>().enabled = true;
+	}
 
-	// Calculate new path
+	// Pathfinding
 	public static List<Waypoint> GetPath (Waypoint _source, Waypoint _target) {
 		if (_source == _target) {
-			Debug.LogWarning ("Pathfinding: source == target");
+			D.LogWarning ("Pathfinding: source == target");
 			return null;
 		}
 
@@ -220,7 +244,7 @@ public static class MapController {
 				if (closed.Contains (currentWaypoint.Neighbours [i]))
 					continue;
 				
-				if (!currentWaypoint.Neighbours [i].walkable)
+				if (!currentWaypoint.Neighbours [i].ColliderEnabled)
 					continue;
 
 				float newMovementCostToNeghbour = currentWaypoint.gCost + Vector3.Distance (currentWaypoint.Position, currentWaypoint.Neighbours [i].Position);
@@ -266,6 +290,7 @@ public static class MapController {
 		return path;
 	}
 		
+	// Helpers
 	public static int GetRotationDegree (Direction _unitRotation) {
 		return (int)_unitRotation * 60;
 	}
@@ -274,7 +299,6 @@ public static class MapController {
 		return new Vector3 (0f, GetRotationDegree (_rotation), 0f);
 	}
 
-	// Helpers
 	static Waypoint GetWaypointByGO (GameObject _target) {
 		int i = System.Array.IndexOf (waypointsDT, _target);
 		return waypoints [i];

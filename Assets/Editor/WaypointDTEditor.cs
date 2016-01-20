@@ -16,7 +16,9 @@ public class WaypointDTEditor : Editor {
 		UnitModelUIControl ();
 		DefaultUIControl ("neighbours");
 		DefaultUIControl ("triggers");
-		DefaultUIControl ("walkable");
+		DefaultUIControl ("noRepeat");
+		DefaultUIControl ("activateOnTouch");
+		DefaultUIControl ("modelColliderEnabled");
 		WaypointTypeUIControl ();
 
 		// Save settings
