@@ -8,20 +8,20 @@ using System.Collections.Generic;
 [System.Serializable]
 [CustomEditor(typeof(MapControllerLoader))]
 class LevelUpdater : Editor {
-	// Waypoints
-	[SerializeField] static GameObject[] waypoints;
-	static float neighbourDistance = 0.9f;
+	[SerializeField] static GameObject[] nodes;
+	static float walkNodeDistance = 0.9f;
+	static float localNodeDistance = 1f;
 
 	void OnSceneGUI() {
-		DrawWaypointNetwork ();
+		DrawNodeNetwork ();
 	}
 
-	public static void CreateWaypoints (GameObject _instanceObject) {
+	public static void CreateNodes (GameObject _instanceObject) {
 		GameObject[] items = Selection.gameObjects;
 
 		foreach (var _item in items) {
-			GameObject waypoint = GameObject.Instantiate (_instanceObject);
-			waypoint.GetComponent<Transform> ().position = _item.GetComponent<Transform> ().position;
+			GameObject node = GameObject.Instantiate (_instanceObject);
+			node.GetComponent<Transform> ().position = _item.GetComponent<Transform> ().position;
 		}
 	}
 
@@ -30,146 +30,166 @@ class LevelUpdater : Editor {
 		MapController.SetContainer (MapController.TAG_TILE);
 	}
 
-	// Place waypoint to container
-	// Update waypoint data
-	public static void UpdateWaypoints () {
-		waypoints = MapController.SetContainer (MapController.TAG_WAYPOINT);
+	// Place node to container
+	// Update node data
+	public static void UpdateNodes () {
+		nodes = MapController.SetContainer (MapController.TAG_NODE);
 
-		for (int a = 0; a < waypoints.Length; a++) {
-			WaypointDT _waypointDT = waypoints[a].GetComponent<WaypointDT> ();
-			SetNeighbours (_waypointDT);
+		for (int a = 0; a < nodes.Length; a++) {
+			NodeDT _nodeDT = nodes[a].GetComponent<NodeDT> ();
+			SetNodes (_nodeDT);
 
 			// Check triggers
-			RemoveWrongTriggers (_waypointDT);
-			RemoveEmpties (_waypointDT.triggers);
+			RemoveWrongTriggers (_nodeDT);
+			RemoveEmpties (_nodeDT.triggers);
 
 			// Set icon
-			SetIcon (waypoints [a]);
+			SetIcon (nodes [a]);
 
 			// Save changes
-			EditorUtility.SetDirty(_waypointDT);
+			EditorUtility.SetDirty(_nodeDT);
 		}
 
 		EditorSceneManager.MarkAllScenesDirty ();
 	}
 
-	static void SetNeighbours (WaypointDT _waypointDT) {
-		Vector3 waypointDTPos = _waypointDT.GetComponent<Transform> ().position;
-		_waypointDT.neighbours = new List<GameObject> ();
+	static void SetNodes (NodeDT _nodeDT) {
+		Vector3 nodeDTPos = _nodeDT.GetComponent<Transform> ().position;
+		_nodeDT.walkNodes = new List<GameObject> ();
 
-		_waypointDT.GetComponent<SphereCollider> ().enabled = false;
-		Collider[] hitColliders = Physics.OverlapSphere(waypointDTPos, neighbourDistance);
-		_waypointDT.GetComponent<SphereCollider> ().enabled = true;
+		_nodeDT.gameObject.SetActive(false);
+		Collider[] walkNodes = Physics.OverlapSphere(nodeDTPos, walkNodeDistance);
+		Collider[] localNodes = Physics.OverlapSphere(nodeDTPos, localNodeDistance);
+		_nodeDT.gameObject.SetActive(true);
 
-		for (int i = 0; i < hitColliders.Length; i++) {
-			WaypointDT neighbourDT = hitColliders [i].GetComponent<WaypointDT> ();
-			Vector3 neighbourPos = hitColliders [i].GetComponent<Transform> ().position;
+		for (int i = 0; i < walkNodes.Length; i++) {
+			Vector3 walkNodeDTPos = walkNodes [i].GetComponent<Transform> ().position;
+			NodeDT walkNodeDT = walkNodes [i].GetComponent<NodeDT> ();
+
+			// Alien check
+			if (walkNodeDT == null) {
+				continue;
+			}
+
+			// Set prefab path
+			walkNodeDT.colliderPrefabPath = GetModelPath (walkNodeDT);
 
 			// Hor
-			if (_waypointDT.Type == WaypointsTypes.Horisontal) {
+			if (_nodeDT.Type == NodeTypes.Horisontal) {
 				// Hor to Hor
-				if (neighbourDT.Type == WaypointsTypes.Horisontal) {
-					if (waypointDTPos.y == neighbourPos.y) {
-						_waypointDT.neighbours.Add (hitColliders [i].gameObject);
+				if (walkNodeDT.Type == NodeTypes.Horisontal) {
+					if (nodeDTPos.y == walkNodeDTPos.y) {
+						_nodeDT.walkNodes.Add (walkNodes [i].gameObject);
 					}
 				}
 
 				// Hor to Ladder
-				if (neighbourDT.Type == WaypointsTypes.Ladder) {
-					if (waypointDTPos.y > neighbourPos.y) {
-						if (CheckStraightConnection (_waypointDT, neighbourDT)) {
-							_waypointDT.neighbours.Add (hitColliders [i].gameObject);
+				if (walkNodeDT.Type == NodeTypes.Ladder) {
+					if (nodeDTPos.y > walkNodeDTPos.y) {
+						if (CheckStraightConnection (_nodeDT, walkNodeDT)) {
+							_nodeDT.walkNodes.Add (walkNodes [i].gameObject);
 						}
 					}
-					if (waypointDTPos.y == neighbourPos.y) {
-						if (CheckOppositConnection(_waypointDT, neighbourDT)) {
-							_waypointDT.neighbours.Add (hitColliders [i].gameObject);
+					if (nodeDTPos.y == walkNodeDTPos.y) {
+						if (CheckOppositConnection(_nodeDT, walkNodeDT)) {
+							_nodeDT.walkNodes.Add (walkNodes [i].gameObject);
 						}
 					}
 				}
 			}
 
 			// Ladder
-			if (_waypointDT.Type == WaypointsTypes.Ladder) {
+			if (_nodeDT.Type == NodeTypes.Ladder) {
 
 				// Ladder to Hor
-				if (neighbourDT.Type == WaypointsTypes.Horisontal) {
+				if (walkNodeDT.Type == NodeTypes.Horisontal) {
 					
-					if (waypointDTPos.y < neighbourPos.y) {
-						if (CheckStraightConnection (neighbourDT, _waypointDT)) {
-							_waypointDT.neighbours.Add (hitColliders [i].gameObject);
+					if (nodeDTPos.y < walkNodeDTPos.y) {
+						if (CheckStraightConnection (walkNodeDT, _nodeDT)) {
+							_nodeDT.walkNodes.Add (walkNodes [i].gameObject);
 						}
 					}
-					if (waypointDTPos.y == neighbourPos.y) {
-						if (CheckOppositConnection(neighbourDT, _waypointDT)) {
-							_waypointDT.neighbours.Add (hitColliders [i].gameObject);
+					if (nodeDTPos.y == walkNodeDTPos.y) {
+						if (CheckOppositConnection(walkNodeDT, _nodeDT)) {
+							_nodeDT.walkNodes.Add (walkNodes [i].gameObject);
 						}
 					}
 				}
 
 				// Ladder to Ladder
-				if (neighbourDT.Type == WaypointsTypes.Ladder) {
+				if (walkNodeDT.Type == NodeTypes.Ladder) {
 					
-					if (waypointDTPos.y > neighbourPos.y) {
-						if (CheckStraightConnection (_waypointDT, neighbourDT)) {
-							_waypointDT.neighbours.Add (hitColliders [i].gameObject);
+					if (nodeDTPos.y > walkNodeDTPos.y) {
+						if (CheckStraightConnection (_nodeDT, walkNodeDT)) {
+							_nodeDT.walkNodes.Add (walkNodes [i].gameObject);
 						}
 					}
-					if (waypointDTPos.y < neighbourPos.y) {
-						if (CheckOppositConnection (_waypointDT, neighbourDT)) {
-							_waypointDT.neighbours.Add (hitColliders [i].gameObject);
+					if (nodeDTPos.y < walkNodeDTPos.y) {
+						if (CheckOppositConnection (_nodeDT, walkNodeDT)) {
+							_nodeDT.walkNodes.Add (walkNodes [i].gameObject);
 						}
 					}
 				}
 			}
 		}
+
+		_nodeDT.localNodes = new List<GameObject> ();
+		for (int j = 0; j < localNodes.Length; j++) {
+			NodeDT localNodeDT = localNodes [j].GetComponent<NodeDT> ();
+
+			if (localNodeDT == null) {
+				continue;
+			}
+
+			_nodeDT.localNodes.Add(localNodes[j].gameObject);
+		}
 	}
 
-	static bool CheckStraightConnection (WaypointDT _waypointDT, WaypointDT _neighbourDT) {
-		Vector3 waypointDTPos = _waypointDT.GetComponent<Transform> ().position;
-		WaypointDT neighbourDT = _neighbourDT.GetComponent<WaypointDT> ();
-		Vector3 neighbourPos = _neighbourDT.GetComponent<Transform> ().position;
+	static bool CheckStraightConnection (NodeDT _nodeDT, NodeDT _neighbourDT) {
+		Vector3 nodeDTPos = _nodeDT.GetComponent<Transform> ().position;
+		NodeDT localNodeDT = _neighbourDT.GetComponent<NodeDT> ();
+		Vector3 localNodePos = _neighbourDT.GetComponent<Transform> ().position;
 
-		if (neighbourDT.ladderDirection == MapController.GetPointDirection(waypointDTPos, neighbourPos)) {
+		if (localNodeDT.ladderDirection == MapController.GetPointDirection(nodeDTPos, localNodePos)) {
 			return true;
 		}
 		return false;
 	}
 
-	static bool CheckOppositConnection (WaypointDT _waypointDT, WaypointDT _neighbourDT) {
-		Vector3 waypointDTPos = _waypointDT.GetComponent<Transform> ().position;
-		WaypointDT neighbourDT = _neighbourDT.GetComponent<WaypointDT> ();
-		Vector3 neighbourPos = _neighbourDT.GetComponent<Transform> ().position;
+	static bool CheckOppositConnection (NodeDT _nodeDT, NodeDT _neighbourDT) {
+		Vector3 nodeDTPos = _nodeDT.GetComponent<Transform> ().position;
+		NodeDT localNodeDT = _neighbourDT.GetComponent<NodeDT> ();
+		Vector3 localNodePos = _neighbourDT.GetComponent<Transform> ().position;
 
-		Direction suitableDirection = MapController.GetPointDirection(waypointDTPos, neighbourPos);
+		Direction suitableDirection = MapController.GetPointDirection(nodeDTPos, localNodePos);
 		suitableDirection = MapController.GetOppositeDirection (suitableDirection);
 
-		if (suitableDirection == neighbourDT.ladderDirection) {
+		if (suitableDirection == localNodeDT.ladderDirection) {
 			return true;
 		}
 
 		return false;
 	}
 
-	static void SetIcon (GameObject _waypointDTInstance) {
-		IconManager.SetIcon (_waypointDTInstance, IconManager.Icon.DiamondGray);
-		WaypointDT _waypointDT = _waypointDTInstance.GetComponent<WaypointDT>();
+	static void SetIcon (GameObject _nodeDTInstance) {
+		IconManager.SetIcon (_nodeDTInstance, IconManager.Icon.DiamondGray);
+		NodeDT _nodeDT = _nodeDTInstance.GetComponent<NodeDT>();
 
-		if (!_waypointDT.GetComponent<SphereCollider>().enabled)
-			IconManager.SetIcon (_waypointDTInstance, IconManager.Icon.DiamondRed);
+		if (!_nodeDT.GetComponent<SphereCollider>().enabled)
+			IconManager.SetIcon (_nodeDTInstance, IconManager.Icon.DiamondRed);
 		
-		if (_waypointDT.triggers != null && _waypointDT.triggers.Count > 0)
-			IconManager.SetIcon (_waypointDTInstance, IconManager.Icon.DiamondYellow);
+		if (_nodeDT.triggers != null && _nodeDT.triggers.Count > 0)
+			IconManager.SetIcon (_nodeDTInstance, IconManager.Icon.DiamondYellow);
 	}
 
-	static void RemoveWrongTriggers (WaypointDT _waypointDT) {
-		if (_waypointDT.triggers != null) {
-			for (int i = 0; i < _waypointDT.triggers.Count; i++) {
-				if (_waypointDT.triggers [i] == null) {
+	static void RemoveWrongTriggers (NodeDT _nodeDT) {
+		if (_nodeDT.triggers != null) {
+			for (int i = 0; i < _nodeDT.triggers.Count; i++) {
+				if (_nodeDT.triggers [i] == null) {
 					continue;
 				}
-				if (_waypointDT.triggers [i].GetComponent<TriggerDT> () == null) {
-					_waypointDT.triggers [i] = null;
+				if (_nodeDT.triggers [i].GetComponent<TriggerDT> () == null) {
+					_nodeDT.triggers [i] = null;
 				}
 			}
 		}
@@ -181,17 +201,17 @@ class LevelUpdater : Editor {
 		foreach (var item in items) {
 			TriggerDT triggerDT = item.GetComponent<TriggerDT> ();
 
-			if (triggerDT.activateWaypoints.Length == 0) {
-				Debug.LogError ("No activate waypoints in trigger: " + triggerDT.GetComponent<Transform> ().position);
+			if (triggerDT.activateNodes.Length == 0) {
+				D.LogError ("No activate nodes in trigger: " + triggerDT.GetComponent<Transform> ().position);
 			}
 			if (triggerDT.path.Length == 0) {
 				triggerDT.path = new GameObject[1];
 			}
 			Vector3 triggerDTPos = triggerDT.GetComponent<Transform> ().position;
-			foreach (var _waypoint in waypoints) {
-				Vector3 waypointDTPos = _waypoint.GetComponent<Transform> ().position;
-				if (triggerDTPos == waypointDTPos) {
-					triggerDT.path [0] = _waypoint.gameObject;
+			foreach (var _node in nodes) {
+				Vector3 nodeDTPos = _node.GetComponent<Transform> ().position;
+				if (triggerDTPos == nodeDTPos) {
+					triggerDT.path [0] = _node.gameObject;
 				}
 			}
 
@@ -199,34 +219,46 @@ class LevelUpdater : Editor {
 		}
 	}
 
-	static void DrawWaypointNetwork () {
-		if (waypoints == null) {
+	static void DrawNodeNetwork () {
+		if (nodes == null) {
 			return;
 		}
 
-		foreach (var _waypoint in waypoints) {
-			if (_waypoint == null) {
+		foreach (var _node in nodes) {
+			if (_node == null) {
 				continue;
 			}
-			WaypointDT waypointObject = _waypoint.GetComponent<WaypointDT> ();
-			Transform waypointTransform = _waypoint.GetComponent<Transform> ();
+			NodeDT nodeObject = _node.GetComponent<NodeDT> ();
+			Transform nodeTransform = _node.GetComponent<Transform> ();
 
-			foreach (var _neigbour in _waypoint.GetComponent<WaypointDT> ().neighbours) {
+			foreach (var _neigbour in _node.GetComponent<NodeDT> ().walkNodes) {
 
-				WaypointDT neigbourObject = _neigbour.GetComponent<WaypointDT> ();
+				NodeDT neigbourObject = _neigbour.GetComponent<NodeDT> ();
 				Transform neigbourTransform = _neigbour.GetComponent<Transform> ();
 
-				if (!waypointObject.GetComponent<SphereCollider>().enabled || !neigbourObject.GetComponent<SphereCollider>().enabled ) {
+				if (!nodeObject.GetComponent<SphereCollider>().enabled || !neigbourObject.GetComponent<SphereCollider>().enabled ) {
 					Handles.color = Color.red;
 				} else{
 					Handles.color = Color.white;
 				}
 
-				Vector3 middlePoint = Vector3.Lerp(waypointTransform.position, neigbourTransform.position, 0.45f);
-				Handles.DrawLine (waypointTransform.position, middlePoint);
+				Vector3 middlePoint = Vector3.Lerp(nodeTransform.position, neigbourTransform.position, 0.45f);
+				Handles.DrawLine (nodeTransform.position, middlePoint);
 			}
 		}
 	}
+
+	static string GetModelPath (NodeDT _nodeDT) {
+		if (_nodeDT.model == null) {
+			return null;
+		}
+
+		string path = AssetDatabase.GetAssetPath (_nodeDT.model);
+		path = path.Substring (0, path.Length - 7);
+		path = path.Substring (17);
+		return path;
+	}
+
 
 	static void RemoveEmpties (List<GameObject> _source) {
 		if (_source == null) {

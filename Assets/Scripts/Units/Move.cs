@@ -13,18 +13,18 @@ public class Move : MonoBehaviour {
 			this.enabled = true;
 		}
 	}
-	public Transform transform;
+	public Transform trans;
 	public DynamicObject dynamicObject;
 
 	void Awake() {
-		transform = this.GetComponent<Transform> ();
+		trans = this.GetComponent<Transform> ();
 	}
 
 	void Update () {
-		if (transform.position == Path[0]) {
+		if (trans.position == Path[0]) {
 			if (Path.Count == 1) {
 				this.enabled = false;
-				dynamicObject.Move ();
+				dynamicObject.Move ("move");
 
 				return;
 			}
@@ -32,13 +32,10 @@ public class Move : MonoBehaviour {
 			Path.RemoveAt (0);
 		}
 
-		transform.position = Vector3.MoveTowards (
-			transform.position,
+		trans.position = Vector3.MoveTowards (
+			trans.position,
 			Path[0],
 			Time.deltaTime * 2f
 		);
-
-//		GameObject cameraContainer = GameObject.FindGameObjectWithTag ("CameraContainer");
-//		cameraContainer.GetComponent<Transform> ().position = transform.position;
 	}
 }

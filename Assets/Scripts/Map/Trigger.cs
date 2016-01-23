@@ -13,9 +13,9 @@ public class Trigger : DynamicObject{
 			activateWaypoints = _activateWaypoints;
 		}
 
-		public Waypoint this [int i] {
+		public Node this [int i] {
 			get {
-				return MapController.waypoints [activateWaypoints [i]];
+				return MapController.walkNodes [activateWaypoints [i]];
 			}
 			set {
 				activateWaypoints [i] = value.id;
@@ -34,49 +34,54 @@ public class Trigger : DynamicObject{
 
 	public Trigger (
 		int _id, 
-		List<Waypoint> _path,
-		string _prefab,
+		List<Node> _path,
+		string _prefabPath,
 		Direction _tileDirection,
 		int _currentWaypoint,
 		int[] _activateWaypoints,
 		bool _removeOnActivation
 	) {
 		id = _id;
-		prefab = _prefab;
+		prefabPath = _prefabPath;
 		modelRotation = _tileDirection;
 		Path = new PathIndexer (_path);
 		ActivateWaypoints = new ActivateWaypointsIndexer (_activateWaypoints);
-		currentWaypoint = _currentWaypoint;
+		currentNode = _currentWaypoint;
 		removeOnActivation = _removeOnActivation;
 
 		SetModel ();
 	}
 
-	public void SetModel () {
-		if (prefab == "") {
+	public override void SetModel () {
+		if (prefabPath == "") {
 			return;
 		}
 
-		model = GameObject.Instantiate (Resources.Load<GameObject> (prefab));
+		model = GameObject.Instantiate (Resources.Load<GameObject> (prefabPath));
 		model.GetComponent<Transform> ().position = Path [PositionInPath].Position;
 		model.GetComponent<Transform> ().eulerAngles = MapController.GetEulerAngle(modelRotation);
 		model.tag = "Trigger";
 	}
 
 	public void Activate() {
+		for (int i = 0; i < ActivateWaypoints.Length; i++) {
+			ActivateWaypoints [i].ActivateWalk ();
+		}
+
 		if (removeOnActivation) {
 			GameObject.Destroy (model.gameObject);
 			return;
 		}
 
-		Move ();
-		for (int i = 0; i < ActivateWaypoints.Length; i++) {
-			ActivateWaypoints [i].ActivateWalkable ();
-		}
+		Move ("activate");
 	}
 
-	public void Move () {
-		if (model == null) {
+	public override void Move (string _callback) {
+		if (prefabPath == null) {
+			return;
+		}
+
+		if (_callback == "move") {
 			return;
 		}
 

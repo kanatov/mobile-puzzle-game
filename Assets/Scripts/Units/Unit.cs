@@ -4,21 +4,21 @@ using System.Collections.Generic;
 
 [System.Serializable]
 public class Unit : DynamicObject {
-	public Unit (string _prefab, Direction _rotation, Waypoint _source) {
-		prefab = _prefab;
+	public Unit (string _prefabPath, Direction _rotation, Node _source) {
+		prefabPath = _prefabPath;
 		modelRotation = _rotation;
 
-		Path = new PathIndexer (new List<Waypoint>{ _source });
-
+		Path = new PathIndexer (new List<Node>{ _source });
+		_source.Walk = false;
 		SetModel ();
 	}
 
-	public void SetModel () {
-		if (prefab.Contains("Friend")) {
+	public override void SetModel () {
+		if (prefabPath.Contains("Friend")) {
 			MapController.player = this;
 		}
 
-		model = GameObject.Instantiate (Resources.Load<GameObject>(prefab));
+		model = GameObject.Instantiate (Resources.Load<GameObject>(prefabPath));
 
 		Transform modelTransform = model.GetComponent<Transform> ();
 		modelTransform.localPosition = Path[0].Position;
@@ -29,15 +29,15 @@ public class Unit : DynamicObject {
 		model.GetComponent<Rotate> ().target = Path[0].Position;
 	}
 
-	public void GoTo (Waypoint _target) {
-		List<Waypoint> newPath = MapController.GetPath (Path[0], _target);
+	public void GoTo (Node _target) {
+		List<Node> newPath = MapController.GetPath (Path[0], _target);
 		if (newPath != null) {
 			Path = new PathIndexer (newPath);
 			model.GetComponent<Move>().enabled = true;
 		}
 	}
 
-	public override void Move() {
+	public override void Move(string _callback) {
 		if (Path == null) {
 			Debug.LogWarning ("Path == null");
 			model.GetComponent<Move>().enabled = false;
@@ -52,19 +52,20 @@ public class Unit : DynamicObject {
 
 		List<Vector3> newPath = new List<Vector3> ();
 
-		if (Path[0].Type == WaypointsTypes.Horisontal) {
-			if (Path [1].Type == WaypointsTypes.Horisontal) {
+		// Set path Horisontal
+		if (Path[0].Type == NodeTypes.Horisontal) {
+			if (Path [1].Type == NodeTypes.Horisontal) {
 				newPath.Add (Path [1].Position);
 			}
-			if (Path [1].Type == WaypointsTypes.Ladder) {
+			if (Path [1].Type == NodeTypes.Ladder) {
 				newPath.Add (GetHorisontalSide (Path [0].Position, Path [1].Position));
 				newPath.Add (GetLadderMiddle (Path [1].Position));
 			}
 		}
 
-		// Set path
-		if (Path [0].Type == WaypointsTypes.Ladder) {
-			if (Path [1].Type == WaypointsTypes.Horisontal) {
+		// Set path Ladder
+		if (Path [0].Type == NodeTypes.Ladder) {
+			if (Path [1].Type == NodeTypes.Horisontal) {
 				if (Path [0].Position.y > Path [1].Position.y) {
 					newPath.Add (GetHorisontalSide (Path [0].Position, Path [1].Position));
 				} else {
@@ -73,7 +74,7 @@ public class Unit : DynamicObject {
 				newPath.Add (Path [1].Position);
 			}
 
-			if (Path [1].Type == WaypointsTypes.Ladder) {
+			if (Path [1].Type == NodeTypes.Ladder) {
 				newPath.Add (GetLadderMiddle (Path [1].Position));
 			}
 		}
@@ -84,6 +85,8 @@ public class Unit : DynamicObject {
 		model.GetComponent<Rotate> ().enabled = true;
 
 		// Activate triggers
+		Path [0].Walk = true;
+		Path [1].Walk = false;
 		Path [1].ActivateTriggers ();
 		Path.RemoveAt (0);
 	}

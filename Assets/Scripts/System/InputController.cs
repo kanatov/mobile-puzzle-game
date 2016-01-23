@@ -5,114 +5,115 @@ public enum SwipeDirection { None = -1, Up = 0, Down = 3, Left = 99, Right = 98,
 
 public static class InputController {
 	static float MinSwipeLength = 5;
+	static float s = 0.906f;
+
 	static Vector2 _firstPressPos;
 	static Vector2 _secondPressPos;
 	static Vector2 _currentSwipe;
 
 	static SwipeDirection swipeDirection;
 
-	public static class GetCardinalDirections {
-		public static readonly Vector2 Up = new Vector2( 0, 1 );
-		public static readonly Vector2 Down = new Vector2( 0, -1 );
-		public static readonly Vector2 Right = new Vector2( 1, 0 );
-		public static readonly Vector2 Left = new Vector2( -1, 0 );
-
-		public static readonly Vector2 UpRight = new Vector2( 1, 1 );
-		public static readonly Vector2 UpLeft = new Vector2( -1, 1 );
-		public static readonly Vector2 DownRight = new Vector2( 1, -1 );
-		public static readonly Vector2 DownLeft = new Vector2( -1, -1 );
+	static bool IsNotSwipe () {
+		if (_currentSwipe.magnitude < MinSwipeLength) {
+			swipeDirection = SwipeDirection.None;
+			return true;
+		} else {
+			return false;
+		}
 	}
 
-	public static void DetectSwipe() {
+	public static class GetCardinalDirections {
+		public static readonly Vector2 Up =		new Vector2(  0,  1 );
+		public static readonly Vector2 Down =	new Vector2(  0, -1 );
+//		public static readonly Vector2 Right =	new Vector2(  1,  0 );
+//		public static readonly Vector2 Left =	new Vector2( -1,  0 );
+
+		public static readonly Vector2 UpRight =	new Vector2(  1,  1 );
+		public static readonly Vector2 UpLeft =		new Vector2( -1,  1 );
+		public static readonly Vector2 DownRight =	new Vector2(  1, -1 );
+		public static readonly Vector2 DownLeft =	new Vector2( -1, -1 );
+	}
+
+	public static void DetectSwipe(Snowball _snowball) {
+		// Touch detection
 		if ( Input.touches.Length > 0 ) {
 			Touch t = Input.GetTouch( 0 );
 
 			if ( t.phase == TouchPhase.Began ) {
 				_firstPressPos = new Vector2( t.position.x, t.position.y );
 			}
-
-			if ( t.phase == TouchPhase.Ended ) {
+//			if ( t.phase == TouchPhase.Ended ) {
 				_secondPressPos = new Vector2( t.position.x, t.position.y );
 				_currentSwipe = new Vector3( _secondPressPos.x - _firstPressPos.x, _secondPressPos.y - _firstPressPos.y );
 
-
 				// Make sure it was a legit swipe, not a tap
-				if ( _currentSwipe.magnitude < MinSwipeLength ) {
-					swipeDirection = SwipeDirection.None;
-//					Units.Behaviour (SwipeDirection.Up);
-					return;
-				}
-
-				_currentSwipe.Normalize();
-				CheckDirection(_currentSwipe);
-			}
-		} else {
-			if ( Input.GetMouseButtonDown( 0 ) ) {
-				_firstPressPos = new Vector2( Input.mousePosition.x, Input.mousePosition.y );
-			} else {
-				swipeDirection = SwipeDirection.None;
-			}
-			if ( Input.GetMouseButtonUp( 0 ) ) {
-				_secondPressPos = new Vector2( Input.mousePosition.x, Input.mousePosition.y );
-				_currentSwipe = new Vector3( _secondPressPos.x - _firstPressPos.x, _secondPressPos.y - _firstPressPos.y );
-
-				// Make sure it was a legit swipe, not a tap
-				if ( _currentSwipe.magnitude < MinSwipeLength ) {
-					swipeDirection = SwipeDirection.None;
-//					Units.Behaviour (SwipeDirection.Up);
-					return;
-				}
-
-				_currentSwipe.Normalize();
-				CheckDirection(_currentSwipe);
-			}
+				if (IsNotSwipe ()) {return;}
+				CheckDirection(_currentSwipe, _snowball);
+//			}
 		}
+
+		// Mosue detection
+		if ( Input.GetMouseButtonDown( 0 ) ) {
+			_firstPressPos = new Vector2( Input.mousePosition.x, Input.mousePosition.y );
+		} else {
+			swipeDirection = SwipeDirection.None;
+		}
+
+//		if ( Input.GetMouseButtonUp( 0 ) ) {
+			_secondPressPos = new Vector2( Input.mousePosition.x, Input.mousePosition.y );
+			_currentSwipe = new Vector3( _secondPressPos.x - _firstPressPos.x, _secondPressPos.y - _firstPressPos.y );
+
+			// Make sure it was a legit swipe, not a tap
+			if (IsNotSwipe ()) {return;}
+			CheckDirection(_currentSwipe, _snowball);
+//		}
 	}
 
-	static void CheckDirection(Vector2 _currentSwipe) {
-		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.Up ) > 0.906f ) {
+	static void CheckDirection(Vector2 _currentSwipe, Snowball _snowball) {
+		_currentSwipe.Normalize();
+
+		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.Up ) > s ) {
 			swipeDirection = SwipeDirection.Up;
-//			Units.Behaviour (SwipeDirection);
+			_snowball.GoTo (swipeDirection);
 			return;
 		}
-		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.Down ) > 0.906f ) {
-			//			SwipeDirection = SwipeDirection.Down;
-			//			return;
-		}
-		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.Left ) > 0.906f ) {
-			swipeDirection = SwipeDirection.Left;
-			MapController.RotateCamera (swipeDirection);
-			return;
-		}
-		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.Right ) > 0.906f) {
-			swipeDirection = SwipeDirection.Right;
-			MapController.RotateCamera (swipeDirection);
+		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.Down ) > s ) {
+			swipeDirection = SwipeDirection.Down;
+			_snowball.GoTo (swipeDirection);
 			return;
 		}
 
-		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.UpRight ) >0.906f ) {
-			swipeDirection = SwipeDirection.Right;
-			MapController.RotateCamera (swipeDirection);
+//		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.Left ) > s ) {
+//			swipeDirection = SwipeDirection.Left;
+//			return;
+//		}
+
+//		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.Right ) > s ) {
+//			swipeDirection = SwipeDirection.Right;
+//			return;
+//		}
+
+		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.UpRight ) > s ) {
+			swipeDirection = SwipeDirection.UpRight;
+			_snowball.GoTo (swipeDirection);
 			return;
 		}
 
-		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.UpLeft ) > 0.906f ) {
-			swipeDirection = SwipeDirection.Left;
-			MapController.RotateCamera (swipeDirection);
+		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.UpLeft ) > s ) {
+			swipeDirection = SwipeDirection.UpLeft;
+			_snowball.GoTo (swipeDirection);
 			return;
 		}
 
-		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.DownLeft ) > 0.906f ) {
-			//			SwipeDirection = SwipeDirection.DownLeft;
-			swipeDirection = SwipeDirection.Left;
-			MapController.RotateCamera (swipeDirection);
+		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.DownLeft ) > s ) {
+			swipeDirection = SwipeDirection.DownLeft;
+			_snowball.GoTo (swipeDirection);
 			return;
 		}
 
-		if ( Vector2.Dot( _currentSwipe, GetCardinalDirections.DownRight ) > 0.906f) {
-			//			SwipeDirection = SwipeDirection.DownRight;
-			swipeDirection = SwipeDirection.Right;
-			MapController.RotateCamera (swipeDirection);
+		if ( Vector2.Dot (_currentSwipe, GetCardinalDirections.DownRight) > s ) {
+			swipeDirection = SwipeDirection.DownRight;
+			_snowball.GoTo (swipeDirection);
 			return;
 		}
 	}

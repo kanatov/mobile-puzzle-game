@@ -2,7 +2,7 @@
 using System.Collections;
 
 public class TriggerDT : MonoBehaviour {
-	public GameObject[] activateWaypoints;
+	public GameObject[] activateNodes;
 	public string prefab;
 	public GameObject[] path;
 	public bool removeOnActivation;

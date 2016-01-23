@@ -27,14 +27,14 @@ class LevelUpdaterWindow : EditorWindow {
 
 		// Draw filed for waypoint place
 		instanceObject = (GameObject)EditorGUILayout.ObjectField(
-			"WaypointDT",
+			"NodeDT",
 			instanceObject, 
 			typeof(GameObject),
 			false
 		);
 
 		// Create waypoints button
-		if (GUILayout.Button ("Create waypoints")) {
+		if (GUILayout.Button ("Create object")) {
 			if (Selection.gameObjects.Length == 0) {
 				return;
 			}
@@ -42,14 +42,14 @@ class LevelUpdaterWindow : EditorWindow {
 				return;
 			}
 
-			LevelUpdater.CreateWaypoints (instanceObject);
-			LevelUpdater.UpdateWaypoints ();
+			LevelUpdater.CreateNodes (instanceObject);
+			LevelUpdater.UpdateNodes ();
 		}
 
 		// Update level button
 		if (GUILayout.Button ("Update level")) {
 			LevelUpdater.UpdateTiles ();
-			LevelUpdater.UpdateWaypoints ();
+			LevelUpdater.UpdateNodes ();
 			LevelUpdater.UpdateTriggers ();
 		}
 

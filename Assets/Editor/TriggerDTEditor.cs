@@ -16,7 +16,7 @@ public class TriggerDTEditor : Editor {
 		// Draw UI
 		ModelUIControl ();
 		DefaultUIControl ("prefab");
-		DefaultUIControl ("activateWaypoints");
+		DefaultUIControl ("activateNodes");
 		DefaultUIControl ("path");
 		DefaultUIControl ("removeOnActivation");
 

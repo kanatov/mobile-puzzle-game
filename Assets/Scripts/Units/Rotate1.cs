@@ -17,28 +17,28 @@ public class Rotate1 : MonoBehaviour {
 			if (value == SwipeDirection.Left) {
 				target.y = yFloor - 60;
 				if (target.y < 0) {
-					transform.eulerAngles = new Vector3 (0, 359.9f, 0);
+					trans.eulerAngles = new Vector3 (0, 359.9f, 0);
 					target.y = 300;
 				}
 			}
 		}
 	}
 
-	Transform transform;
+	Transform trans;
 
 	void Awake() {
-		transform = this.GetComponent<Transform> ();
+		trans = this.GetComponent<Transform> ();
 	}
 
 	void Update () {
-		if (transform.eulerAngles.y == target.y) {
-			if (transform.eulerAngles.y == 359.9f) {
-				transform.eulerAngles = Vector3.zero;
+		if (trans.eulerAngles.y == target.y) {
+			if (trans.eulerAngles.y == 359.9f) {
+				trans.eulerAngles = Vector3.zero;
 			}
 			this.enabled = false;
 		} else {
-			transform.eulerAngles = Vector3.MoveTowards (
-				transform.eulerAngles,
+			trans.eulerAngles = Vector3.MoveTowards (
+				trans.eulerAngles,
 				target,
 				400f * Time.deltaTime
 			);

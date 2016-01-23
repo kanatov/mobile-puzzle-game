@@ -62,13 +62,13 @@ public class AutoSnap : EditorWindow
 	
 	private void Snap()
 	{
-		foreach ( var transform in Selection.transforms )
+		foreach ( var _trans in Selection.transforms )
 		{
-			var t = transform.transform.position;
+			var t = _trans.GetComponent<Transform>().position;
 			t.x = RoundX( t.x );
 			t.y = RoundY( t.y );
 			t.z = RoundZ( t.z );
-			transform.transform.position = t;
+			_trans.GetComponent<Transform>().position = t;
 		}
 	}
 	
@@ -76,11 +76,11 @@ public class AutoSnap : EditorWindow
 	{
 		foreach (var transform in Selection.transforms)
 		{
-			var r = transform.transform.eulerAngles;
+			var r = transform.GetComponent<Transform>().eulerAngles;
 			r.x = RotRound (r.x);
 			r.y = RotRound (r.y);
 			r.z = RotRound (r.z);
-			transform.transform.eulerAngles = r;
+			transform.GetComponent<Transform>().eulerAngles = r;
 		}
 	}
 	

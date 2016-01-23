@@ -13,52 +13,46 @@ public enum Direction {
 	ForwardLeft
 }
 
-public enum WaypointsTypes {
+public enum NodeTypes {
 	Horisontal = 0,
 	Ladder,
 	Vertical
 }
 
-public enum TriggersTypes {
-	Move = 0,
-	Destroy,
-	Swap
+public enum DynamicObjectTypes {
+	Unit = 0,
+	SnowBall
 }
-
-public enum TerrainsTypes {
-	Grass = 0,
-	Rock
-}
-
+	
 public static class MapController {
 	public static float tileHeight = 0.5f;
 	public static string TAG_UNIT = "Unit";
 	public static string TAG_TILE = "Tile";
-	public static string TAG_WAYPOINT = "Waypoint";
+	public static string TAG_NODE = "Node";
 	public static string TAG_TRIGGER = "Trigger";
 	public static string TAG_CONTAINER = "sContainer";
 
-	public static GameObject waypointCollider = Resources.Load<GameObject>("Waypoint/Waypoint_Collider");
-	public static Waypoint[] waypoints;
-	public static Unit[] units;
+	public static GameObject nodeCollider = Resources.Load<GameObject>("Nodes/NodeCollider");
+	public static Node[] walkNodes;
+	public static List<DynamicObject> dynamicObjects;
 	public static Trigger[] triggers;
 	public static Unit player;
 
 	public static List<Trigger> triggersList;
-	static GameObject[] waypointsDT;
+	static GameObject[] nodesDT;
 	static List<GameObject> triggersDT;
 
 	public static void Init () {
 		D.Log ("___Map init");
 		GameController.ClearSavedData ();
 
-		waypointsDT = GameObject.FindGameObjectsWithTag (TAG_WAYPOINT);
+		nodesDT = GameObject.FindGameObjectsWithTag (TAG_NODE);
 		triggersDT = new List<GameObject> ();
 		triggersList = new List<Trigger> ();
 
 		GameController.LoadGameSession ();
 
-		if (waypoints == null || units == null || triggers == null) {
+		if (walkNodes == null || dynamicObjects == null || triggers == null) {
 			D.Log ("___Map init: Prepare New Level");
 			PrepareNewLevel ();
 		} else {
@@ -67,67 +61,63 @@ public static class MapController {
 		}
 
 		// Remove references and objects
-		waypointsDT = null;
+		nodesDT = null;
 		triggersDT = null;
 		triggersList = null;
 		GameObject.DestroyImmediate (GameObject.FindGameObjectWithTag (TAG_TRIGGER + TAG_CONTAINER));
-		GameObject.DestroyImmediate (GameObject.FindGameObjectWithTag (TAG_WAYPOINT + TAG_CONTAINER));
+		GameObject.DestroyImmediate (GameObject.FindGameObjectWithTag (TAG_NODE + TAG_CONTAINER));
 
 		// Organise scene
-		SetContainer (TAG_WAYPOINT);
+		SetContainer (TAG_NODE);
 		SetContainer (TAG_TRIGGER);
 		SetContainer (TAG_UNIT);
 	}
 
 
 	static void PrepareNewLevel () {
-		waypoints = new Waypoint[waypointsDT.Length];
-		List <Unit> newUnits = new List<Unit> ();
+		walkNodes = new Node[nodesDT.Length];
+		List <DynamicObject> newDynamicObjects = new List<DynamicObject> ();
 
-		D.Log ("Map Init: Populate empty waypoints");
-		// Populate empty waypoints
-		for (int i = 0; i < waypoints.Length; i++) {
-			WaypointDT waypointDT = waypointsDT [i].GetComponent<WaypointDT> ();
-			waypoints [i] = new Waypoint (
+		D.Log ("Map Init: Populate empty nodes");
+		// Populate empty nodes
+		for (int i = 0; i < walkNodes.Length; i++) {
+			NodeDT nodeDT = nodesDT [i].GetComponent<NodeDT> ();
+			walkNodes [i] = new Node (
 				i,
-				waypointDT.Type,
-				waypointDT.modelColliderEnabled,
-				waypointDT.noRepeat,
-				waypointDT.activateOnTouch,
-				waypointDT.GetComponent<Transform> ().position,
-				new int[waypointDT.neighbours.Count],
-				new int[waypointDT.triggers.Count]
+				nodeDT.Type,
+				nodeDT.walk,
+				nodeDT.singleActivation,
+				nodeDT.touchActiovation,
+				nodeDT.GetComponent<Transform> ().position,
+				new int[nodeDT.walkNodes.Count],
+				new int[nodeDT.triggers.Count]
 			);
 		}
 
-		D.Log ("Map Init: Fill waypoints");
-		// Fill waypoints
-		for (int i = 0; i < waypoints.Length; i++) {
-			WaypointDT waypointDT = waypointsDT [i].GetComponent<WaypointDT> ();
+		D.Log ("Map Init: Fill nodes");
+		// Fill nodes
+		for (int i = 0; i < walkNodes.Length; i++) {
+			NodeDT nodeDT = nodesDT [i].GetComponent<NodeDT> ();
 
 			// Prepare neighbours
-			for (int k = 0; k < waypoints [i].Neighbours.Length; k++) {
-				waypoints [i].Neighbours [k] = GetWaypointByGO (waypointDT.neighbours [k]);
+			for (int k = 0; k < walkNodes [i].WalkNodes.Length; k++) {
+				walkNodes [i].WalkNodes [k] = GetNodeByGO (nodeDT.walkNodes [k]);
 			}
 
 			// Prepare triggers
-			for (int l = 0; l < waypoints [i].Triggers.Length; l++) {
-				waypoints [i].Triggers [l] = GetTrigger (waypointDT.triggers [l]);
+			for (int l = 0; l < walkNodes [i].Triggers.Length; l++) {
+				walkNodes [i].Triggers [l] = GetTrigger (nodeDT.triggers [l]);
 			}
 
 			// Prepare units
-			if (waypointDT.unitPrefab != null && waypointDT.unitPrefab != "") {
-
-				newUnits.Add(GetUnit (waypointDT));
+			if (nodeDT.colliderPrefabPath != null && nodeDT.colliderPrefabPath != "") {
+				newDynamicObjects.Add (GetDynamicObject (nodeDT));
 			}
 		}
 
 		D.Log ("Map Init: Copy dynamic objects");
 		// Copy new dynamic objects
-		units = new Unit[newUnits.Count];
-		for (int i = 0; i < units.Length; i++) {
-			units [i] = newUnits [i];
-		}
+		dynamicObjects = newDynamicObjects;
 
 		// Copy Trigger List to Array
 		triggers = new Trigger[triggersList.Count];
@@ -149,18 +139,18 @@ public static class MapController {
 		// Prepare new Trigger
 		triggersDT.Add (_triggerDT);
 		TriggerDT triggerDT = _triggerDT.GetComponent<TriggerDT> ();
-		Transform triggerDTTrans = _triggerDT.GetComponent<Transform> ();
+//		Transform triggerDTTrans = _triggerDT.GetComponent<Transform> ();
 
-		// Copy activateWaypoints
-		int[] activateWaypoints = new int[triggerDT.activateWaypoints.Length];
-		for (int i = 0; i < triggerDT.activateWaypoints.Length; i++) {
-			activateWaypoints [i] = GetWaypointByGO (triggerDT.activateWaypoints [i]).id;
+		// Copy activateNodes
+		int[] activateNodes = new int[triggerDT.activateNodes.Length];
+		for (int i = 0; i < triggerDT.activateNodes.Length; i++) {
+			activateNodes [i] = GetNodeByGO (triggerDT.activateNodes [i]).id;
 		}
 
 		// Copy path
-		List<Waypoint> path = new List<Waypoint> ();
-		foreach(var _waypoint in triggerDT.path){
-			path.Add (GetWaypointByGO (_waypoint));
+		List<Node> path = new List<Node> ();
+		foreach(var _node in triggerDT.path){
+			path.Add (GetNodeByGO (_node));
 		};
 
 		triggersList.Add (new Trigger(
@@ -169,30 +159,43 @@ public static class MapController {
 			triggerDT.prefab,
 			triggerDT.tileDirection,
 			0,
-			activateWaypoints,
+			activateNodes,
 			triggerDT.removeOnActivation
 		));
 		return triggersList.Last();
 	}
 
 
-	static Unit GetUnit(WaypointDT _waypointDT) {
-		Unit unit = new Unit (
-			_waypointDT.unitPrefab,
-			_waypointDT.unitDirection,
-			GetWaypointByGO (_waypointDT.gameObject)
-		);
+	static DynamicObject GetDynamicObject(NodeDT _nodeDT) {
+		DynamicObject dynamicObject;
 
-		return unit;
+		switch (_nodeDT.dynamicObjectTypes) {
+		case DynamicObjectTypes.SnowBall :
+			dynamicObject = new Snowball (
+				_nodeDT.colliderPrefabPath,
+				GetNodeByGO (_nodeDT.gameObject)
+			);
+			break;
+
+		default :
+			dynamicObject = new Unit (
+				_nodeDT.colliderPrefabPath,
+				_nodeDT.unitDirection,
+				GetNodeByGO (_nodeDT.gameObject)
+			);
+			break;
+		}
+
+		return dynamicObject;
 	}
 
 
 	static void PrepareGameSession () {
-		foreach (var _waypoint in waypoints) {
-			_waypoint.SetModel (_waypoint.ColliderEnabled);
+		foreach (var _node in walkNodes) {
+			_node.SetModel (_node.Walk);
 		}
-		foreach (var _unit in units) {
-			_unit.SetModel ();
+		foreach (var _dynamicObject in dynamicObjects) {
+			_dynamicObject.SetModel ();
 		}
 		foreach (var _trigger in triggers) {
 			_trigger.SetModel ();
@@ -206,64 +209,64 @@ public static class MapController {
 	}
 
 	// Pathfinding
-	public static List<Waypoint> GetPath (Waypoint _source, Waypoint _target) {
+	public static List<Node> GetPath (Node _source, Node _target) {
 		if (_source == _target) {
 			D.LogWarning ("Pathfinding: source == target");
 			return null;
 		}
 
-		List<Waypoint> opened = new List<Waypoint> ();
-		HashSet<Waypoint> closed = new HashSet<Waypoint> ();
+		List<Node> opened = new List<Node> ();
+		HashSet<Node> closed = new HashSet<Node> ();
 
 		opened.Add (_source);
 
 		while (opened.Count > 0) {
 			// Assign some active node as current
-			Waypoint currentWaypoint = opened [0];
+			Node currentNode = opened [0];
 
 			// Looking for the closest node to our target
 			for (int i = 1; i < opened.Count; i++) {
 				// If the fCost of some node is less then current cell fCost
 				// or
 				// If the fCost of some node is equal but hCost is less
-				if (opened [i].fCost < currentWaypoint.fCost || opened [i].fCost == currentWaypoint.fCost && opened [i].hCost < currentWaypoint.hCost) {
-					currentWaypoint = opened [i];
+				if (opened [i].fCost < currentNode.fCost || opened [i].fCost == currentNode.fCost && opened [i].hCost < currentNode.hCost) {
+					currentNode = opened [i];
 				}
 			}
 
 			// Closest node was found
 			// Let's remove it from active node and put it to the closed
-			opened.Remove (currentWaypoint);
-			closed.Add (currentWaypoint);
+			opened.Remove (currentNode);
+			closed.Add (currentNode);
 
-			if (currentWaypoint == _target)
+			if (currentNode == _target)
 				break;
 
 			// For every neighbour of current cell
-			for (int i = 0; i < currentWaypoint.Neighbours.Length; i++) {
-				if (closed.Contains (currentWaypoint.Neighbours [i]))
+			for (int i = 0; i < currentNode.WalkNodes.Length; i++) {
+				if (closed.Contains (currentNode.WalkNodes [i]))
 					continue;
 				
-				if (!currentWaypoint.Neighbours [i].ColliderEnabled)
+				if (!currentNode.WalkNodes [i].Walk)
 					continue;
 
-				float newMovementCostToNeghbour = currentWaypoint.gCost + Vector3.Distance (currentWaypoint.Position, currentWaypoint.Neighbours [i].Position);
+				float newMovementCostToNeghbour = currentNode.gCost + Vector3.Distance (currentNode.Position, currentNode.WalkNodes [i].Position);
 
-				if (newMovementCostToNeghbour < currentWaypoint.Neighbours [i].gCost || !opened.Contains (currentWaypoint.Neighbours [i])) {
-					currentWaypoint.Neighbours [i].gCost = newMovementCostToNeghbour;
-					currentWaypoint.Neighbours [i].hCost = Vector3.Distance (currentWaypoint.Neighbours[i].Position, _target.Position);
+				if (newMovementCostToNeghbour < currentNode.WalkNodes [i].gCost || !opened.Contains (currentNode.WalkNodes [i])) {
+					currentNode.WalkNodes [i].gCost = newMovementCostToNeghbour;
+					currentNode.WalkNodes [i].hCost = Vector3.Distance (currentNode.WalkNodes[i].Position, _target.Position);
 
-					currentWaypoint.Neighbours [i].parent = currentWaypoint;
+					currentNode.WalkNodes [i].parent = currentNode;
 
-					if (!opened.Contains (currentWaypoint.Neighbours [i])) {
-						opened.Add (currentWaypoint.Neighbours [i]);
+					if (!opened.Contains (currentNode.WalkNodes [i])) {
+						opened.Add (currentNode.WalkNodes [i]);
 					}
 				}
 			}
 		}
 
 		if (!closed.Contains (_target)) {
-			Waypoint closestCell = null;
+			Node closestCell = null;
 			float distance = 0;
 
 			foreach (var cell in closed) {
@@ -277,8 +280,8 @@ public static class MapController {
 			_target = closestCell;
 		}
 
-		List<Waypoint> path = new List<Waypoint> ();
-		Waypoint tmpCell = _target;
+		List<Node> path = new List<Node> ();
+		Node tmpCell = _target;
 
 		while (tmpCell != _source) {
 			path.Add (tmpCell);
@@ -299,9 +302,9 @@ public static class MapController {
 		return new Vector3 (0f, GetRotationDegree (_rotation), 0f);
 	}
 
-	static Waypoint GetWaypointByGO (GameObject _target) {
-		int i = System.Array.IndexOf (waypointsDT, _target);
-		return waypoints [i];
+	static Node GetNodeByGO (GameObject _target) {
+		int i = System.Array.IndexOf (nodesDT, _target);
+		return walkNodes [i];
 	}
 
 	// Scene clear

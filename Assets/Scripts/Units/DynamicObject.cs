@@ -8,17 +8,17 @@ public class DynamicObject {
 	public class PathIndexer {
 		[SerializeField] List<int> path;
 
-		public PathIndexer (List<Waypoint> _path) {
+		public PathIndexer (List<Node> _path) {
 			List<int> intPath = new List<int>();
-			foreach (var _waypoint in _path) {
-				intPath.Add (_waypoint.id);
+			foreach (var _node in _path) {
+				intPath.Add (_node.id);
 			}
 			path = intPath;
 		}
 
-		public Waypoint this [int i] {
+		public Node this [int i] {
 			get {
-				return MapController.waypoints [path [i]];
+				return MapController.walkNodes [path [i]];
 			}
 			set {
 				path [i] = value.id;
@@ -31,8 +31,8 @@ public class DynamicObject {
 			}
 		}
 
-		public int IndexOf (Waypoint _waypoint) {
-			return path.IndexOf (_waypoint.id);
+		public int IndexOf (Node _node) {
+			return path.IndexOf (_node.id);
 		}
 
 		public void RemoveAt (int _index) {
@@ -42,17 +42,17 @@ public class DynamicObject {
 
 	public int PositionInPath {
 		get {
-			return currentWaypoint;
+			return currentNode;
 		}
 		set {
-			currentWaypoint = value;
+			currentNode = value;
 
-			if (currentWaypoint == Path.Count) {
-				currentWaypoint = 0;
+			if (currentNode == Path.Count) {
+				currentNode = 0;
 			}
 
-			if (currentWaypoint == -1) {
-				currentWaypoint = Path.Count - 1;
+			if (currentNode == -1) {
+				currentNode = Path.Count - 1;
 			}
 		}
 	}
@@ -60,10 +60,11 @@ public class DynamicObject {
 	public PathIndexer Path;
 	public Direction modelRotation;
 	public int id;
-	public string prefab;
-	[SerializeField] protected int currentWaypoint;
+	public string prefabPath;
+	[SerializeField] protected int currentNode;
 
 	[System.NonSerialized] public GameObject model;
 
-	public virtual void Move(){}
+	public virtual void Move(string _callback){}
+	public virtual void SetModel(){}
 }

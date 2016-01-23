@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 using GenericData;
+using System.Collections.Generic;
 
 public static class GameController {
 	public static PlayerData playerData;
@@ -17,17 +18,17 @@ public static class GameController {
 			return;
 		}
 
-		Debug.Log ("___Init: Looking for Game session");
+//		Debug.Log ("___Init: Looking for Game session");
 
-		foreach (var _level in playerData.levelState) {
-			for (int i = 0; i < playerData.levelState.Length; i++) {
-				if (playerData.levelState[i] == LevelState.GameSession) {
-					Debug.Log ("___Init: Load Game Session");
-					LoadScene (i);
-					return;
-				}
-			}
-		}
+//		foreach (var _level in playerData.levelState) {
+//			for (int i = 0; i < playerData.levelState.Length; i++) {
+//				if (playerData.levelState[i] == LevelState.GameSession) {
+//					Debug.Log ("___Init: Load Game Session");
+//					LoadScene (i);
+//					return;
+//				}
+//			}
+//		}
 
 		Debug.Log ("___Init: Loading Menu screen");
 	}
@@ -54,14 +55,14 @@ public static class GameController {
 	}
 
 	public static void SaveGameSession () {
-		SaveLoad.Save (MapController.waypoints, SaveLoad.nameGameSessionWaypoints);
-		SaveLoad.Save (MapController.units, SaveLoad.nameGameSessionUnits);
+		SaveLoad.Save (MapController.walkNodes, SaveLoad.nameGameSessionWaypoints);
+		SaveLoad.Save (MapController.dynamicObjects, SaveLoad.nameGameSessionUnits);
 		SaveLoad.Save (MapController.triggers, SaveLoad.nameGameSessionTriggers);
 	}
 
 	public static void LoadGameSession () {
-		MapController.waypoints = (Waypoint[])SaveLoad.Load (SaveLoad.nameGameSessionWaypoints);
-		MapController.units = (Unit[])SaveLoad.Load (SaveLoad.nameGameSessionUnits);
+		MapController.walkNodes = (Node[])SaveLoad.Load (SaveLoad.nameGameSessionWaypoints);
+		MapController.dynamicObjects = (List<DynamicObject>)SaveLoad.Load (SaveLoad.nameGameSessionUnits);
 		MapController.triggers = (Trigger[])SaveLoad.Load (SaveLoad.nameGameSessionTriggers);
 	}
 }

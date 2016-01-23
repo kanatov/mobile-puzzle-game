@@ -5,8 +5,4 @@ public class MapControllerLoader : MonoBehaviour {
 		Debug.Log("___LOADER: Map controller");
 		MapController.Init ();
 	}
-
-	void Update () {
-		InputController.DetectSwipe ();
-	}
 }

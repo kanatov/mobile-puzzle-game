@@ -2,29 +2,29 @@
 using System.Collections;
 
 [System.Serializable]
-public class Waypoint {
+public class Node {
 	
 	[System.Serializable]
 	public class NeighboursReferenceIndexer {
-		[SerializeField] int[] neighbours;
+		[SerializeField] int[] walkNodes;
 
-		public Waypoint this [int i] {
+		public Node this [int i] {
 			get {
-				return MapController.waypoints [neighbours [i]];
+				return MapController.walkNodes [walkNodes [i]];
 			}
 			set {
-				neighbours [i] = value.id;
+				walkNodes [i] = value.id;
 			}
 		}
 
 		public int Length {
 			get {
-				return neighbours.Length;
+				return walkNodes.Length;
 			}
 		}
 
 		public NeighboursReferenceIndexer (int[] _neighbours) {
-			neighbours = _neighbours;
+			walkNodes = _neighbours;
 		}
 	}
 
@@ -53,22 +53,22 @@ public class Waypoint {
 	}
 
 	public int type;
-	public WaypointsTypes Type {
+	public NodeTypes Type {
 		get {
-			return (WaypointsTypes)type;
+			return (NodeTypes)type;
 		}
 		set {
 			type = (int)value;
 		}
 	}
 
-	[SerializeField] bool colliderEnabled;
-	public bool ColliderEnabled {
+	[SerializeField] bool walk;
+	public bool Walk {
 		get {
-			return colliderEnabled;
+			return walk;
 		}
 		set {
-			colliderEnabled = value;
+			walk = value;
 			collider.enabled = value;
 		}
 	}
@@ -78,11 +78,11 @@ public class Waypoint {
 	public bool activateOnTouch;
 	public bool noRepeat;
 
-	public NeighboursReferenceIndexer Neighbours;
+	public NeighboursReferenceIndexer WalkNodes;
 	public TriggersReferenceIndexer Triggers;
 
 	[System.NonSerialized] public GameObject model;
-	[System.NonSerialized] WaypointCollider modelCollider;
+	[System.NonSerialized] NodeCollider modelCollider;
 	[System.NonSerialized] SphereCollider collider;
 
 	[SerializeField]float x;
@@ -101,7 +101,7 @@ public class Waypoint {
 	}
 
 	// Pathfinding
-	[System.NonSerialized] public Waypoint parent;
+	[System.NonSerialized] public Node parent;
 	[System.NonSerialized] public float gCost;
 	[System.NonSerialized] public float hCost;
 	public float fCost {
@@ -111,30 +111,30 @@ public class Waypoint {
 	}
 
 	// Constructor
-	public Waypoint(int _id, WaypointsTypes _type, bool _enabled, bool _noRepeat, bool _activateOnTouch, Vector3 _position, int[] _neighbours, int[] _triggers) {
+	public Node(int _id, NodeTypes _type, bool _enabled, bool _noRepeat, bool _activateOnTouch, Vector3 _position, int[] _neighbours, int[] _triggers) {
 		id = _id;
 		Type = _type;
 		noRepeat = _noRepeat;
 		activateOnTouch = _activateOnTouch;
 		Position = _position;
-		Neighbours = new NeighboursReferenceIndexer(_neighbours);
+		WalkNodes = new NeighboursReferenceIndexer(_neighbours);
 		Triggers = new TriggersReferenceIndexer(_triggers);
 
 		SetModel (_enabled);
 	}
 
 	public void SetModel (bool _enabled) {
-		model = GameObject.Instantiate (MapController.waypointCollider);
+		model = GameObject.Instantiate (MapController.nodeCollider);
 
 		Transform modelTransform = model.GetComponent<Transform> ();
 		modelTransform.localPosition = Position;
 
-		modelCollider = model.GetComponent<WaypointCollider> ();
-		modelCollider.waypoint = this;
+		modelCollider = model.GetComponent<NodeCollider> ();
+		modelCollider.node = this;
 
 		collider = model.GetComponent<SphereCollider>();
 
-		ColliderEnabled = _enabled;
+		Walk = _enabled;
 		activated = false;
 	}
 
@@ -146,12 +146,12 @@ public class Waypoint {
 		return false;
 	}
 
-	public void ActivateWalkable() {
+	public void ActivateWalk() {
 		if (SetWaypointAsActivatedOnce ()) {
 			return;
 		}
 
-		ColliderEnabled = !ColliderEnabled;
+		Walk = !Walk;
 	}
 
 	public void ActivateTriggers() {
