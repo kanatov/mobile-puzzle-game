@@ -11,4 +11,8 @@ public static class D {
 	public static void LogError (object _msg) {
 		Debug.LogError (_msg + "\n");
 	}
+
+	public static void DrawLine (Vector3 _source, Vector3 _target) {
+		Debug.DrawLine (_source, _target, Color.yellow);
+	}
 }

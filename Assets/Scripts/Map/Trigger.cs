@@ -15,7 +15,7 @@ public class Trigger : DynamicObject{
 
 		public Node this [int i] {
 			get {
-				return MapController.walkNodes [activateWaypoints [i]];
+				return MapController.currentLevelNodes [activateWaypoints [i]];
 			}
 			set {
 				activateWaypoints [i] = value.id;
@@ -43,7 +43,7 @@ public class Trigger : DynamicObject{
 	) {
 		id = _id;
 		prefabPath = _prefabPath;
-		modelRotation = _tileDirection;
+		modelDirection = _tileDirection;
 		Path = new PathIndexer (_path);
 		ActivateWaypoints = new ActivateWaypointsIndexer (_activateWaypoints);
 		currentNode = _currentWaypoint;
@@ -59,7 +59,7 @@ public class Trigger : DynamicObject{
 
 		model = GameObject.Instantiate (Resources.Load<GameObject> (prefabPath));
 		model.GetComponent<Transform> ().position = Path [PositionInPath].Position;
-		model.GetComponent<Transform> ().eulerAngles = MapController.GetEulerAngle(modelRotation);
+		model.GetComponent<Transform> ().eulerAngles = MapController.GetEulerAngle(modelDirection);
 		model.tag = "Trigger";
 	}
 

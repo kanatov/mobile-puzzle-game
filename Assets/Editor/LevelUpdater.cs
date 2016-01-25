@@ -9,8 +9,8 @@ using System.Collections.Generic;
 [CustomEditor(typeof(MapControllerLoader))]
 class LevelUpdater : Editor {
 	[SerializeField] static GameObject[] nodes;
-	static float walkNodeDistance = 0.9f;
-	static float localNodeDistance = 1f;
+	static readonly float walkNodeDistance = 0.9f;
+	static readonly float localNodeDistance = 1f;
 
 	void OnSceneGUI() {
 		DrawNodeNetwork ();
@@ -36,32 +36,36 @@ class LevelUpdater : Editor {
 		nodes = MapController.SetContainer (MapController.TAG_NODE);
 
 		for (int a = 0; a < nodes.Length; a++) {
-			NodeDT _nodeDT = nodes[a].GetComponent<NodeDT> ();
-			SetNodes (_nodeDT);
+			NodeDT nodeDT = nodes[a].GetComponent<NodeDT> ();
+			SetNodeNetwork (nodeDT);
 
 			// Check triggers
-			RemoveWrongTriggers (_nodeDT);
-			RemoveEmpties (_nodeDT.triggers);
+			RemoveAlliensFromTriggers (nodeDT);
+
+			// Set prefab path
+			nodeDT.unitPrefabPath = GetModelPath (nodeDT);
 
 			// Set icon
 			SetIcon (nodes [a]);
 
 			// Save changes
-			EditorUtility.SetDirty(_nodeDT);
+			EditorUtility.SetDirty(nodeDT);
 		}
 
 		EditorSceneManager.MarkAllScenesDirty ();
 	}
 
-	static void SetNodes (NodeDT _nodeDT) {
+	static void SetNodeNetwork (NodeDT _nodeDT) {
 		Vector3 nodeDTPos = _nodeDT.GetComponent<Transform> ().position;
-		_nodeDT.walkNodes = new List<GameObject> ();
+		_nodeDT.walkNodes = new GameObject[MapController.EnumCount<Direction>()];
+		_nodeDT.localNodes = new GameObject[MapController.EnumCount<Direction>()];
 
 		_nodeDT.gameObject.SetActive(false);
 		Collider[] walkNodes = Physics.OverlapSphere(nodeDTPos, walkNodeDistance);
 		Collider[] localNodes = Physics.OverlapSphere(nodeDTPos, localNodeDistance);
 		_nodeDT.gameObject.SetActive(true);
 
+		// WalkNodes network
 		for (int i = 0; i < walkNodes.Length; i++) {
 			Vector3 walkNodeDTPos = walkNodes [i].GetComponent<Transform> ().position;
 			NodeDT walkNodeDT = walkNodes [i].GetComponent<NodeDT> ();
@@ -71,69 +75,20 @@ class LevelUpdater : Editor {
 				continue;
 			}
 
-			// Set prefab path
-			walkNodeDT.colliderPrefabPath = GetModelPath (walkNodeDT);
-
-			// Hor
-			if (_nodeDT.Type == NodeTypes.Horisontal) {
-				// Hor to Hor
-				if (walkNodeDT.Type == NodeTypes.Horisontal) {
-					if (nodeDTPos.y == walkNodeDTPos.y) {
-						_nodeDT.walkNodes.Add (walkNodes [i].gameObject);
-					}
-				}
-
-				// Hor to Ladder
-				if (walkNodeDT.Type == NodeTypes.Ladder) {
-					if (nodeDTPos.y > walkNodeDTPos.y) {
-						if (CheckStraightConnection (_nodeDT, walkNodeDT)) {
-							_nodeDT.walkNodes.Add (walkNodes [i].gameObject);
-						}
-					}
-					if (nodeDTPos.y == walkNodeDTPos.y) {
-						if (CheckOppositConnection(_nodeDT, walkNodeDT)) {
-							_nodeDT.walkNodes.Add (walkNodes [i].gameObject);
-						}
-					}
-				}
-			}
-
-			// Ladder
-			if (_nodeDT.Type == NodeTypes.Ladder) {
-
-				// Ladder to Hor
-				if (walkNodeDT.Type == NodeTypes.Horisontal) {
-					
-					if (nodeDTPos.y < walkNodeDTPos.y) {
-						if (CheckStraightConnection (walkNodeDT, _nodeDT)) {
-							_nodeDT.walkNodes.Add (walkNodes [i].gameObject);
-						}
-					}
-					if (nodeDTPos.y == walkNodeDTPos.y) {
-						if (CheckOppositConnection(walkNodeDT, _nodeDT)) {
-							_nodeDT.walkNodes.Add (walkNodes [i].gameObject);
-						}
-					}
-				}
-
-				// Ladder to Ladder
-				if (walkNodeDT.Type == NodeTypes.Ladder) {
-					
-					if (nodeDTPos.y > walkNodeDTPos.y) {
-						if (CheckStraightConnection (_nodeDT, walkNodeDT)) {
-							_nodeDT.walkNodes.Add (walkNodes [i].gameObject);
-						}
-					}
-					if (nodeDTPos.y < walkNodeDTPos.y) {
-						if (CheckOppositConnection (_nodeDT, walkNodeDT)) {
-							_nodeDT.walkNodes.Add (walkNodes [i].gameObject);
-						}
-					}
-				}
+			if (MapController.IsNodesConnected (
+				_nodeDT.type,
+				nodeDTPos,
+				_nodeDT.ladderDirection,
+				walkNodeDT.type,
+				walkNodeDTPos,
+				walkNodeDT.ladderDirection
+			)) {
+				_nodeDT.walkNodes[(int)MapController.GetPointDirection(nodeDTPos, walkNodeDTPos)] = walkNodeDT.gameObject;
 			}
 		}
 
-		_nodeDT.localNodes = new List<GameObject> ();
+		// LocalNodes network
+		_nodeDT.localNodes = new GameObject[6];
 		for (int j = 0; j < localNodes.Length; j++) {
 			NodeDT localNodeDT = localNodes [j].GetComponent<NodeDT> ();
 
@@ -141,50 +96,27 @@ class LevelUpdater : Editor {
 				continue;
 			}
 
-			_nodeDT.localNodes.Add(localNodes[j].gameObject);
+			int d = (int)MapController.GetPointDirection (nodeDTPos, localNodes[j].GetComponent<Transform>().position);
+			_nodeDT.localNodes[d] = localNodes[j].gameObject;
 		}
-	}
-
-	static bool CheckStraightConnection (NodeDT _nodeDT, NodeDT _neighbourDT) {
-		Vector3 nodeDTPos = _nodeDT.GetComponent<Transform> ().position;
-		NodeDT localNodeDT = _neighbourDT.GetComponent<NodeDT> ();
-		Vector3 localNodePos = _neighbourDT.GetComponent<Transform> ().position;
-
-		if (localNodeDT.ladderDirection == MapController.GetPointDirection(nodeDTPos, localNodePos)) {
-			return true;
-		}
-		return false;
-	}
-
-	static bool CheckOppositConnection (NodeDT _nodeDT, NodeDT _neighbourDT) {
-		Vector3 nodeDTPos = _nodeDT.GetComponent<Transform> ().position;
-		NodeDT localNodeDT = _neighbourDT.GetComponent<NodeDT> ();
-		Vector3 localNodePos = _neighbourDT.GetComponent<Transform> ().position;
-
-		Direction suitableDirection = MapController.GetPointDirection(nodeDTPos, localNodePos);
-		suitableDirection = MapController.GetOppositeDirection (suitableDirection);
-
-		if (suitableDirection == localNodeDT.ladderDirection) {
-			return true;
-		}
-
-		return false;
 	}
 
 	static void SetIcon (GameObject _nodeDTInstance) {
 		IconManager.SetIcon (_nodeDTInstance, IconManager.Icon.DiamondGray);
 		NodeDT _nodeDT = _nodeDTInstance.GetComponent<NodeDT>();
 
-		if (!_nodeDT.GetComponent<SphereCollider>().enabled)
+		if (!_nodeDT.walk) {
 			IconManager.SetIcon (_nodeDTInstance, IconManager.Icon.DiamondRed);
+		}
 		
-		if (_nodeDT.triggers != null && _nodeDT.triggers.Count > 0)
+		if (_nodeDT.triggers != null && _nodeDT.triggers.Length > 0) {
 			IconManager.SetIcon (_nodeDTInstance, IconManager.Icon.DiamondYellow);
+		}
 	}
 
-	static void RemoveWrongTriggers (NodeDT _nodeDT) {
+	static void RemoveAlliensFromTriggers (NodeDT _nodeDT) {
 		if (_nodeDT.triggers != null) {
-			for (int i = 0; i < _nodeDT.triggers.Count; i++) {
+			for (int i = 0; i < _nodeDT.triggers.Length; i++) {
 				if (_nodeDT.triggers [i] == null) {
 					continue;
 				}
@@ -202,7 +134,7 @@ class LevelUpdater : Editor {
 			TriggerDT triggerDT = item.GetComponent<TriggerDT> ();
 
 			if (triggerDT.activateNodes.Length == 0) {
-				D.LogError ("No activate nodes in trigger: " + triggerDT.GetComponent<Transform> ().position);
+				D.LogWarning ("No activate nodes in trigger: " + triggerDT.GetComponent<Transform> ().position);
 			}
 			if (triggerDT.path.Length == 0) {
 				triggerDT.path = new GameObject[1];
@@ -257,18 +189,5 @@ class LevelUpdater : Editor {
 		path = path.Substring (0, path.Length - 7);
 		path = path.Substring (17);
 		return path;
-	}
-
-
-	static void RemoveEmpties (List<GameObject> _source) {
-		if (_source == null) {
-			return;
-		}
-
-		for(var i = _source.Count - 1; i > -1; i--) {
-			if (_source[i] == null) {
-				_source.RemoveAt (i);
-			}
-		}
 	}
 }

@@ -4,26 +4,27 @@ using System.Collections.Generic;
 using GenericData;
 using System.Linq;
 
-public enum Direction {
-	Forward = 0,
-	ForwardRight,
-	BackwardRight,
-	Backward,
-	BackwardLeft,
-	ForwardLeft
-}
-
 public enum NodeTypes {
 	Horisontal = 0,
 	Ladder,
 	Vertical
 }
 
-public enum DynamicObjectTypes {
-	Unit = 0,
+public enum ColliderTypes {
+	Node = 0,
+	Unit,
 	SnowBall
 }
-	
+
+public enum Direction {
+	Up = 0,
+	UpRight,
+	DownRight,
+	Down,
+	DownLeft,
+	UpLeft,
+}
+
 public static class MapController {
 	public static float tileHeight = 0.5f;
 	public static string TAG_UNIT = "Unit";
@@ -33,26 +34,26 @@ public static class MapController {
 	public static string TAG_CONTAINER = "sContainer";
 
 	public static GameObject nodeCollider = Resources.Load<GameObject>("Nodes/NodeCollider");
-	public static Node[] walkNodes;
+	public static Node[] currentLevelNodes;
 	public static List<DynamicObject> dynamicObjects;
 	public static Trigger[] triggers;
 	public static Unit player;
 
 	public static List<Trigger> triggersList;
-	static GameObject[] nodesDT;
+	static GameObject[] currentLevelNodesDT;
 	static List<GameObject> triggersDT;
 
 	public static void Init () {
 		D.Log ("___Map init");
 		GameController.ClearSavedData ();
 
-		nodesDT = GameObject.FindGameObjectsWithTag (TAG_NODE);
+		currentLevelNodesDT = GameObject.FindGameObjectsWithTag (TAG_NODE);
 		triggersDT = new List<GameObject> ();
 		triggersList = new List<Trigger> ();
 
 		GameController.LoadGameSession ();
 
-		if (walkNodes == null || dynamicObjects == null || triggers == null) {
+		if (currentLevelNodes == null || dynamicObjects == null || triggers == null) {
 			D.Log ("___Map init: Prepare New Level");
 			PrepareNewLevel ();
 		} else {
@@ -61,7 +62,7 @@ public static class MapController {
 		}
 
 		// Remove references and objects
-		nodesDT = null;
+		currentLevelNodesDT = null;
 		triggersDT = null;
 		triggersList = null;
 		GameObject.DestroyImmediate (GameObject.FindGameObjectWithTag (TAG_TRIGGER + TAG_CONTAINER));
@@ -75,43 +76,51 @@ public static class MapController {
 
 
 	static void PrepareNewLevel () {
-		walkNodes = new Node[nodesDT.Length];
+		currentLevelNodes = new Node[currentLevelNodesDT.Length];
 		List <DynamicObject> newDynamicObjects = new List<DynamicObject> ();
 
 		D.Log ("Map Init: Populate empty nodes");
 		// Populate empty nodes
-		for (int i = 0; i < walkNodes.Length; i++) {
-			NodeDT nodeDT = nodesDT [i].GetComponent<NodeDT> ();
-			walkNodes [i] = new Node (
+		for (int i = 0; i < currentLevelNodes.Length; i++) {
+			NodeDT nodeDT = currentLevelNodesDT [i].GetComponent<NodeDT> ();
+			currentLevelNodes [i] = new Node (
 				i,
-				nodeDT.Type,
+				nodeDT.type,
 				nodeDT.walk,
 				nodeDT.singleActivation,
 				nodeDT.touchActiovation,
 				nodeDT.GetComponent<Transform> ().position,
-				new int[nodeDT.walkNodes.Count],
-				new int[nodeDT.triggers.Count]
+				new int[nodeDT.walkNodes.Length],
+				new int[nodeDT.localNodes.Length],
+				new int[nodeDT.triggers.Length]
 			);
 		}
 
 		D.Log ("Map Init: Fill nodes");
 		// Fill nodes
-		for (int i = 0; i < walkNodes.Length; i++) {
-			NodeDT nodeDT = nodesDT [i].GetComponent<NodeDT> ();
+		for (int i = 0; i < currentLevelNodes.Length; i++) {
+			NodeDT nodeDT = currentLevelNodesDT [i].GetComponent<NodeDT> ();
 
-			// Prepare neighbours
-			for (int k = 0; k < walkNodes [i].WalkNodes.Length; k++) {
-				walkNodes [i].WalkNodes [k] = GetNodeByGO (nodeDT.walkNodes [k]);
+			// Prepare walknodes
+			for (int k = 0; k < currentLevelNodes [i].WalkNodes.Length; k++) {
+				currentLevelNodes [i].WalkNodes [k] = GetNodeByGO (nodeDT.walkNodes [k]);
+			}
+
+			// Prepare localnodes
+			for (int m = 0; m < currentLevelNodes [i].LocalNodes.Length; m++) {
+				currentLevelNodes [i].LocalNodes [m] = GetNodeByGO (nodeDT.localNodes [m]);
 			}
 
 			// Prepare triggers
-			for (int l = 0; l < walkNodes [i].Triggers.Length; l++) {
-				walkNodes [i].Triggers [l] = GetTrigger (nodeDT.triggers [l]);
+			for (int l = 0; l < currentLevelNodes [i].Triggers.Length; l++) {
+				currentLevelNodes [i].Triggers [l] = GetTrigger (nodeDT.triggers [l]);
 			}
 
 			// Prepare units
-			if (nodeDT.colliderPrefabPath != null && nodeDT.colliderPrefabPath != "") {
-				newDynamicObjects.Add (GetDynamicObject (nodeDT));
+			if (nodeDT.unitType != ColliderTypes.Node) {
+				if (nodeDT.unitPrefabPath != null && nodeDT.unitPrefabPath != "") {
+					newDynamicObjects.Add (GetDynamicObject (nodeDT));
+				}
 			}
 		}
 
@@ -169,17 +178,18 @@ public static class MapController {
 	static DynamicObject GetDynamicObject(NodeDT _nodeDT) {
 		DynamicObject dynamicObject;
 
-		switch (_nodeDT.dynamicObjectTypes) {
-		case DynamicObjectTypes.SnowBall :
+		switch (_nodeDT.unitType) {
+		case ColliderTypes.SnowBall :
 			dynamicObject = new Snowball (
-				_nodeDT.colliderPrefabPath,
+				_nodeDT.unitPrefabPath,
+				_nodeDT.unitDirection,
 				GetNodeByGO (_nodeDT.gameObject)
 			);
 			break;
 
 		default :
 			dynamicObject = new Unit (
-				_nodeDT.colliderPrefabPath,
+				_nodeDT.unitPrefabPath,
 				_nodeDT.unitDirection,
 				GetNodeByGO (_nodeDT.gameObject)
 			);
@@ -191,8 +201,8 @@ public static class MapController {
 
 
 	static void PrepareGameSession () {
-		foreach (var _node in walkNodes) {
-			_node.SetModel (_node.Walk);
+		foreach (var _node in currentLevelNodes) {
+			_node.SetCollider ();
 		}
 		foreach (var _dynamicObject in dynamicObjects) {
 			_dynamicObject.SetModel ();
@@ -200,12 +210,6 @@ public static class MapController {
 		foreach (var _trigger in triggers) {
 			_trigger.SetModel ();
 		}
-	}
-
-	public static void RotateCamera(SwipeDirection _swipeDir) {
-		GameObject cameraContainer = GameObject.FindGameObjectWithTag ("CameraContainer");
-		cameraContainer.GetComponent<Rotate1>().Target = _swipeDir;
-		cameraContainer.GetComponent<Rotate1>().enabled = true;
 	}
 
 	// Pathfinding
@@ -244,11 +248,17 @@ public static class MapController {
 
 			// For every neighbour of current cell
 			for (int i = 0; i < currentNode.WalkNodes.Length; i++) {
-				if (closed.Contains (currentNode.WalkNodes [i]))
+				if (currentNode.WalkNodes [i] == null) {
 					continue;
+				}
+
+				if (closed.Contains (currentNode.WalkNodes [i])) {
+					continue;
+				}
 				
-				if (!currentNode.WalkNodes [i].Walk)
+				if (!currentNode.WalkNodes [i].Walk) {
 					continue;
+				}
 
 				float newMovementCostToNeghbour = currentNode.gCost + Vector3.Distance (currentNode.Position, currentNode.WalkNodes [i].Position);
 
@@ -303,8 +313,11 @@ public static class MapController {
 	}
 
 	static Node GetNodeByGO (GameObject _target) {
-		int i = System.Array.IndexOf (nodesDT, _target);
-		return walkNodes [i];
+		if (_target == null) {
+			return null;
+		}
+		int i = System.Array.IndexOf (currentLevelNodesDT, _target);
+		return currentLevelNodes [i];
 	}
 
 	// Scene clear
@@ -350,22 +363,108 @@ public static class MapController {
 
 		if (y > 0) {
 			if (x > 0) {
-				return Direction.ForwardRight;
+				return Direction.UpRight;
 			}
 			if (x < 0) {
-				return Direction.ForwardLeft;
+				return Direction.UpLeft;
 			}
 
-			return Direction.Forward;
+			return Direction.Up;
 		} else {
 			if (x > 0) {
-				return Direction.ForwardRight;
+				return Direction.DownRight;
 			}
 			if (x < 0) {
-				return Direction.BackwardLeft;
+				return Direction.DownLeft;
 			}
 
-			return Direction.Backward;
+			return Direction.Down;
 		}
+	}
+
+	// Update Node Network helpers
+	static bool CheckStraightConnection (
+		Vector3 _sourcePos,
+		Vector3 _targetPos,
+		Direction _ladderDirection
+	) {
+		return _ladderDirection == GetPointDirection(_sourcePos, _targetPos);
+	}
+
+	static bool CheckOppositConnection (
+		Vector3 _sourcePos,
+		Vector3 _targetPos,
+		Direction _ladderDirection
+	) {
+		Direction suitableDirection = GetOppositeDirection (GetPointDirection(_sourcePos, _targetPos));
+		return _ladderDirection == suitableDirection;
+	}
+
+	// Update Node Network
+	public static bool IsNodesConnected (
+		NodeTypes _sourceType,
+		Vector3 _sourcePos,
+		Direction _sourceLaderDirection,
+		NodeTypes _targetType,
+		Vector3 _targetPos,
+		Direction _targetLaderDirection
+	) {
+		// Hor
+		if (_sourceType == NodeTypes.Horisontal) {
+			// Hor to Hor
+			if (_targetType == NodeTypes.Horisontal) {
+				if (_sourcePos.y == _targetPos.y) {
+					return true;
+				}
+			}
+			// Hor to Ladder
+			if (_targetType == NodeTypes.Ladder) {
+				if (_sourcePos.y > _targetPos.y) {
+					if (CheckStraightConnection (_sourcePos, _targetPos, _targetLaderDirection)) {
+						return true;
+					}
+				}
+				if (_sourcePos.y == _targetPos.y) {
+					if (CheckOppositConnection (_sourcePos, _targetPos, _targetLaderDirection)) {
+						return true;
+					}
+				}
+			}
+		}
+		// Ladder
+		if (_sourceType == NodeTypes.Ladder) {
+			// Ladder to Hor
+			if (_targetType == NodeTypes.Horisontal) {
+				if (_sourcePos.y < _targetPos.y) {
+					if (CheckStraightConnection (_targetPos, _sourcePos, _sourceLaderDirection)) {
+						return true;
+					}
+				}
+				if (_sourcePos.y == _targetPos.y) {
+					if (CheckOppositConnection (_targetPos, _sourcePos, _sourceLaderDirection)) {
+						return true;
+					}
+				}
+			}
+			// Ladder to Ladder
+			if (_targetType == NodeTypes.Ladder) {
+				if (_sourcePos.y > _targetPos.y) {
+					if (CheckStraightConnection (_sourcePos, _targetPos, _targetLaderDirection)) {
+						return true;
+					}
+				}
+				if (_sourcePos.y < _targetPos.y) {
+					if (CheckOppositConnection (_sourcePos, _targetPos, _targetLaderDirection)) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
+	public static int EnumCount <T>(){
+		return System.Enum.GetValues (typeof(T)).Length;
 	}
 }

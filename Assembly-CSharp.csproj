@@ -54,7 +54,10 @@
      <Compile Include="Assets\Scripts\Map\MapController.cs" />
      <Compile Include="Assets\Scripts\Map\Node.cs" />
      <Compile Include="Assets\Scripts\Map\NodeCollider.cs" />
+     <Compile Include="Assets\Scripts\Map\NodeIndexer.cs" />
+     <Compile Include="Assets\Scripts\Map\PathIndexer.cs" />
      <Compile Include="Assets\Scripts\Map\Trigger.cs" />
+     <Compile Include="Assets\Scripts\Map\TriggerIndexer.cs" />
      <Compile Include="Assets\Scripts\System\GameControllerLoader.cs" />
      <Compile Include="Assets\Scripts\System\InputController.cs" />
      <Compile Include="Assets\Scripts\System\MapControllerLoader.cs" />
@@ -63,7 +66,6 @@
      <Compile Include="Assets\Scripts\Units\DynamicObject.cs" />
      <Compile Include="Assets\Scripts\Units\Move.cs" />
      <Compile Include="Assets\Scripts\Units\Rotate.cs" />
-     <Compile Include="Assets\Scripts\Units\Rotate1.cs" />
      <Compile Include="Assets\Scripts\Units\Snowball.cs" />
      <Compile Include="Assets\Scripts\Units\SnowballCollider.cs" />
      <Compile Include="Assets\Scripts\Units\Unit.cs" />

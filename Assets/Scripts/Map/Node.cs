@@ -2,74 +2,20 @@
 using System.Collections;
 
 [System.Serializable]
-public class Node {
+public class Node
+{
 	
-	[System.Serializable]
-	public class NeighboursReferenceIndexer {
-		[SerializeField] int[] walkNodes;
-
-		public Node this [int i] {
-			get {
-				return MapController.walkNodes [walkNodes [i]];
-			}
-			set {
-				walkNodes [i] = value.id;
-			}
-		}
-
-		public int Length {
-			get {
-				return walkNodes.Length;
-			}
-		}
-
-		public NeighboursReferenceIndexer (int[] _neighbours) {
-			walkNodes = _neighbours;
-		}
-	}
-
-	[System.Serializable]
-	public class TriggersReferenceIndexer {
-		[SerializeField] int[] triggers;
-
-		public TriggersReferenceIndexer (int[] _triggers) {
-			triggers = _triggers;
-		}
-
-		public Trigger this [int i] {
-			get {
-				return MapController.triggers [triggers [i]];
-			}
-			set {
-				triggers [i] = value.id;
-			}
-		}
-
-		public int Length {
-			get {
-				return triggers.Length;
-			}
-		}
-	}
-
-	public int type;
-	public NodeTypes Type {
-		get {
-			return (NodeTypes)type;
-		}
-		set {
-			type = (int)value;
-		}
-	}
-
 	[SerializeField] bool walk;
+
 	public bool Walk {
 		get {
 			return walk;
 		}
 		set {
 			walk = value;
-			collider.enabled = value;
+			if (nodeCollider != null) {
+				nodeCollider.GetComponent<SphereCollider> ().enabled = value;
+			}
 		}
 	}
 
@@ -78,13 +24,16 @@ public class Node {
 	public bool activateOnTouch;
 	public bool noRepeat;
 
-	public NeighboursReferenceIndexer WalkNodes;
-	public TriggersReferenceIndexer Triggers;
+	public NodeTypes type;
+	public Direction ladderDirection;
 
-	[System.NonSerialized] public GameObject model;
-	[System.NonSerialized] NodeCollider modelCollider;
-	[System.NonSerialized] SphereCollider collider;
+	public NodeIndexer LocalNodes;
+	public NodeIndexer WalkNodes;
+	public TriggersIndexer Triggers;
 
+	// Reference to hit collider controller
+	[System.NonSerialized] NodeCollider nodeCollider;
+	
 	[SerializeField]float x;
 	[SerializeField]float y;
 	[SerializeField]float z;
@@ -104,6 +53,7 @@ public class Node {
 	[System.NonSerialized] public Node parent;
 	[System.NonSerialized] public float gCost;
 	[System.NonSerialized] public float hCost;
+
 	public float fCost {
 		get {
 			return gCost + hCost;
@@ -111,34 +61,46 @@ public class Node {
 	}
 
 	// Constructor
-	public Node(int _id, NodeTypes _type, bool _enabled, bool _noRepeat, bool _activateOnTouch, Vector3 _position, int[] _neighbours, int[] _triggers) {
+	public Node
+	(
+		int _id,
+		NodeTypes _type,
+		bool _walk,
+		bool _noRepeat,
+		bool _activateOnTouch,
+		Vector3 _position,
+		int[] _walknodes,
+		int[] _localnodes,
+		int[] _triggers
+	)
+	{
 		id = _id;
-		Type = _type;
+		type = _type;
+		Walk = _walk;
 		noRepeat = _noRepeat;
 		activateOnTouch = _activateOnTouch;
 		Position = _position;
-		WalkNodes = new NeighboursReferenceIndexer(_neighbours);
-		Triggers = new TriggersReferenceIndexer(_triggers);
+		WalkNodes = new NodeIndexer (_walknodes);
+		LocalNodes = new NodeIndexer (_localnodes);
+		Triggers = new TriggersIndexer (_triggers);
 
-		SetModel (_enabled);
+		SetCollider ();
 	}
 
-	public void SetModel (bool _enabled) {
-		model = GameObject.Instantiate (MapController.nodeCollider);
+	public void SetCollider ()
+	{
+		GameObject colliderObject = GameObject.Instantiate (MapController.nodeCollider);
 
-		Transform modelTransform = model.GetComponent<Transform> ();
+		Transform modelTransform = colliderObject.GetComponent<Transform> ();
 		modelTransform.localPosition = Position;
 
-		modelCollider = model.GetComponent<NodeCollider> ();
-		modelCollider.node = this;
-
-		collider = model.GetComponent<SphereCollider>();
-
-		Walk = _enabled;
-		activated = false;
+		nodeCollider = colliderObject.GetComponent<NodeCollider> ();
+		nodeCollider.node = this;
+		nodeCollider.GetComponent<SphereCollider> ().enabled = Walk;
 	}
 
-	bool SetWaypointAsActivatedOnce () {
+	bool SetWaypointAsActivatedOnce ()
+	{
 		if (noRepeat && activated) {
 			return true;
 		}
@@ -146,7 +108,8 @@ public class Node {
 		return false;
 	}
 
-	public void ActivateWalk() {
+	public void ActivateWalk ()
+	{
 		if (SetWaypointAsActivatedOnce ()) {
 			return;
 		}
@@ -154,7 +117,8 @@ public class Node {
 		Walk = !Walk;
 	}
 
-	public void ActivateTriggers() {
+	public void ActivateTriggers ()
+	{
 		if (SetWaypointAsActivatedOnce ()) {
 			return;
 		}

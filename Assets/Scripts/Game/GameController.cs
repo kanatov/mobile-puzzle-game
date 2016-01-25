@@ -55,13 +55,13 @@ public static class GameController {
 	}
 
 	public static void SaveGameSession () {
-		SaveLoad.Save (MapController.walkNodes, SaveLoad.nameGameSessionWaypoints);
+		SaveLoad.Save (MapController.currentLevelNodes, SaveLoad.nameGameSessionWaypoints);
 		SaveLoad.Save (MapController.dynamicObjects, SaveLoad.nameGameSessionUnits);
 		SaveLoad.Save (MapController.triggers, SaveLoad.nameGameSessionTriggers);
 	}
 
 	public static void LoadGameSession () {
-		MapController.walkNodes = (Node[])SaveLoad.Load (SaveLoad.nameGameSessionWaypoints);
+		MapController.currentLevelNodes = (Node[])SaveLoad.Load (SaveLoad.nameGameSessionWaypoints);
 		MapController.dynamicObjects = (List<DynamicObject>)SaveLoad.Load (SaveLoad.nameGameSessionUnits);
 		MapController.triggers = (Trigger[])SaveLoad.Load (SaveLoad.nameGameSessionTriggers);
 	}

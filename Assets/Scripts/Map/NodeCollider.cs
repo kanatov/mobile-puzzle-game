@@ -8,7 +8,7 @@ public class NodeCollider : MonoBehaviour {
 		if (node.activateOnTouch) {
 			node.ActivateTriggers ();
 		} else {
-			MapController.player.GoTo (MapController.walkNodes [node.id]);
+			MapController.player.GoTo (node);
 		}
 	}
 }

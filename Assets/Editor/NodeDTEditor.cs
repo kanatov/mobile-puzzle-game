@@ -13,7 +13,6 @@ public class NodeDTEditor : Editor {
 		nodeDTTransform = nodeDT.GetComponent<Transform>();
 
 		// Draw UI
-		DefaultUIControl ("dynamicObjectTypes");
 		UnitModelUIControl ();
 		DefaultUIControl ("walkNodes");
 		DefaultUIControl ("localNodes");
@@ -29,19 +28,25 @@ public class NodeDTEditor : Editor {
 	}
 
 	void UnitModelUIControl () {
+		// Collider type selector
+		ColliderTypes colliderType = (ColliderTypes)EditorGUILayout.EnumPopup ("Collider Type:", nodeDT.unitType);
+
+		if (colliderType != nodeDT.unitType) {
+			nodeDT.unitType = colliderType;
+			SetModel ();
+		}
+
+		// Model selector
 		GameObject newModel = (GameObject)EditorGUILayout.ObjectField ("Collider:", nodeDT.model, typeof(GameObject), false);
 
 		if (newModel != nodeDT.model) {
 			nodeDT.model = newModel;
-
-			if (nodeDT.model == null) {
-				RemoveChild ();
-				return;
-			}
 			SetModel ();
 		}
 
-		if (nodeDT.model != null) {
+		if (nodeDT.unitType == ColliderTypes.Node) {
+			RemoveChild ();
+		} else {
 			DynamicObjectRotationUIControl ();
 		}
 	}
@@ -87,13 +92,13 @@ public class NodeDTEditor : Editor {
 	}
 
 	void NodeTypeUIControl () {
-		NodeTypes nodeType = (NodeTypes)EditorGUILayout.EnumPopup ("Neighbour Type:", nodeDT.Type);
+		NodeTypes nodeType = (NodeTypes)EditorGUILayout.EnumPopup ("Neighbour Type:", nodeDT.type);
 
-		if (nodeType != nodeDT.Type) {
-			nodeDT.Type = nodeType;
+		if (nodeType != nodeDT.type) {
+			nodeDT.type = nodeType;
 		}
 
-		if (nodeDT.Type == NodeTypes.Ladder) {
+		if (nodeDT.type == NodeTypes.Ladder) {
 			Direction ladderDirection = (Direction)EditorGUILayout.EnumPopup ("Ladder Base:", nodeDT.ladderDirection);
 
 			if (ladderDirection != nodeDT.ladderDirection) {
