@@ -37,13 +37,17 @@ class LevelUpdater : Editor {
 
 		for (int a = 0; a < nodes.Length; a++) {
 			NodeDT nodeDT = nodes[a].GetComponent<NodeDT> ();
+			DynamicObjectDT dynamicObjectDT = nodes[a].GetComponent<DynamicObjectDT> ();
+
 			SetNodeNetwork (nodeDT);
 
 			// Check triggers
 			RemoveAlliensFromTriggers (nodeDT);
 
 			// Set prefab path
-			nodeDT.unitPrefabPath = GetModelPath (nodeDT);
+			if (dynamicObjectDT) {
+				dynamicObjectDT.unitPrefabPath = GetModelPath (dynamicObjectDT);
+			}
 
 			// Set icon
 			SetIcon (nodes [a]);
@@ -180,12 +184,12 @@ class LevelUpdater : Editor {
 		}
 	}
 
-	static string GetModelPath (NodeDT _nodeDT) {
-		if (_nodeDT.model == null) {
+	static string GetModelPath (DynamicObjectDT _dynamicObjectDT) {
+		if (_dynamicObjectDT.model == null) {
 			return null;
 		}
 
-		string path = AssetDatabase.GetAssetPath (_nodeDT.model);
+		string path = AssetDatabase.GetAssetPath (_dynamicObjectDT.model);
 		path = path.Substring (0, path.Length - 7);
 		path = path.Substring (17);
 		return path;

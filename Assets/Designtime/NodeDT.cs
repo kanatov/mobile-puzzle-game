@@ -11,10 +11,4 @@ public class NodeDT : MonoBehaviour {
 	public bool walk;
 	public NodeTypes type;
 	public Direction ladderDirection;
-
-	// Collider properties
-	public ColliderTypes unitType;
-	public GameObject model;
-	[HideInInspector] public string unitPrefabPath;
-	public Direction unitDirection;
 }

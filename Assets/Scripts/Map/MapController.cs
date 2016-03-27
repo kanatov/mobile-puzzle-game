@@ -10,11 +10,9 @@ public enum NodeTypes {
 	Vertical
 }
 
-public enum ColliderTypes {
-	Node = 0,
-	Unit,
-	SnowBall,
-	Finish
+public enum DynamicObjectTypes {
+	Unit = 0,
+	SnowBall
 }
 
 public enum Direction {
@@ -123,11 +121,11 @@ public static class MapController {
 			}
 
 			// Prepare units
-			if (nodeDT.unitType != ColliderTypes.Node) {
-				if (nodeDT.unitPrefabPath != null && nodeDT.unitPrefabPath != "") {
-					newDynamicObjects.Add (GetDynamicObject (nodeDT));
-				}
-			}
+//			if (nodeDT.dynamicObjectType != DynamicObjectTypes.Node) {
+//				if (nodeDT.unitPrefabPath != null && nodeDT.unitPrefabPath != "") {
+//					newDynamicObjects.Add (GetDynamicObject (nodeDT));
+//				}
+//			}
 		}
 
 		D.Log ("Map Init: Copy dynamic objects");
@@ -182,25 +180,25 @@ public static class MapController {
 
 
 	static DynamicObject GetDynamicObject(NodeDT _nodeDT) {
-		DynamicObject dynamicObject;
+		DynamicObject dynamicObject = null;
 
-		switch (_nodeDT.unitType) {
-		case ColliderTypes.SnowBall :
-			dynamicObject = new Snowball (
-				_nodeDT.unitPrefabPath,
-				_nodeDT.unitDirection,
-				GetNodeByGO (_nodeDT.gameObject)
-			);
-			break;
-
-		default :
-			dynamicObject = new Unit (
-				_nodeDT.unitPrefabPath,
-				_nodeDT.unitDirection,
-				GetNodeByGO (_nodeDT.gameObject)
-			);
-			break;
-		}
+//		switch (_nodeDT.dynamicObjectType) {
+//		case DynamicObjectTypes.SnowBall :
+//			dynamicObject = new Snowball (
+//				_nodeDT.unitPrefabPath,
+//				_nodeDT.unitDirection,
+//				GetNodeByGO (_nodeDT.gameObject)
+//			);
+//			break;
+//
+//		default :
+//			dynamicObject = new Unit (
+//				_nodeDT.unitPrefabPath,
+//				_nodeDT.unitDirection,
+//				GetNodeByGO (_nodeDT.gameObject)
+//			);
+//			break;
+//		}
 
 		return dynamicObject;
 	}

@@ -1,22 +1,24 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj" RefactoringSettings.EnableRefactorings="True">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Map/MapController.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Editor/NodeDTEditor.cs">
     <Files>
+      <File FileName="Assets/Scripts/Map/Trigger.cs" Line="72" Column="3" />
       <File FileName="Assets/DesignTime/TriggerDT.cs" Line="4" Column="17" />
-      <File FileName="Assets/Editor/LevelUpdater.cs" Line="1" Column="1" />
-      <File FileName="Assets/Scripts/Map/MapController.cs" Line="56" Column="21" />
-      <File FileName="Assets/Editor/NodeDTEditor.cs" Line="1" Column="1" />
-      <File FileName="Assets/Scripts/Units/Snowball.cs" Line="40" Column="21" />
-      <File FileName="Assets/Scripts/Units/Unit.cs" Line="1" Column="1" />
+      <File FileName="Assets/Editor/LevelUpdater.cs" Line="148" Column="5" />
+      <File FileName="Assets/Scripts/Map/MapController.cs" Line="188" Column="26" />
+      <File FileName="Assets/Editor/NodeDTEditor.cs" Line="32" Column="104" />
+      <File FileName="Assets/Scripts/Units/Snowball.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/Units/Unit.cs" Line="109" Column="14" />
       <File FileName="Assets/Scripts/Units/SnowballCollider.cs" Line="1" Column="1" />
-      <File FileName="Assets/Scripts/Map/Node.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/Map/Node.cs" Line="127" Column="22" />
       <File FileName="Assets/Scripts/Units/DynamicObject.cs" Line="1" Column="1" />
       <File FileName="Assets/Scripts/Map/NodeIndexer.cs" Line="1" Column="1" />
       <File FileName="Assets/Scripts/System/InputController.cs" Line="1" Column="1" />
       <File FileName="Assets/Scripts/Map/NodeCollider.cs" Line="1" Column="1" />
-      <File FileName="Assets/Scripts/Map/Trigger.cs" Line="38" Column="15" />
       <File FileName="Assets/Editor/TriggerDTEditor.cs" Line="80" Column="4" />
-      <File FileName="Assets/Scripts/System/MapControllerLoader.cs" Line="6" Column="18" />
+      <File FileName="Assets/Scripts/System/MapControllerLoader.cs" Line="1" Column="1" />
+      <File FileName="Assets/Editor/AutoSnap.cs" Line="12" Column="33" />
+      <File FileName="Assets/DesignTime/NodeDT.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
