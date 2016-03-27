@@ -104,6 +104,7 @@ public static class MapController {
 		// Fill nodes
 		for (int i = 0; i < currentLevelNodes.Length; i++) {
 			NodeDT nodeDT = currentLevelNodesDT [i].GetComponent<NodeDT> ();
+			DynamicObjectDT dynamicObjectDT = currentLevelNodesDT [i].GetComponent<DynamicObjectDT> ();
 
 			// Prepare walknodes
 			for (int k = 0; k < currentLevelNodes [i].WalkNodes.Length; k++) {
@@ -121,11 +122,11 @@ public static class MapController {
 			}
 
 			// Prepare units
-//			if (nodeDT.dynamicObjectType != DynamicObjectTypes.Node) {
-//				if (nodeDT.unitPrefabPath != null && nodeDT.unitPrefabPath != "") {
-//					newDynamicObjects.Add (GetDynamicObject (nodeDT));
-//				}
-//			}
+			if (dynamicObjectDT != null) {
+				if (dynamicObjectDT.unitPrefabPath != null && dynamicObjectDT.unitPrefabPath != "") {
+					newDynamicObjects.Add (GetDynamicObject (dynamicObjectDT));
+				}
+			}
 		}
 
 		D.Log ("Map Init: Copy dynamic objects");
@@ -179,26 +180,26 @@ public static class MapController {
 	}
 
 
-	static DynamicObject GetDynamicObject(NodeDT _nodeDT) {
+	static DynamicObject GetDynamicObject(DynamicObjectDT _nodeDT) {
 		DynamicObject dynamicObject = null;
 
-//		switch (_nodeDT.dynamicObjectType) {
-//		case DynamicObjectTypes.SnowBall :
-//			dynamicObject = new Snowball (
-//				_nodeDT.unitPrefabPath,
-//				_nodeDT.unitDirection,
-//				GetNodeByGO (_nodeDT.gameObject)
-//			);
-//			break;
-//
-//		default :
-//			dynamicObject = new Unit (
-//				_nodeDT.unitPrefabPath,
-//				_nodeDT.unitDirection,
-//				GetNodeByGO (_nodeDT.gameObject)
-//			);
-//			break;
-//		}
+		switch (_nodeDT.dynamicObjectType) {
+		case DynamicObjectTypes.SnowBall :
+			dynamicObject = new Snowball (
+				_nodeDT.unitPrefabPath,
+				_nodeDT.unitDirection,
+				GetNodeByGO (_nodeDT.gameObject)
+			);
+			break;
+
+		default :
+			dynamicObject = new Unit (
+				_nodeDT.unitPrefabPath,
+				_nodeDT.unitDirection,
+				GetNodeByGO (_nodeDT.gameObject)
+			);
+			break;
+		}
 
 		return dynamicObject;
 	}

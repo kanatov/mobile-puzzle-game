@@ -59,6 +59,9 @@ public class DynamicObjectDTEditor : Editor {
 
 		// Instant new children
 		GameObject newChild = (GameObject)PrefabUtility.InstantiatePrefab (dynamicObjectDT.model);
+		if (newChild == null) {
+			return;
+		}
 		Transform newChildTransform = newChild.GetComponent<Transform> ();
 		newChildTransform.SetParent (dynamicObjectDTTransform);
 		newChildTransform.localPosition = Vector3.zero;
