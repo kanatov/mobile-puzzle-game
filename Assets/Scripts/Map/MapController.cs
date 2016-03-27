@@ -13,7 +13,8 @@ public enum NodeTypes {
 public enum ColliderTypes {
 	Node = 0,
 	Unit,
-	SnowBall
+	SnowBall,
+	Finish
 }
 
 public enum Direction {
@@ -46,6 +47,11 @@ public static class MapController {
 	public static void Init () {
 		D.Log ("___Map init");
 		GameController.ClearSavedData ();
+
+//		GameObject[] lights = GameObject.FindGameObjectsWithTag ("Light");
+//		foreach (var _light in lights) {
+//			_light.GetComponent<Light>().shadows = LightShadows.None;
+//		}
 
 		currentLevelNodesDT = GameObject.FindGameObjectsWithTag (TAG_NODE);
 		triggersDT = new List<GameObject> ();
@@ -166,7 +172,7 @@ public static class MapController {
 			triggersList.Count,
 			path,
 			triggerDT.prefab,
-			triggerDT.tileDirection,
+			triggerDT.modelDirection,
 			0,
 			activateNodes,
 			triggerDT.removeOnActivation

@@ -8,5 +8,5 @@ public class TriggerDT : MonoBehaviour {
 	public bool removeOnActivation;
 	[SerializeField]
 	public GameObject model;
-	public Direction tileDirection;
+	public Direction modelDirection;
 }

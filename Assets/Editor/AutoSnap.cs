@@ -7,9 +7,9 @@ public class AutoSnap : EditorWindow
 	private Vector3 prevRotation;
 	private bool doSnap = true;
 	private bool doRotateSnap = true;
-	private float snapValueX = 1;
-	private float snapValueY = 1;
-	private float snapValueZ = 1;
+	private float snapValueX = 0.866f;
+	private float snapValueY = 0.5f;
+	private float snapValueZ = 0.5f;
 	private float snapRotateValue = 1;
 	
 	private const string doSnapKey        = "AutoSnap_doSnapKey";

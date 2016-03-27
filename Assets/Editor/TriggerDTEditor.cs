@@ -67,15 +67,15 @@ public class TriggerDTEditor : Editor {
 		Transform newChildTransform = newChild.GetComponent<Transform> ();
 		newChildTransform.SetParent (triggerDTTransform);
 		newChildTransform.localPosition = Vector3.zero;
-		newChildTransform.eulerAngles = MapController.GetEulerAngle(triggerDT.tileDirection);
+		newChildTransform.eulerAngles = MapController.GetEulerAngle(triggerDT.modelDirection);
 		newChildTransform.tag = "Untagged";
 	}
 
 	void TriggerRotationUIControl () {
-		Direction rotation = (Direction)EditorGUILayout.EnumPopup ("Trigger Rotation:", triggerDT.tileDirection);
+		Direction rotation = (Direction)EditorGUILayout.EnumPopup ("Model Rotation:", triggerDT.modelDirection);
 
-		if (rotation != triggerDT.tileDirection) {
-			triggerDT.tileDirection = rotation;
+		if (rotation != triggerDT.modelDirection) {
+			triggerDT.modelDirection = rotation;
 			SetModel ();
 		}
 	}

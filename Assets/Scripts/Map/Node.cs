@@ -25,7 +25,7 @@ public class Node
 	public bool noRepeat;
 
 	public NodeTypes type;
-	public Direction ladderDirection;
+	public Direction ladderDir;
 
 	public NodeIndexer LocalNodes;
 	public NodeIndexer WalkNodes;

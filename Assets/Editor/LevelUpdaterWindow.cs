@@ -27,7 +27,7 @@ class LevelUpdaterWindow : EditorWindow {
 
 		// Draw filed for waypoint place
 		instanceObject = (GameObject)EditorGUILayout.ObjectField(
-			"NodeDT",
+			"New object",
 			instanceObject, 
 			typeof(GameObject),
 			false

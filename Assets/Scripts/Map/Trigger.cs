@@ -3,13 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 
 [System.Serializable]
-public class Trigger : DynamicObject{
+public class Trigger : DynamicObject
+{
 
 	[System.Serializable]
-	public class ActivateWaypointsIndexer {
+	public class ActivateWaypointsIndexer
+	{
 		[SerializeField] int[] activateWaypoints;
 
-		public ActivateWaypointsIndexer (int[] _activateWaypoints) {
+		public ActivateWaypointsIndexer (int[] _activateWaypoints)
+		{
 			activateWaypoints = _activateWaypoints;
 		}
 
@@ -40,7 +43,8 @@ public class Trigger : DynamicObject{
 		int _currentWaypoint,
 		int[] _activateWaypoints,
 		bool _removeOnActivation
-	) {
+	)
+	{
 		id = _id;
 		prefabPath = _prefabPath;
 		modelDirection = _tileDirection;
@@ -52,18 +56,20 @@ public class Trigger : DynamicObject{
 		SetModel ();
 	}
 
-	public override void SetModel () {
-		if (prefabPath == "") {
+	public override void SetModel ()
+	{
+ 		if (prefabPath == "") {
 			return;
 		}
 
 		model = GameObject.Instantiate (Resources.Load<GameObject> (prefabPath));
 		model.GetComponent<Transform> ().position = Path [PositionInPath].Position;
-		model.GetComponent<Transform> ().eulerAngles = MapController.GetEulerAngle(modelDirection);
+		model.GetComponent<Transform> ().eulerAngles = MapController.GetEulerAngle (modelDirection);
 		model.tag = "Trigger";
 	}
 
-	public void Activate() {
+	public void Activate ()
+	{
 		for (int i = 0; i < ActivateWaypoints.Length; i++) {
 			ActivateWaypoints [i].ActivateWalk ();
 		}
@@ -76,7 +82,8 @@ public class Trigger : DynamicObject{
 		Move ("activate");
 	}
 
-	public override void Move (string _callback) {
+	public override void Move (string _callback)
+	{
 		if (prefabPath == null) {
 			return;
 		}

@@ -44,7 +44,7 @@ public class NodeDTEditor : Editor {
 			SetModel ();
 		}
 
-		if (nodeDT.unitType == ColliderTypes.Node) {
+		if (nodeDT.unitType == ColliderTypes.Node || nodeDT.unitType == ColliderTypes.Finish) {
 			RemoveChild ();
 		} else {
 			DynamicObjectRotationUIControl ();
