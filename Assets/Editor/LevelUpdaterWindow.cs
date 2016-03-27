@@ -50,7 +50,7 @@ class LevelUpdaterWindow : EditorWindow {
 		if (GUILayout.Button ("Update level")) {
 			LevelUpdater.UpdateTiles ();
 			LevelUpdater.UpdateNodes ();
-			LevelUpdater.UpdateTriggers ();
+			EditorSceneManager.MarkAllScenesDirty ();
 		}
 
 		// Save game button

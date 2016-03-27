@@ -8,7 +8,7 @@ using System.Collections.Generic;
 [System.Serializable]
 [CustomEditor(typeof(MapControllerLoader))]
 class LevelUpdater : Editor {
-	[SerializeField] static GameObject[] nodes;
+	[SerializeField] public static GameObject[] nodes;
 	static readonly float walkNodeDistance = 0.9f;
 	static readonly float localNodeDistance = 1f;
 
@@ -41,9 +41,6 @@ class LevelUpdater : Editor {
 
 			SetNodeNetwork (nodeDT);
 
-			// Check triggers
-			RemoveAlliensFromTriggers (nodeDT);
-
 			// Set prefab path
 			if (dynamicObjectDT) {
 				dynamicObjectDT.unitPrefabPath = GetModelPath (dynamicObjectDT);
@@ -55,8 +52,6 @@ class LevelUpdater : Editor {
 			// Save changes
 			EditorUtility.SetDirty(nodeDT);
 		}
-
-		EditorSceneManager.MarkAllScenesDirty ();
 	}
 
 	static void SetNodeNetwork (NodeDT _nodeDT) {
@@ -105,56 +100,16 @@ class LevelUpdater : Editor {
 		}
 	}
 
+
 	static void SetIcon (GameObject _nodeDTInstance) {
 		IconManager.SetIcon (_nodeDTInstance, IconManager.Icon.DiamondGray);
 		NodeDT _nodeDT = _nodeDTInstance.GetComponent<NodeDT>();
 
 		if (!_nodeDT.walk) {
 			IconManager.SetIcon (_nodeDTInstance, IconManager.Icon.DiamondRed);
-		}
-		
-		if (_nodeDT.triggers != null && _nodeDT.triggers.Length > 0) {
-			IconManager.SetIcon (_nodeDTInstance, IconManager.Icon.DiamondYellow);
-		}
+		}		
 	}
-
-	static void RemoveAlliensFromTriggers (NodeDT _nodeDT) {
-		if (_nodeDT.triggers != null) {
-			for (int i = 0; i < _nodeDT.triggers.Length; i++) {
-				if (_nodeDT.triggers [i] == null) {
-					continue;
-				}
-				if (_nodeDT.triggers [i].GetComponent<TriggerDT> () == null) {
-					_nodeDT.triggers [i] = null;
-				}
-			}
-		}
-	}
-
-	public static void UpdateTriggers () {
-		GameObject[] items = MapController.SetContainer (MapController.TAG_TRIGGER);
-
-		foreach (var item in items) {
-			TriggerDT triggerDT = item.GetComponent<TriggerDT> ();
-
-			if (triggerDT.activateNodes.Length == 0) {
-				D.LogWarning ("No activate nodes in trigger: " + triggerDT.GetComponent<Transform> ().position);
-			}
-			if (triggerDT.path.Length == 0) {
-				triggerDT.path = new GameObject[1];
-			}
-			Vector3 triggerDTPos = triggerDT.GetComponent<Transform> ().position;
-			foreach (var _node in nodes) {
-				Vector3 nodeDTPos = _node.GetComponent<Transform> ().position;
-				if (triggerDTPos == nodeDTPos) {
-					triggerDT.path [0] = _node.gameObject;
-				}
-			}
-
-			EditorUtility.SetDirty (triggerDT);
-		}
-	}
-
+				
 	static void DrawNodeNetwork () {
 		if (nodes == null) {
 			return;

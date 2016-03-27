@@ -16,14 +16,14 @@ public class DynamicObjectDTEditor : Editor {
 		// Draw UI
 		UnitModelUIControl ();
 
-		// Save settings
-		EditorSceneManager.MarkAllScenesDirty ();
-		EditorUtility.SetDirty (dynamicObjectDT);
-
 		if(GUILayout.Button("Destroy dynamic object"))
 		{
 			Destroy();
 		}
+
+		// Save settings
+		EditorSceneManager.MarkAllScenesDirty ();
+		EditorUtility.SetDirty (dynamicObjectDT);
 	}
 
 	void UnitModelUIControl ()
