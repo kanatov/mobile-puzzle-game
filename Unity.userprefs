@@ -2,26 +2,26 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Editor/TriggerDTEditor.cs">
     <Files>
-      <File FileName="Assets/Designtime/TriggerDT.cs" Line="5" Column="21" />
-      <File FileName="Assets/Editor/LevelUpdater.cs" Line="30" Column="3" />
-      <File FileName="Assets/Scripts/Map/MapController.cs" Line="159" Column="40" />
-      <File FileName="Assets/Editor/NodeDTEditor.cs" Line="9" Column="17" />
-      <File FileName="Assets/Scripts/Units/Snowball.cs" Line="4" Column="2" />
-      <File FileName="Assets/Scripts/Units/Unit.cs" Line="38" Column="40" />
+      <File FileName="Assets/Editor/TriggerDTEditor.cs" Line="119" Column="57" />
+      <File FileName="Assets/Designtime/TriggerObjectDT.cs" Line="1" Column="1" />
+      <File FileName="Assets/Designtime/TriggerDT.cs" Line="1" Column="1" />
+      <File FileName="Assets/Editor/LevelUpdater.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/Map/MapController.cs" Line="1" Column="1" />
+      <File FileName="Assets/Editor/NodeDTEditor.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/Units/Snowball.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/Units/Unit.cs" Line="1" Column="1" />
       <File FileName="Assets/Scripts/Units/SnowballCollider.cs" Line="1" Column="1" />
-      <File FileName="Assets/Scripts/Map/Node.cs" Line="127" Column="22" />
+      <File FileName="Assets/Scripts/Map/Node.cs" Line="1" Column="1" />
       <File FileName="Assets/Scripts/Units/DynamicObject.cs" Line="1" Column="1" />
       <File FileName="Assets/Scripts/Map/NodeIndexer.cs" Line="1" Column="1" />
       <File FileName="Assets/Scripts/System/InputController.cs" Line="1" Column="1" />
       <File FileName="Assets/Scripts/Map/NodeCollider.cs" Line="1" Column="1" />
-      <File FileName="Assets/Editor/TriggerDTEditor.cs" Line="64" Column="1" />
       <File FileName="Assets/Scripts/System/MapControllerLoader.cs" Line="1" Column="1" />
-      <File FileName="Assets/Editor/AutoSnap.cs" Line="12" Column="33" />
-      <File FileName="Assets/Designtime/DynamicObjectDT.cs" Line="6" Column="45" />
-      <File FileName="Assets/Designtime/NodeDT.cs" Line="13" Column="35" />
-      <File FileName="Assets/Editor/DynamicObjectDTEditor.cs" Line="54" Column="3" />
-      <File FileName="Assets/Editor/LevelUpdaterWindow.cs" Line="53" Column="1" />
-      <File FileName="Assets/Designtime/TriggerObjectDT.cs" Line="6" Column="39" />
+      <File FileName="Assets/Editor/AutoSnap.cs" Line="1" Column="1" />
+      <File FileName="Assets/Designtime/DynamicObjectDT.cs" Line="1" Column="1" />
+      <File FileName="Assets/Designtime/NodeDT.cs" Line="1" Column="1" />
+      <File FileName="Assets/Editor/DynamicObjectDTEditor.cs" Line="1" Column="1" />
+      <File FileName="Assets/Editor/LevelUpdaterWindow.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
