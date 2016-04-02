@@ -4,18 +4,21 @@ using System.Collections.Generic;
 using GenericData;
 using System.Linq;
 
-public enum NodeTypes {
+public enum NodeTypes
+{
 	Horisontal = 0,
 	Ladder,
 	Vertical
 }
 
-public enum DynamicObjectTypes {
+public enum DynamicObjectTypes
+{
 	Unit = 0,
 	SnowBall
 }
 
-public enum Direction {
+public enum Direction
+{
 	Up = 0,
 	UpRight,
 	DownRight,
@@ -24,7 +27,8 @@ public enum Direction {
 	UpLeft,
 }
 
-public static class MapController {
+public static class MapController
+{
 	public static float tileHeight = 0.5f;
 	public static string TAG_UNIT = "Unit";
 	public static string TAG_TILE = "Tile";
@@ -32,7 +36,7 @@ public static class MapController {
 	public static string TAG_TRIGGER = "Trigger";
 	public static string TAG_CONTAINER = "sContainer";
 
-	public static GameObject nodeCollider = Resources.Load<GameObject>("Nodes/NodeCollider");
+	public static GameObject nodeCollider = Resources.Load<GameObject> ("Nodes/NodeCollider");
 	public static Node[] currentLevelNodes;
 	public static List<DynamicObject> dynamicObjects;
 	public static Trigger[] triggers;
@@ -40,9 +44,11 @@ public static class MapController {
 
 	public static List<Trigger> triggersList;
 	static GameObject[] currentLevelNodesDT;
-	static List<GameObject> triggersDT;
+	static List<string> triggersDTNames;
+	static List<TriggerDT> triggersDT;
 
-	public static void Init () {
+	public static void Init ()
+	{
 		D.Log ("___Map init");
 		GameController.ClearSavedData ();
 
@@ -52,7 +58,7 @@ public static class MapController {
 //		}
 
 		currentLevelNodesDT = GameObject.FindGameObjectsWithTag (TAG_NODE);
-		triggersDT = new List<GameObject> ();
+		triggersDTNames = new List<string> ();
 		triggersList = new List<Trigger> ();
 
 		GameController.LoadGameSession ();
@@ -65,9 +71,9 @@ public static class MapController {
 			PrepareGameSession ();
 		}
 
-		// Remove references and objects
+		// Remove references and objects after game inicialisation
 		currentLevelNodesDT = null;
-		triggersDT = null;
+		triggersDTNames = null;
 		triggersList = null;
 		GameObject.DestroyImmediate (GameObject.FindGameObjectWithTag (TAG_TRIGGER + TAG_CONTAINER));
 		GameObject.DestroyImmediate (GameObject.FindGameObjectWithTag (TAG_NODE + TAG_CONTAINER));
@@ -79,11 +85,13 @@ public static class MapController {
 	}
 
 
-	static void PrepareNewLevel () {
+	static void PrepareNewLevel ()
+	{
 		currentLevelNodes = new Node[currentLevelNodesDT.Length];
 		List <DynamicObject> newDynamicObjects = new List<DynamicObject> ();
 
 		D.Log ("Map Init: Populate empty nodes");
+
 		// Populate empty nodes
 		for (int i = 0; i < currentLevelNodes.Length; i++) {
 			NodeDT nodeDT = currentLevelNodesDT [i].GetComponent<NodeDT> ();
@@ -96,7 +104,7 @@ public static class MapController {
 				nodeDT.GetComponent<Transform> ().position,
 				new int[nodeDT.walkNodes.Length],
 				new int[nodeDT.localNodes.Length],
-				new int[nodeDT.triggers.Length]
+				new int[nodeDT.triggers.Count]
 			);
 		}
 
@@ -114,6 +122,11 @@ public static class MapController {
 			// Prepare localnodes
 			for (int m = 0; m < currentLevelNodes [i].LocalNodes.Length; m++) {
 				currentLevelNodes [i].LocalNodes [m] = GetNodeByGO (nodeDT.localNodes [m]);
+			}
+
+			// Copy TriggersDT from NodeDT
+			if (i == 0) {
+				triggersDT = nodeDT.triggersList;
 			}
 
 			// Prepare triggers
@@ -143,48 +156,60 @@ public static class MapController {
 	}
 
 
-	static Trigger GetTrigger(GameObject _triggerDT) {
+	static Trigger GetTrigger (string _triggerDTName)
+	{
 		// Check for duplicate
-		int triggerIndex = triggersDT.IndexOf (_triggerDT);
+		int triggerIndex = triggersDTNames.IndexOf (_triggerDTName);
 		if (triggerIndex != -1) {
 			return triggersList [triggerIndex];
 		}
 
+		// Trigger doesn't found, so add the new name to the array of existed names
+		triggersDTNames.Add (_triggerDTName);
+
 		// Prepare new Trigger
-		triggersDT.Add (_triggerDT);
-		TriggerDT triggerDT = _triggerDT.GetComponent<TriggerDT> ();
-//		Transform triggerDTTrans = _triggerDT.GetComponent<Transform> ();
+		int id = 0;
+		for (int i = 0; i < triggersDT.Count; i++)
+		{
+			if (triggersDT[i].name == _triggerDTName)
+			{
+				id = i;
+				break;
+			}
+		}
 
 		// Copy activateNodes
-		int[] activateNodes = new int[triggerDT.activateNodes.Length];
-		for (int i = 0; i < triggerDT.activateNodes.Length; i++) {
-			activateNodes [i] = GetNodeByGO (triggerDT.activateNodes [i]).id;
+		int[] activateNodes = new int[triggersDT[id].activateNodes.Count];
+		for (int i = 0; i < triggersDT[id].activateNodes.Count; i++) {
+			activateNodes [i] = GetNodeByGO (triggersDT[id].activateNodes [i]).id;
 		}
 
 		// Copy path
 		List<Node> path = new List<Node> ();
-		foreach(var _node in triggerDT.path){
+		foreach (var _node in triggersDT[id].path) {
 			path.Add (GetNodeByGO (_node));
-		};
+		}
+		;
 
-		triggersList.Add (new Trigger(
+		triggersList.Add (new Trigger (
 			triggersList.Count,
 			path,
-			triggerDT.prefab,
-			triggerDT.modelDirection,
+			triggersDT[id].prefab,
+			triggersDT[id].modelDirection,
 			0,
 			activateNodes,
-			triggerDT.removeOnActivation
+			triggersDT[id].removeOnActivation
 		));
-		return triggersList.Last();
+		return triggersList.Last ();
 	}
 
 
-	static DynamicObject GetDynamicObject(DynamicObjectDT _nodeDT) {
+	static DynamicObject GetDynamicObject (DynamicObjectDT _nodeDT)
+	{
 		DynamicObject dynamicObject = null;
 
 		switch (_nodeDT.dynamicObjectType) {
-		case DynamicObjectTypes.SnowBall :
+		case DynamicObjectTypes.SnowBall:
 			dynamicObject = new Snowball (
 				_nodeDT.unitPrefabPath,
 				_nodeDT.unitDirection,
@@ -205,7 +230,8 @@ public static class MapController {
 	}
 
 
-	static void PrepareGameSession () {
+	static void PrepareGameSession ()
+	{
 		foreach (var _node in currentLevelNodes) {
 			_node.SetCollider ();
 		}
@@ -218,7 +244,8 @@ public static class MapController {
 	}
 
 	// Pathfinding
-	public static List<Node> GetPath (Node _source, Node _target) {
+	public static List<Node> GetPath (Node _source, Node _target)
+	{
 		if (_source == _target) {
 			D.LogWarning ("Pathfinding: source == target");
 			return null;
@@ -269,7 +296,7 @@ public static class MapController {
 
 				if (newMovementCostToNeghbour < currentNode.WalkNodes [i].gCost || !opened.Contains (currentNode.WalkNodes [i])) {
 					currentNode.WalkNodes [i].gCost = newMovementCostToNeghbour;
-					currentNode.WalkNodes [i].hCost = Vector3.Distance (currentNode.WalkNodes[i].Position, _target.Position);
+					currentNode.WalkNodes [i].hCost = Vector3.Distance (currentNode.WalkNodes [i].Position, _target.Position);
 
 					currentNode.WalkNodes [i].parent = currentNode;
 
@@ -285,8 +312,8 @@ public static class MapController {
 			float distance = 0;
 
 			foreach (var cell in closed) {
-				float altDistance = Vector3.Distance(cell.Position, _target.Position);
-				if (distance == 0 || altDistance < distance){
+				float altDistance = Vector3.Distance (cell.Position, _target.Position);
+				if (distance == 0 || altDistance < distance) {
 					closestCell = cell;
 					distance = altDistance;
 				}
@@ -309,15 +336,18 @@ public static class MapController {
 	}
 		
 	// Helpers
-	public static int GetRotationDegree (Direction _unitRotation) {
+	public static int GetRotationDegree (Direction _unitRotation)
+	{
 		return (int)_unitRotation * 60;
 	}
 
-	public static Vector3 GetEulerAngle (Direction _rotation) {
+	public static Vector3 GetEulerAngle (Direction _rotation)
+	{
 		return new Vector3 (0f, GetRotationDegree (_rotation), 0f);
 	}
 
-	static Node GetNodeByGO (GameObject _target) {
+	static Node GetNodeByGO (GameObject _target)
+	{
 		if (_target == null) {
 			return null;
 		}
@@ -326,7 +356,8 @@ public static class MapController {
 	}
 
 	// Scene clear
-	public static GameObject[] SetContainer (string _tag) {
+	public static GameObject[] SetContainer (string _tag)
+	{
 		GameObject container = GameObject.FindGameObjectWithTag (_tag + TAG_CONTAINER);
 		
 		if (container == null) {
@@ -348,7 +379,8 @@ public static class MapController {
 		return items;
 	}
 
-	public static Direction GetOppositeDirection (Direction _direction) {
+	public static Direction GetOppositeDirection (Direction _direction)
+	{
 		int directionNumber = (int)_direction;
 		int directionsCount = System.Enum.GetValues (typeof(Direction)).Length;
 		if (directionNumber < 3) {
@@ -360,7 +392,8 @@ public static class MapController {
 		}
 	}
 
-	public static Direction GetPointDirection (Vector3 _source, Vector3 _target) {
+	public static Direction GetPointDirection (Vector3 _source, Vector3 _target)
+	{
 		Vector3 difference = _target - _source;
 
 		float x = difference.x;
@@ -392,16 +425,18 @@ public static class MapController {
 		Vector3 _sourcePos,
 		Vector3 _targetPos,
 		Direction _ladderDirection
-	) {
-		return _ladderDirection == GetPointDirection(_sourcePos, _targetPos);
+	)
+	{
+		return _ladderDirection == GetPointDirection (_sourcePos, _targetPos);
 	}
 
 	static bool CheckOppositConnection (
 		Vector3 _sourcePos,
 		Vector3 _targetPos,
 		Direction _ladderDirection
-	) {
-		Direction suitableDirection = GetOppositeDirection (GetPointDirection(_sourcePos, _targetPos));
+	)
+	{
+		Direction suitableDirection = GetOppositeDirection (GetPointDirection (_sourcePos, _targetPos));
 		return _ladderDirection == suitableDirection;
 	}
 
@@ -413,7 +448,8 @@ public static class MapController {
 		NodeTypes _targetType,
 		Vector3 _targetPos,
 		Direction _targetLaderDirection
-	) {
+	)
+	{
 		// Hor
 		if (_sourceType == NodeTypes.Horisontal) {
 			// Hor to Hor
@@ -469,7 +505,8 @@ public static class MapController {
 		return false;
 	}
 
-	public static int EnumCount <T>(){
+	public static int EnumCount <T> ()
+	{
 		return System.Enum.GetValues (typeof(T)).Length;
 	}
 }

@@ -5,10 +5,10 @@ using System.Collections.Generic;
 [System.Serializable]
 public class TriggerDT {
 	public string name;
-	public GameObject[] activateNodes;
+	public List<GameObject> activateNodes;
 	public string prefab;
-	public GameObject[] path;
+	public List<GameObject> path;
 	public bool removeOnActivation = false;
-	[SerializeField] public GameObject model;
+	public GameObject model;
 	public Direction modelDirection;
 }
