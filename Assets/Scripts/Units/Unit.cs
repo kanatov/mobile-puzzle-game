@@ -17,7 +17,7 @@ public class Unit : DynamicObject
 		prefabPath = _prefabPath;
 		modelDirection = _rotation;
 
-		Path = new PathIndexer (new List<Node>{ _source });
+		path = new PathIndexer (new List<Node>{ _source });
 		_source.Walk = false;
 		SetModel ();
 	}
@@ -32,82 +32,85 @@ public class Unit : DynamicObject
 			MapController.player = this;
 		}
 
+		D.Log ("Set model to unit: " + prefabPath);
+
 		model = GameObject.Instantiate (Resources.Load<GameObject> (prefabPath));
 
 		Transform modelTransform = model.GetComponent<Transform> ();
-		modelTransform.localPosition = Path [0].Position;
+
+		modelTransform.localPosition = path [0].Position;
 		modelTransform.eulerAngles = MapController.GetEulerAngle (modelDirection);
 
 		Move modelMove = model.GetComponent<Move> ();
 		if (modelMove != null) {
-			modelMove.Path = new List<Vector3> { Path [0].Position };
+			modelMove.Path = new List<Vector3> { path [0].Position };
 			modelMove.dynamicObject = this;
-			model.GetComponent<Rotate> ().target = Path [0].Position;
+			model.GetComponent<Rotate> ().target = path [0].Position;
 		}
 	}
 
 	public void GoTo (Node _target)
 	{
-		List<Node> newPath = MapController.GetPath (Path [0], _target);
+		List<Node> newPath = MapController.GetPath (path [0], _target);
 		if (newPath != null) {
-			Path = new PathIndexer (newPath);
+			path = new PathIndexer (newPath);
 			model.GetComponent<Move> ().enabled = true;
 		}
 	}
 
 	public override void Move (string _callback)
 	{
-		if (Path == null) {
+		if (path == null) {
 			Debug.LogWarning ("Path == null");
 			model.GetComponent<Move> ().enabled = false;
 			model.GetComponent<Rotate> ().enabled = false;
 			return;
 		}
 
-		if (Path.Count < 2) {
-			GameController.SaveGameSession ();
+		if (path.Count < 2) {
+			GameController.SavePlayerData ();
 			return;
 		}
 
 		List<Vector3> newPath = new List<Vector3> ();
 
 		// Set path Horisontal
-		if (Path [0].type == NodeTypes.Horisontal) {
-			if (Path [1].type == NodeTypes.Horisontal) {
-				newPath.Add (Path [1].Position);
+		if (path [0].type == NodeTypes.Horisontal) {
+			if (path [1].type == NodeTypes.Horisontal) {
+				newPath.Add (path [1].Position);
 			}
-			if (Path [1].type == NodeTypes.Ladder) {
-				newPath.Add (GetHorisontalSide (Path [0].Position, Path [1].Position));
-				newPath.Add (GetLadderMiddle (Path [1].Position));
+			if (path [1].type == NodeTypes.Ladder) {
+				newPath.Add (GetHorisontalSide (path [0].Position, path [1].Position));
+				newPath.Add (GetLadderMiddle (path [1].Position));
 			}
 		}
 
 		// Set path Ladder
-		if (Path [0].type == NodeTypes.Ladder) {
-			if (Path [1].type == NodeTypes.Horisontal) {
-				if (Path [0].Position.y > Path [1].Position.y) {
-					newPath.Add (GetHorisontalSide (Path [0].Position, Path [1].Position));
+		if (path [0].type == NodeTypes.Ladder) {
+			if (path [1].type == NodeTypes.Horisontal) {
+				if (path [0].Position.y > path [1].Position.y) {
+					newPath.Add (GetHorisontalSide (path [0].Position, path [1].Position));
 				} else {
-					newPath.Add (GetHorisontalSide (Path [1].Position, Path [0].Position));
+					newPath.Add (GetHorisontalSide (path [1].Position, path [0].Position));
 				}
-				newPath.Add (Path [1].Position);
+				newPath.Add (path [1].Position);
 			}
 
-			if (Path [1].type == NodeTypes.Ladder) {
-				newPath.Add (GetLadderMiddle (Path [1].Position));
+			if (path [1].type == NodeTypes.Ladder) {
+				newPath.Add (GetLadderMiddle (path [1].Position));
 			}
 		}
 
 		model.GetComponent<Move> ().Path = newPath;
 		model.GetComponent<Move> ().enabled = true;
-		model.GetComponent<Rotate> ().target = Path [1].Position;
+		model.GetComponent<Rotate> ().target = path [1].Position;
 		model.GetComponent<Rotate> ().enabled = true;
 
 		// Activate triggers
-		Path [0].Walk = true;
-		Path [1].Walk = false;
-		Path [1].ActivateTriggers ();
-		Path.RemoveAt (0);
+		path [0].Walk = true;
+		path [1].Walk = false;
+		path [1].ActivateTriggers ();
+		path.RemoveAt (0);
 	}
 
 	static Vector3 GetHorisontalSide (Vector3 _source, Vector3 _target)

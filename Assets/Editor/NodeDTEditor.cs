@@ -142,13 +142,14 @@ public class NodeDTEditor : Editor {
 			// Draw trigger body if active
 			if (isActiveCheck)
 			{
-				ModelPicker (i);
-
-				nodeDTCur.triggersList [i].removeOnActivation = EditorGUILayout.Toggle (
-					"Remove on actiovation: ",
-					nodeDTCur.triggersList [i].removeOnActivation
+				// Type
+				nodeDTCur.triggersList [i].type = (TriggerTypes)EditorGUILayout.EnumPopup (
+					"Type: ",
+					nodeDTCur.triggersList [i].type
 				);
 
+				// Model
+				ModelPicker (i);
 
 				// Populate path
 				if (nodeDTCur.triggersList [i].path == null || nodeDTCur.triggersList [i].path.Count == 0)

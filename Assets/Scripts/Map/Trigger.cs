@@ -33,25 +33,25 @@ public class Trigger : DynamicObject
 	}
 
 	public ActivateWaypointsIndexer ActivateWaypoints;
-	public bool removeOnActivation;
+	public TriggerTypes type;
 
 	public Trigger (
 		int _id, 
+		TriggerTypes _type,
 		List<Node> _path,
 		string _prefabPath,
 		Direction _tileDirection,
 		int _currentWaypoint,
-		int[] _activateWaypoints,
-		bool _removeOnActivation
+		int[] _activateWaypoints
 	)
 	{
 		id = _id;
+		type = _type;
 		prefabPath = _prefabPath;
 		modelDirection = _tileDirection;
-		Path = new PathIndexer (_path);
+		path = new PathIndexer (_path);
 		ActivateWaypoints = new ActivateWaypointsIndexer (_activateWaypoints);
 		currentNode = _currentWaypoint;
-		removeOnActivation = _removeOnActivation;
 
 		SetModel ();
 	}
@@ -63,7 +63,7 @@ public class Trigger : DynamicObject
 		}
 
 		model = GameObject.Instantiate (Resources.Load<GameObject> (prefabPath));
-		model.GetComponent<Transform> ().position = Path [PositionInPath].Position;
+		model.GetComponent<Transform> ().position = path [PositionInPath].Position;
 		model.GetComponent<Transform> ().eulerAngles = MapController.GetEulerAngle (modelDirection);
 		model.tag = "Trigger";
 	}
@@ -74,8 +74,15 @@ public class Trigger : DynamicObject
 			ActivateWaypoints [i].ActivateWalk ();
 		}
 
-		if (removeOnActivation) {
+		if (type == TriggerTypes.RemoveOnActivation)
+		{
 			GameObject.Destroy (model.gameObject);
+			return;
+		}
+
+		if (type == TriggerTypes.Finish)
+		{
+			GameController.Finish ();
 			return;
 		}
 
@@ -99,13 +106,13 @@ public class Trigger : DynamicObject
 			modelMove.dynamicObject = this;
 		}
 
-		if (Path.Count < 2) {
+		if (path.Count < 2) {
 			return;
 		}
 
 		PositionInPath = PositionInPath + 1;
 
-		modelMove.Path = new List<Vector3> { Path [PositionInPath].Position };
+		modelMove.Path = new List<Vector3> { path [PositionInPath].Position };
 		modelMove.enabled = true;
 	}
 }

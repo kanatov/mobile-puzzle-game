@@ -11,6 +11,13 @@ public enum NodeTypes
 	Vertical
 }
 
+public enum TriggerTypes
+{
+	General = 0,
+	RemoveOnActivation,
+	Finish
+}
+
 public enum DynamicObjectTypes
 {
 	Unit = 0,
@@ -36,10 +43,23 @@ public static class MapController
 	public static string TAG_TRIGGER = "Trigger";
 	public static string TAG_CONTAINER = "sContainer";
 
+	public static Node[] currentLevelNodes
+	{
+		get {return GameController.playerData.levelsData [GameController.playerData.currentLevel].currentLevelNodes;}
+		set {GameController.playerData.levelsData [GameController.playerData.currentLevel].currentLevelNodes = value;}
+	}
+	public static List<DynamicObject> dynamicObjects
+	{
+		get {return GameController.playerData.levelsData [GameController.playerData.currentLevel].dynamicObjects;}
+		set {GameController.playerData.levelsData [GameController.playerData.currentLevel].dynamicObjects = value;}
+	}
+	public static Trigger[] triggers
+	{
+		get {return GameController.playerData.levelsData [GameController.playerData.currentLevel].triggers;}
+		set {GameController.playerData.levelsData [GameController.playerData.currentLevel].triggers = value;}
+	}
+
 	public static GameObject nodeCollider = Resources.Load<GameObject> ("Nodes/NodeCollider");
-	public static Node[] currentLevelNodes;
-	public static List<DynamicObject> dynamicObjects;
-	public static Trigger[] triggers;
 	public static Unit player;
 
 	public static List<Trigger> triggersList;
@@ -47,11 +67,11 @@ public static class MapController
 	static List<string> triggersDTNames;
 	static List<TriggerDT> triggersDT;
 
+
+
 	public static void Init ()
 	{
 		D.Log ("___Map init");
-		GameController.ClearSavedData ();
-
 //		GameObject[] lights = GameObject.FindGameObjectsWithTag ("Light");
 //		foreach (var _light in lights) {
 //			_light.GetComponent<Light>().shadows = LightShadows.None;
@@ -61,9 +81,13 @@ public static class MapController
 		triggersDTNames = new List<string> ();
 		triggersList = new List<Trigger> ();
 
-		GameController.LoadGameSession ();
+		GameController.LoadPlayerData ();
 
-		if (currentLevelNodes == null || dynamicObjects == null || triggers == null) {
+		if (
+			currentLevelNodes == null
+			|| dynamicObjects == null
+			|| triggers == null
+		) {
 			D.Log ("___Map init: Prepare New Level");
 			PrepareNewLevel ();
 		} else {
@@ -152,7 +176,7 @@ public static class MapController
 			triggers [i] = triggersList [i];
 		}
 
-		GameController.SaveGameSession ();
+		GameController.SavePlayerData ();
 	}
 
 
@@ -193,12 +217,12 @@ public static class MapController
 
 		triggersList.Add (new Trigger (
 			triggersList.Count,
+			triggersDT[id].type,
 			path,
 			triggersDT[id].prefab,
 			triggersDT[id].modelDirection,
 			0,
-			activateNodes,
-			triggersDT[id].removeOnActivation
+			activateNodes
 		));
 		return triggersList.Last ();
 	}
@@ -237,6 +261,11 @@ public static class MapController
 		}
 		foreach (var _dynamicObject in dynamicObjects) {
 			_dynamicObject.SetModel ();
+			if (_dynamicObject.prefabPath.Contains("Snowball"))
+			{
+//				_dynamicObject.SetSnowballModel ();
+			}
+
 		}
 		foreach (var _trigger in triggers) {
 			_trigger.SetModel ();
@@ -441,7 +470,7 @@ public static class MapController
 	}
 
 	// Update Node Network
-	public static bool IsNodesConnected (
+	public static bool AreNodesConnected (
 		NodeTypes _sourceType,
 		Vector3 _sourcePos,
 		Direction _sourceLaderDirection,

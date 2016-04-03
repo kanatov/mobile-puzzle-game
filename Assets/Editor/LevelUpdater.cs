@@ -74,7 +74,7 @@ class LevelUpdater : Editor {
 				continue;
 			}
 
-			if (MapController.IsNodesConnected (
+			if (MapController.AreNodesConnected (
 				_nodeDT.type,
 				nodeDTPos,
 				_nodeDT.ladderDirection,

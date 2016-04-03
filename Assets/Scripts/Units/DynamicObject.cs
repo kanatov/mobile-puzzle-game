@@ -11,17 +11,17 @@ public class DynamicObject {
 		set {
 			currentNode = value;
 
-			if (currentNode == Path.Count) {
+			if (currentNode == path.Count) {
 				currentNode = 0;
 			}
 
 			if (currentNode == -1) {
-				currentNode = Path.Count - 1;
+				currentNode = path.Count - 1;
 			}
 		}
 	}
 
-	public PathIndexer Path;
+	public PathIndexer path;
 	public Direction modelDirection;
 	public int id;
 	public string prefabPath;

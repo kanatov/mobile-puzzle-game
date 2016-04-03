@@ -6,63 +6,58 @@ using System.Collections.Generic;
 public static class GameController {
 	public static PlayerData playerData;
 
-	public static void Init () {
+	public static void Init ()
+	{
 		Debug.Log ("___Init: Loading Player data");
-		playerData = (PlayerData)SaveLoad.Load(SaveLoad.namePlayerProgress);
+		LoadPlayerData ();
 
-		if (playerData == null) {
+		if (playerData == null) 
+		{
 			Debug.Log ("___Init: First start");
 			playerData = new PlayerData ();
-			SaveLoad.Save (playerData, SaveLoad.namePlayerProgress);
 			LoadScene (1);
 			return;
 		}
 
-//		Debug.Log ("___Init: Looking for Game session");
+		Debug.Log ("___Init: Update playerData");
+		playerData.Update ();
 
-//		foreach (var _level in playerData.levelState) {
-//			for (int i = 0; i < playerData.levelState.Length; i++) {
-//				if (playerData.levelState[i] == LevelState.GameSession) {
-//					Debug.Log ("___Init: Load Game Session");
-//					LoadScene (i);
-//					return;
-//				}
-//			}
-//		}
-
-		Debug.Log ("___Init: Loading Menu screen");
+		Debug.Log ("___Init: Load Game Session: " + playerData.currentLevel);
+		if (playerData.currentLevel != 0)
+		{
+			LoadScene (playerData.currentLevel);
+		}
 	}
 
-	public static void LoadScene(int _scene) {
+	public static void LoadScene(int _scene)
+	{
 		Debug.Log ("___Loading scene: " + _scene);
-		playerData.levelState [_scene] = LevelState.GameSession;
+		playerData.currentLevel = _scene;
 
-		if (_scene == 0) {
-			playerData.levelState [SceneManager.GetActiveScene().buildIndex] = LevelState.Locked;
-			ClearSavedData ();
-		}
-		SaveLoad.Save (playerData, SaveLoad.namePlayerProgress);
-
-
+		SavePlayerData ();
 		SceneManager.LoadScene (_scene);
 	}
 
-	public static void ClearSavedData() {
+	public static void Finish()
+	{
+		int currentScene = SceneManager.GetActiveScene ().buildIndex;
+		playerData.levelsData[playerData.currentLevel].state = LevelState.Finished;
+		LoadScene (0);
+	}
+
+	public static void ClearPlayerData()
+	{
 		SaveLoad.Delete (SaveLoad.namePlayerProgress);
-		SaveLoad.Delete (SaveLoad.nameGameSessionWaypoints);
-		SaveLoad.Delete (SaveLoad.nameGameSessionTriggers);
-		SaveLoad.Delete (SaveLoad.nameGameSessionUnits);
+		LoadScene (0);
 	}
 
-	public static void SaveGameSession () {
-		SaveLoad.Save (MapController.currentLevelNodes, SaveLoad.nameGameSessionWaypoints);
-		SaveLoad.Save (MapController.dynamicObjects, SaveLoad.nameGameSessionUnits);
-		SaveLoad.Save (MapController.triggers, SaveLoad.nameGameSessionTriggers);
+	public static void SavePlayerData ()
+	{
+		SaveLoad.Save (playerData, SaveLoad.namePlayerProgress);
 	}
 
-	public static void LoadGameSession () {
-		MapController.currentLevelNodes = (Node[])SaveLoad.Load (SaveLoad.nameGameSessionWaypoints);
-		MapController.dynamicObjects = (List<DynamicObject>)SaveLoad.Load (SaveLoad.nameGameSessionUnits);
-		MapController.triggers = (Trigger[])SaveLoad.Load (SaveLoad.nameGameSessionTriggers);
+	public static void LoadPlayerData ()
+	{
+		playerData = (PlayerData)SaveLoad.Load(SaveLoad.namePlayerProgress);
 	}
 }

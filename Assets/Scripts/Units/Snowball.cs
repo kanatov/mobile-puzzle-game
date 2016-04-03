@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 [System.Serializable]
 public class Snowball : Unit
 {
-
 	// Constructor
 	public Snowball
 	(
@@ -19,22 +19,41 @@ public class Snowball : Unit
 			_source
 		)
 	{
-		SetSnowballModel ();
+		SetModel ();
 	}
 
-	public void SetSnowballModel ()
+	public override void SetModel ()
 	{
+		if (model != null) {
+			GameObject.Destroy (model);
+		}
+
+		if (prefabPath.Contains ("Friend")) {
+			MapController.player = this;
+		}
+
+		D.Log ("Set model to unit: " + prefabPath);
+
+		model = GameObject.Instantiate (Resources.Load<GameObject> (prefabPath));
+
+		Transform modelTransform = model.GetComponent<Transform> ();
+
+		modelTransform.localPosition = path [0].Position;
+		modelTransform.eulerAngles = MapController.GetEulerAngle (modelDirection);
+
 		Move modelMove = model.GetComponent<Move> ();
 		if (modelMove != null) {
-			model.GetComponent<Move> ().dynamicObject = this;
+			modelMove.Path = new List<Vector3> { path [0].Position };
+			modelMove.dynamicObject = this;
+			model.GetComponent<Rotate> ().target = path [0].Position;
 			model.GetComponent<SnowballCollider> ().snowball = this;
 		}
 	}
-
+		
 	public void Dash (Direction _swipeDir)
 	{
-		if (Path [0].LocalNodes [(int)_swipeDir] != null) {
-			Node targetWalkNode = Path [0].WalkNodes [(int)_swipeDir];
+		if (path [0].LocalNodes [(int)_swipeDir] != null) {
+			Node targetWalkNode = path [0].WalkNodes [(int)_swipeDir];
 
 			if (targetWalkNode != null) {
 				if (targetWalkNode.type == NodeTypes.Ladder && targetWalkNode.ladderDir == _swipeDir) {
@@ -48,22 +67,34 @@ public class Snowball : Unit
 
 	void CreateLadder (Direction _swipeDir)
 	{
-		Node targetLocalNode = Path [0].LocalNodes [(int)_swipeDir];
+		Node targetLocalNode = path [0].LocalNodes [(int)_swipeDir];
+
 		// Change target node type to ladder
 		targetLocalNode.type = NodeTypes.Ladder;
-		Direction laderDir = MapController.GetPointDirection (Path [0].Position, targetLocalNode.Position);
+		Direction laderDir = MapController.GetPointDirection (path [0].Position, targetLocalNode.Position);
 		targetLocalNode.ladderDir = laderDir;
+
 		// Update target's walknodes
-		for (int i = 0; i < targetLocalNode.LocalNodes.Length; i++) {
+		for (int i = 0; i < targetLocalNode.LocalNodes.Length; i++)
+		{
 			Node localNodeOfTheTargetLocalNode = targetLocalNode.LocalNodes [i];
-			if (localNodeOfTheTargetLocalNode == null) {
+			if (localNodeOfTheTargetLocalNode == null)
+			{
 				continue;
 			}
-			if (MapController.IsNodesConnected (targetLocalNode.type, targetLocalNode.Position, targetLocalNode.ladderDir, localNodeOfTheTargetLocalNode.type, localNodeOfTheTargetLocalNode.Position, localNodeOfTheTargetLocalNode.ladderDir)) {
+			if (MapController.AreNodesConnected (
+				targetLocalNode.type,
+				targetLocalNode.Position,
+				targetLocalNode.ladderDir,
+				localNodeOfTheTargetLocalNode.type,
+				localNodeOfTheTargetLocalNode.Position,
+				localNodeOfTheTargetLocalNode.ladderDir
+			)) {
 				targetLocalNode.WalkNodes [i] = localNodeOfTheTargetLocalNode;
 				localNodeOfTheTargetLocalNode.WalkNodes [(int)MapController.GetOppositeDirection ((Direction)i)] = targetLocalNode;
 			}
-			else {
+			else
+			{
 				targetLocalNode.WalkNodes [i] = null;
 				localNodeOfTheTargetLocalNode.WalkNodes [(int)MapController.GetOppositeDirection ((Direction)i)] = null;
 			}
@@ -71,10 +102,9 @@ public class Snowball : Unit
 		// Swap snowball to ladder
 		prefabPath = "Tiles/Tile_Ladder";
 		modelDirection = laderDir;
-		Path [0].Walk = true;
-		Path [0] = targetLocalNode;
+		path [0].Walk = true;
+		path [0] = targetLocalNode;
 		SetModel ();
-		SetSnowballModel ();
 	}
 }
 
