@@ -47,11 +47,24 @@ public static class GameController {
 		playerData.levelsData [playerData.currentLevel].state = LevelState.Finished;
 		playerData.levelsData [playerData.currentLevel].Reset ();
 
-		Exit ();
+        if (playerData.currentLevel + 1 < Application.levelCount)
+        {
+            NextLevel ();
+        }
+        else
+        {
+            Exit();
+        }
 	}
+
+    public static void NextLevel()
+    {
+        GameUI.GetComponent<Animator> ().Play ("FadeOutGameNextLevel");
+    }
 
 	public static void Exit()
 	{
+        D.Log("GameController.Exit()");
 		GameUI.GetComponent<Animator> ().Play ("FadeOutGame");
 	}
 
