@@ -171,7 +171,11 @@ public class NodeDTEditor : Editor {
 				ModelPicker (i);
 
 				// Populate path
-				if (nodeDTCur.triggersList [i].path == null || nodeDTCur.triggersList [i].path.Count == 0)
+				if (
+                    nodeDTCur.triggersList [i].path == null
+                    || nodeDTCur.triggersList [i].path.Count == 0
+                    || nodeDTCur.triggersList [i].path[0] == null
+                )
 				{
 					nodeDTCur.triggersList [i].path = new List<GameObject>(){nodeDTCur.gameObject};
 				}
@@ -357,6 +361,9 @@ public class NodeDTEditor : Editor {
 		}
 	}
 
+
+    //
+    //
     //Dynamic Object Editor
     void UnitModelUIControl ()
     {

@@ -13,9 +13,11 @@ public class NodeDT : MonoBehaviour {
 
     public InteractiveTypes interactiveType = InteractiveTypes.None;
 
+    // Triggers
     public List<TriggerDT> triggersList;
     public List<string> triggers;
 
+    // Dynamic Object
     public DynamicObjectTypes dynamicObjectType;
     public GameObject dynamicObjectModel;
     public string dynamicObjectPrefabPath;
