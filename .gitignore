@@ -1,42 +1,34 @@
-.DS_Store
-*.userprefs
-*.pidb
-Build
-Builds
+# =============== #
+# Unity generated #
+# =============== #
 Temp/
-obj/
-Library/*
-Assets/Plugins/Shared/Bin
-Assets/Plugins/Shared/Bin.meta
-Assets/Plugins/Shared/Sources
-Assets/Plugins/Shared/Sources.meta
-Assets/RenderingOrderHighlighterTool/
-Assets/RenderingOrderHighlighterTool.meta
-Assets/UnityVS
-Assets/UnityVS.meta
-ProjectSettings/Physics2DSettings.asset
-ProjectSettings/EditorBuildSettings.asset
+Obj/
+UnityGenerated/
+Library/
+Assets/AssetStoreTools*
 
-client-csharp.sln
-client.sln
-Assembly-CSharp-Editor-firstpass-vs.csproj
-Assembly-CSharp-Editor-firstpass.csproj
-Assembly-CSharp-Editor-vs.csproj
-Assembly-CSharp-Editor.csproj
-Assembly-CSharp-firstpass-vs.csproj
-Assembly-CSharp-firstpass.csproj
-Assembly-CSharp-vs.csproj
-Assembly-CSharp.csproj
-Assembly-UnityScript-vs.unityproj
-Assembly-UnityScript.unityproj
+# ===================================== #
+# Visual Studio / MonoDevelop generated #
+# ===================================== #
+ExportedObj/
+*.svd
+*.userprefs
+*.csproj
+*.pidb
+*.suo
+*.sln
+*.user
+*.unityproj
+*.booproj
 
-client.CSharp.csproj
-client.CSharp.Editor.csproj
-client.CSharp.Editor.Plugins.csproj
-client.CSharp.Plugins.csproj
-
-UnityVS.client.CSharp.Editor.csproj
-UnityVS.client.CSharp.csproj
-UnityVS.client.CSharp.Editor.Plugins.csproj
-UnityVS.client.CSharp.Plugins.csproj
-client.tss
+# ============ #
+# OS generated #
+# ============ #
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db

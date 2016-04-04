@@ -10,6 +10,12 @@ public enum NodeTypes
 	Ladder,
 	Vertical
 }
+public enum InteractiveTypes
+{
+    None = 0,
+    Trigger,
+    DynamicObject
+}
 
 public enum TriggerTypes
 {
@@ -66,9 +72,7 @@ public static class MapController
 	public static List<Trigger> triggersList;
 	static GameObject[] currentLevelNodesDT;
 	static List<string> triggersDTNames;
-	static List<TriggerDT> triggersDT;
-
-
+    static List<TriggerDT> triggersDT;
 
 	public static void Init ()
 	{
@@ -83,8 +87,6 @@ public static class MapController
 		currentLevelNodesDT = GameObject.FindGameObjectsWithTag (TAG_NODE);
 		triggersDTNames = new List<string> ();
 		triggersList = new List<Trigger> ();
-
-		GameController.LoadPlayerData ();
 
 		if (
 			currentLevelNodes == null
@@ -137,35 +139,40 @@ public static class MapController
 		D.Log ("Map Init: Fill nodes");
 		// Fill nodes
 		for (int i = 0; i < currentLevelNodes.Length; i++) {
-			NodeDT nodeDT = currentLevelNodesDT [i].GetComponent<NodeDT> ();
-			DynamicObjectDT dynamicObjectDT = currentLevelNodesDT [i].GetComponent<DynamicObjectDT> ();
+			NodeDT nodeDTCur = currentLevelNodesDT [i].GetComponent<NodeDT> ();
 
 			// Prepare walknodes
 			for (int k = 0; k < currentLevelNodes [i].WalkNodes.Length; k++) {
-				currentLevelNodes [i].WalkNodes [k] = GetNodeByGO (nodeDT.walkNodes [k]);
+				currentLevelNodes [i].WalkNodes [k] = GetNodeByGO (nodeDTCur.walkNodes [k]);
 			}
 
 			// Prepare localnodes
 			for (int m = 0; m < currentLevelNodes [i].LocalNodes.Length; m++) {
-				currentLevelNodes [i].LocalNodes [m] = GetNodeByGO (nodeDT.localNodes [m]);
+				currentLevelNodes [i].LocalNodes [m] = GetNodeByGO (nodeDTCur.localNodes [m]);
 			}
 
 			// Copy TriggersDT from NodeDT
 			if (i == 0) {
-				triggersDT = nodeDT.triggersList;
+				triggersDT = nodeDTCur.triggersList;
 			}
 
-			// Prepare triggers
-			for (int l = 0; l < currentLevelNodes [i].Triggers.Length; l++) {
-				currentLevelNodes [i].Triggers [l] = GetTrigger (nodeDT.triggers [l]);
-			}
+            // Prepare triggers
+            if (nodeDTCur.interactiveType == InteractiveTypes.Trigger)
+            {
+                for (int l = 0; l < currentLevelNodes [i].Triggers.Length; l++) {
+                    currentLevelNodes [i].Triggers [l] = GetTrigger (nodeDTCur.triggers [l]);
+                }
+            }
 
-			// Prepare units
-			if (dynamicObjectDT != null) {
-				if (dynamicObjectDT.unitPrefabPath != null && dynamicObjectDT.unitPrefabPath != "") {
-					newDynamicObjects.Add (GetDynamicObject (dynamicObjectDT));
-				}
-			}
+			// Prepare dynamic objects
+            if (nodeDTCur.interactiveType == InteractiveTypes.DynamicObject)
+            {
+                if (nodeDTCur.dynamicObjectPrefabPath != null && nodeDTCur.dynamicObjectPrefabPath != "") {
+                    newDynamicObjects.Add (GetDynamicObject (nodeDTCur));
+                } else {
+                    D.LogError("Prefab path is empty: " + nodeDTCur.GetComponent<Transform>().position);
+                }
+            }
 		}
 
 		D.Log ("Map Init: Copy dynamic objects");
@@ -221,7 +228,7 @@ public static class MapController
 			triggersList.Count,
 			triggersDT[id].type,
 			path,
-			triggersDT[id].prefab,
+			triggersDT[id].prefabPath,
 			triggersDT[id].modelDirection,
 			0,
 			activateNodes
@@ -230,23 +237,23 @@ public static class MapController
 	}
 
 
-	static DynamicObject GetDynamicObject (DynamicObjectDT _nodeDT)
+    static DynamicObject GetDynamicObject (NodeDT _nodeDT)
 	{
 		DynamicObject dynamicObject = null;
 
 		switch (_nodeDT.dynamicObjectType) {
 		case DynamicObjectTypes.SnowBall:
 			dynamicObject = new Snowball (
-				_nodeDT.unitPrefabPath,
-				_nodeDT.unitDirection,
+				_nodeDT.dynamicObjectPrefabPath,
+				_nodeDT.dynamicObjectDirection,
 				GetNodeByGO (_nodeDT.gameObject)
 			);
 			break;
 
 		default :
 			dynamicObject = new Unit (
-				_nodeDT.unitPrefabPath,
-				_nodeDT.unitDirection,
+				_nodeDT.dynamicObjectPrefabPath,
+				_nodeDT.dynamicObjectDirection,
 				GetNodeByGO (_nodeDT.gameObject)
 			);
 			break;
@@ -258,18 +265,21 @@ public static class MapController
 
 	static void PrepareGameSession ()
 	{
-		foreach (var _node in currentLevelNodes) {
+        // Nodes
+		foreach (var _node in currentLevelNodes)
+        {
 			_node.SetCollider ();
 		}
-		foreach (var _dynamicObject in dynamicObjects) {
-			_dynamicObject.SetModel ();
-			if (_dynamicObject.prefabPath.Contains("Snowball"))
-			{
-//				_dynamicObject.SetSnowballModel ();
-			}
 
+        // Dynamic Objects
+		foreach (var _dynamicObject in dynamicObjects)
+        {
+			_dynamicObject.SetModel ();
 		}
-		foreach (var _trigger in triggers) {
+
+        // Triggers
+		foreach (var _trigger in triggers)
+        {
 			_trigger.SetModel ();
 		}
 	}
@@ -277,7 +287,8 @@ public static class MapController
 	// Pathfinding
 	public static List<Node> GetPath (Node _source, Node _target)
 	{
-		if (_source == _target) {
+		if (_source == _target)
+        {
 			D.LogWarning ("Pathfinding: source == target");
 			return null;
 		}

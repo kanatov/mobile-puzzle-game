@@ -7,7 +7,7 @@ public class TriggerDT {
 	public string name;
 	public TriggerTypes type;
 	public List<GameObject> activateNodes;
-	public string prefab;
+	public string prefabPath;
 	public List<GameObject> path;
 	public GameObject model;
 	public Direction modelDirection;

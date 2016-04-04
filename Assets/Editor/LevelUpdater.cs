@@ -36,21 +36,21 @@ class LevelUpdater : Editor {
 		nodes = MapController.SetContainer (MapController.TAG_NODE);
 
 		for (int a = 0; a < nodes.Length; a++) {
-			NodeDT nodeDT = nodes[a].GetComponent<NodeDT> ();
-			DynamicObjectDT dynamicObjectDT = nodes[a].GetComponent<DynamicObjectDT> ();
+			NodeDT nodeDTCur = nodes[a].GetComponent<NodeDT> ();
 
-			SetNodeNetwork (nodeDT);
+			SetNodeNetwork (nodeDTCur);
 
 			// Set prefab path
-			if (dynamicObjectDT) {
-				dynamicObjectDT.unitPrefabPath = GetModelPath (dynamicObjectDT);
+            if (nodeDTCur.interactiveType == InteractiveTypes.DynamicObject)
+            {
+                nodeDTCur.dynamicObjectPrefabPath = GetModelPath (nodeDTCur.dynamicObjectModel);
 			}
 
 			// Set icon
 			SetIcon (nodes [a]);
 
 			// Save changes
-			EditorUtility.SetDirty(nodeDT);
+			EditorUtility.SetDirty(nodeDTCur);
 		}
 	}
 
@@ -139,12 +139,12 @@ class LevelUpdater : Editor {
 		}
 	}
 
-	static string GetModelPath (DynamicObjectDT _dynamicObjectDT) {
-		if (_dynamicObjectDT.model == null) {
+    public static string GetModelPath (GameObject _model) {
+        if (_model == null) {
 			return null;
 		}
 
-		string path = AssetDatabase.GetAssetPath (_dynamicObjectDT.model);
+        string path = AssetDatabase.GetAssetPath (_model);
 		path = path.Substring (0, path.Length - 7);
 		path = path.Substring (17);
 		return path;

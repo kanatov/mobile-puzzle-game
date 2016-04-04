@@ -26,30 +26,49 @@ public class NodeDTEditor : Editor {
 		DefaultUIControl ("walkNodes");
 		DefaultUIControl ("localNodes");
 		DefaultUIControl ("singleActivation");
-		DefaultUIControl ("touchActiovation");
+        DefaultUIControl ("touchActiovation");
 		DefaultUIControl ("walk");
 		NodeTypeUIControl ();
 
-		// Triggers UI
-		GUILayout.Space (15f);
-		EditorGUILayout.LabelField ("Triggers", EditorStyles.boldLabel);
-		DefaultUIControl ("triggers");
-		FetchTriggersList ();
-		DrawList ();
-		GUILayout.Space (15f);
-		Create ();
-		UpdateTriggersList ();
+        // Triggers UI
+        GUILayout.Space (15f);
+        DefaultUIControl ("interactiveType");
+        GUILayout.Space (15f);
 
-		// Save settings
-		EditorSceneManager.MarkAllScenesDirty ();
-		EditorUtility.SetDirty (nodeDTCur);
+        if (nodeDTCur.interactiveType == InteractiveTypes.Trigger)
+        {
+            EditorGUILayout.LabelField ("Triggers", EditorStyles.boldLabel);
+            DefaultUIControl ("triggers");
+            FetchTriggersList ();
+            DrawList ();
+            GUILayout.Space (15f);
+            Create ();
+            UpdateTriggersList ();
 
-		// Display all active triggers
-		//		DisplayActiveTriggers ();
+            // Remove triggers
+            GUILayout.Space (15f);
+            if(GUILayout.Button("Remove triggers from this NodeDT", GUILayout.Height(23f))) {DestroyTriggers();}
+        }
 
-		// Remove triggers
-		GUILayout.Space (15f);
-		if(GUILayout.Button("Remove triggers from this NodeDT", GUILayout.Height(23f))) {Destroy();}
+        // Dynamic Object UI
+        if (nodeDTCur.interactiveType == InteractiveTypes.DynamicObject)
+        {
+            EditorGUILayout.LabelField ("Dynamic Object", EditorStyles.boldLabel);
+            UnitModelUIControl ();
+
+            GUILayout.Space (15f);
+            if(GUILayout.Button("Destroy dynamic object", GUILayout.Height(23f))) { DestroyDynamicObjects(); }
+        }
+
+        // Clear Child
+        if (nodeDTCur.interactiveType == InteractiveTypes.None)
+        {
+            RemoveChild ();
+        }
+
+        // Save settings
+        EditorSceneManager.MarkAllScenesDirty ();
+        EditorUtility.SetDirty (nodeDTCur);
 	}
 		
 	void DefaultUIControl (string _property) {
@@ -218,18 +237,26 @@ public class NodeDTEditor : Editor {
 		{
 			nodeDTCur.triggersList [i].model = model;
 
-			nodeDTCur.triggersList [i].prefab = AssetDatabase.GetAssetPath (model);
-			nodeDTCur.triggersList [i].prefab = nodeDTCur.triggersList [i].prefab.Substring (0, nodeDTCur.triggersList [i].prefab.Length - 7);
-			nodeDTCur.triggersList [i].prefab = nodeDTCur.triggersList [i].prefab.Substring (17);
+			nodeDTCur.triggersList [i].prefabPath = AssetDatabase.GetAssetPath (model);
+			nodeDTCur.triggersList [i].prefabPath = nodeDTCur.triggersList [i].prefabPath.Substring (0, nodeDTCur.triggersList [i].prefabPath.Length - 7);
+			nodeDTCur.triggersList [i].prefabPath = nodeDTCur.triggersList [i].prefabPath.Substring (17);
 
-			SetModel (i);
+            SetTriggerModel (i);
 		}
 
-		if (nodeDTCur.triggersList [i].model != null)
-		{
-			TriggerRotationUIControl (i);
-		}
+        if (nodeDTCur.triggersList [i].model != null)
+        {
+            TriggerRotationUIControl (i);
 
+            if (
+                nodeDTCur.GetComponent<Transform>().childCount == 0
+                || nodeDTCur.triggersList [i].prefabPath == null
+                || nodeDTCur.triggersList [i].prefabPath == ""
+            )
+            {
+                SetTriggerModel (i);   
+            }
+        }
 	}
 
 	void RemoveTrigger (int n)
@@ -255,12 +282,13 @@ public class NodeDTEditor : Editor {
 		}
 	}
 
-	void SetModel (int i)
+	void SetTriggerModel (int i)
 	{
 		// Remove old children
 		RemoveChild ();
 
 		// Instant new children
+        nodeDTCur.triggersList[i].prefabPath = LevelUpdater.GetModelPath (nodeDTCur.triggersList[i].model);
 		GameObject newChild = (GameObject)PrefabUtility.InstantiatePrefab (nodeDTCur.triggersList [i].model);
 		Transform newChildTransform = newChild.GetComponent<Transform> ();
 		newChildTransform.SetParent (nodeDTTrans);
@@ -276,11 +304,11 @@ public class NodeDTEditor : Editor {
 		if (rotation != nodeDTCur.triggersList [i].modelDirection)
 		{
 			nodeDTCur.triggersList [i].modelDirection = rotation;
-			SetModel (i);
+            SetTriggerModel (i);
 		}
 	}
 
-	void Destroy ()
+    void DestroyTriggers ()
 	{
 		nodeDTCur.triggers = new List<string> ();
 		RemoveChild ();
@@ -328,4 +356,68 @@ public class NodeDTEditor : Editor {
 			}
 		}
 	}
+
+    //Dynamic Object Editor
+    void UnitModelUIControl ()
+    {
+        // Collider type selector
+        DynamicObjectTypes colliderType = (DynamicObjectTypes)EditorGUILayout.EnumPopup ("Dynamic Object Type:", nodeDTCur.dynamicObjectType);
+
+        if (colliderType != nodeDTCur.dynamicObjectType) {
+            nodeDTCur.dynamicObjectType = colliderType;
+            SetDynamicObjectModel ();
+        }
+
+        // Model selector
+        GameObject newModel = (GameObject)EditorGUILayout.ObjectField ("Dynamic Object:", nodeDTCur.dynamicObjectModel, typeof(GameObject), false);
+
+        if (newModel != nodeDTCur.dynamicObjectModel) {
+            nodeDTCur.dynamicObjectModel = newModel;
+            SetDynamicObjectModel ();
+        }
+
+        if (nodeDTCur.dynamicObjectModel != null)
+        {
+            if (
+                nodeDTCur.GetComponent<Transform>().childCount == 0
+                || nodeDTCur.dynamicObjectPrefabPath == null
+                || nodeDTCur.dynamicObjectPrefabPath == ""
+            )
+            {
+                SetDynamicObjectModel ();   
+            }
+        }
+
+        // Rotation
+        Direction rotation = (Direction)EditorGUILayout.EnumPopup ("Unit Rotation:", nodeDTCur.dynamicObjectDirection);
+
+        if (rotation != nodeDTCur.dynamicObjectDirection) {
+            nodeDTCur.dynamicObjectDirection = rotation;
+            SetDynamicObjectModel ();
+        }
+
+        // Prefab
+        DefaultUIControl ("dynamicObjectPrefabPath");
+    }
+
+    void SetDynamicObjectModel ()
+    {
+        RemoveChild ();
+
+        // Instant new children
+        nodeDTCur.dynamicObjectPrefabPath = LevelUpdater.GetModelPath (nodeDTCur.dynamicObjectModel);
+        GameObject newChild = (GameObject)PrefabUtility.InstantiatePrefab (nodeDTCur.dynamicObjectModel);
+        if (newChild == null) { return; }
+
+        Transform newChildTransform = newChild.GetComponent<Transform> ();
+        newChildTransform.SetParent (nodeDTTrans);
+        newChildTransform.localPosition = Vector3.zero;
+        newChildTransform.eulerAngles = MapController.GetEulerAngle(nodeDTCur.dynamicObjectDirection);
+        newChildTransform.tag = "Untagged";
+    }
+
+    void DestroyDynamicObjects()
+    {
+        RemoveChild ();
+    }
 }
