@@ -7,7 +7,6 @@ public class PathIndexer {
 	[SerializeField] List<int> path;
 
 	public PathIndexer (List<Node> _path) {
-		D.Log ("Init list: " + _path.Count);
 		List<int> intPath = new List<int>();
 		foreach (var _node in _path) {
 			intPath.Add (_node.id);

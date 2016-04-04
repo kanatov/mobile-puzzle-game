@@ -5,7 +5,7 @@ Build
 Builds
 Temp/
 obj/
-Library/
+Library/*
 Assets/Plugins/Shared/Bin
 Assets/Plugins/Shared/Bin.meta
 Assets/Plugins/Shared/Sources

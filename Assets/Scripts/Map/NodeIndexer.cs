@@ -23,12 +23,23 @@ public class NodeIndexer {
 		}
 	}
 
-	// Public Method
 	public int Length {
 		get {
 			return nodesID.Length;
 		}
 	}
+
+    public bool Contains (Node _node) {
+        foreach (var _id in nodesID)
+        {
+            if (_id == _node.id)
+            {
+                return true;
+                break;
+            }
+        }
+        return false;
+    }
 
 	// Constructor
 	public NodeIndexer (int[] _neighbours) {
