@@ -2,9 +2,11 @@
 using UnityEngine.SceneManagement;
 using GenericData;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public static class GameController {
 	public static PlayerData playerData;
+	public static GameObject GameUI;
 
 	public static void Init ()
 	{
@@ -40,6 +42,13 @@ public static class GameController {
 
 	public static void Finish()
 	{
+		D.Log ("Game controller: Finish!");
+		GameUI.GetComponent<Animator> ().Play ("FadeOutGame");
+	}
+
+	public static void Exit()
+	{
+		D.Log ("Game controller: Exit!");
 		int currentScene = SceneManager.GetActiveScene ().buildIndex;
 		playerData.levelsData[playerData.currentLevel].state = LevelState.Finished;
 		LoadScene (0);

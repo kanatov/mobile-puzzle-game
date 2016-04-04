@@ -70,6 +70,7 @@ public class Trigger : DynamicObject
 
 	public void Activate ()
 	{
+		D.Log ("Trigger: activate");
 		for (int i = 0; i < ActivateWaypoints.Length; i++) {
 			ActivateWaypoints [i].ActivateWalk ();
 		}
@@ -82,6 +83,7 @@ public class Trigger : DynamicObject
 
 		if (type == TriggerTypes.Finish)
 		{
+			D.Log ("Trigger: Finish!");
 			GameController.Finish ();
 			return;
 		}

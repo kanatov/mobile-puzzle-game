@@ -41,6 +41,7 @@ public static class MapController
 	public static string TAG_TILE = "Tile";
 	public static string TAG_NODE = "Node";
 	public static string TAG_TRIGGER = "Trigger";
+	public static string TAG_GAMEUI = "GameUI";
 	public static string TAG_CONTAINER = "sContainer";
 
 	public static Node[] currentLevelNodes
@@ -77,6 +78,8 @@ public static class MapController
 //			_light.GetComponent<Light>().shadows = LightShadows.None;
 //		}
 
+		GameController.GameUI = GameObject.FindGameObjectsWithTag (TAG_GAMEUI)[0];
+
 		currentLevelNodesDT = GameObject.FindGameObjectsWithTag (TAG_NODE);
 		triggersDTNames = new List<string> ();
 		triggersList = new List<Trigger> ();
@@ -99,7 +102,6 @@ public static class MapController
 		currentLevelNodesDT = null;
 		triggersDTNames = null;
 		triggersList = null;
-		GameObject.DestroyImmediate (GameObject.FindGameObjectWithTag (TAG_TRIGGER + TAG_CONTAINER));
 		GameObject.DestroyImmediate (GameObject.FindGameObjectWithTag (TAG_NODE + TAG_CONTAINER));
 
 		// Organise scene

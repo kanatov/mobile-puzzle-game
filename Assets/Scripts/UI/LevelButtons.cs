@@ -26,7 +26,7 @@ public class LevelButtons : MonoBehaviour {
 			if (GameController.playerData.levelsData [i].state == LevelState.Finished)
 			{
 				buttons [i].GetComponent<Button> ().interactable = true;
-				buttons [i].GetComponent<Image> ().color = new Color (0.7f, 0.9f, 0f, 1f);
+				buttons [i].GetComponent<Image> ().color = new Color (0.8f, 1f, 0.8f, 1f);
 			}
 		}
 

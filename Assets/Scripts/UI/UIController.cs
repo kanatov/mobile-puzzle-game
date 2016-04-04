@@ -11,4 +11,9 @@ public class UIController : MonoBehaviour {
 	{
 		GameController.ClearPlayerData ();
 	}
+
+	public void Exit ()
+	{
+		GameController.Exit ();
+	}
 }
