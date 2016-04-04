@@ -52,14 +52,17 @@ public class Snowball : Unit
 		
 	public void Dash (Direction _swipeDir)
 	{
-		if (path [0].LocalNodes [(int)_swipeDir] != null) {
+		// If there is Local Node in _swipeDir
+		if (path [0].LocalNodes [(int)_swipeDir] != null && path [0].LocalNodes [(int)_swipeDir].Walk) {
 			Node targetWalkNode = path [0].WalkNodes [(int)_swipeDir];
 
 			if (targetWalkNode != null) {
 				if (targetWalkNode.type == NodeTypes.Ladder && targetWalkNode.ladderDir == _swipeDir) {
+					// If there is Walk Node in _swipeDir and it is downside Ladder
 					GoTo (targetWalkNode);
 				}
 			} else {
+				// Or create Walk Node
 				CreateLadder (_swipeDir);
 			}
 		}
