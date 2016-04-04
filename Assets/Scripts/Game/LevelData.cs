@@ -13,4 +13,11 @@ public class LevelData {
 	public LevelData(int _id) {
 		id = _id;
 	}
+
+	public void Reset()
+	{
+		currentLevelNodes = null;
+		dynamicObjects = null;
+		triggers = null;
+	}
 }

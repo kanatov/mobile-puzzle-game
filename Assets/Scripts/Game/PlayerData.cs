@@ -24,13 +24,15 @@ public class PlayerData {
 		if (levelsData.Count != Application.levelCount) {
 			List<LevelData> newLevelsData = new List<LevelData>();
 
-			for (int i = 0; i < Application.levelCount; i++) {
+			for (int i = 0; i < Application.levelCount; i++)
+			{
 				if (i < levelsData.Count) {
 					newLevelsData.Add(levelsData[i]);
 				} else {
 					newLevelsData.Add(new LevelData(i));
 				}
 			}
+
 			levelsData = newLevelsData;
 		}
 	}

@@ -43,21 +43,23 @@ public static class GameController {
 	public static void Finish()
 	{
 		D.Log ("Game controller: Finish!");
-		GameUI.GetComponent<Animator> ().Play ("FadeOutGame");
+		int currentScene = SceneManager.GetActiveScene ().buildIndex;
+		playerData.levelsData [playerData.currentLevel].state = LevelState.Finished;
+		playerData.levelsData [playerData.currentLevel].Reset ();
+
+		Exit ();
 	}
 
 	public static void Exit()
 	{
-		D.Log ("Game controller: Exit!");
-		int currentScene = SceneManager.GetActiveScene ().buildIndex;
-		playerData.levelsData[playerData.currentLevel].state = LevelState.Finished;
-		LoadScene (0);
+		GameUI.GetComponent<Animator> ().Play ("FadeOutGame");
 	}
 
 	public static void ClearPlayerData()
 	{
+		playerData = null;
 		SaveLoad.Delete (SaveLoad.namePlayerProgress);
-		LoadScene (0);
+		Init ();
 	}
 
 	public static void SavePlayerData ()
