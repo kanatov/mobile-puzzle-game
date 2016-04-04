@@ -64,11 +64,11 @@ public class Snowball : Unit
 
 			if (targetWalkNode != null)
 			{
-				if (targetWalkNode.type == NodeTypes.Ladder && targetWalkNode.ladderDir == _swipeDir)
-				{
-					// If there is Walk Node in _swipeDir and it is downside Ladder
-					GoTo(targetWalkNode);
-				}
+//				if (targetWalkNode.type == NodeTypes.Ladder)
+//				{
+//					// If there is Walk Node in _swipeDir and it is downside Ladder
+//					GoTo(targetWalkNode);
+//				}
 			}
 			else
 			{
@@ -90,8 +90,8 @@ public class Snowball : Unit
 		// Update target's walknodes
 		for (int i = 0; i < newLadder.LocalNodes.Length; i++)
 		{
-			Node localNodeOfTheTargetLocalNode = newLadder.LocalNodes[i];
-			if (localNodeOfTheTargetLocalNode == null)
+            Node newLadderLocalNode = newLadder.LocalNodes[i];
+			if (newLadderLocalNode == null)
 			{
 				continue;
 			}
@@ -100,18 +100,18 @@ public class Snowball : Unit
 				    newLadder.type,
 				    newLadder.Position,
 				    newLadder.ladderDir,
-				    localNodeOfTheTargetLocalNode.type,
-				    localNodeOfTheTargetLocalNode.Position,
-				    localNodeOfTheTargetLocalNode.ladderDir
+				    newLadderLocalNode.type,
+				    newLadderLocalNode.Position,
+				    newLadderLocalNode.ladderDir
 			    ))
 			{
-				newLadder.WalkNodes[i] = localNodeOfTheTargetLocalNode;
-				localNodeOfTheTargetLocalNode.WalkNodes[(int)MapController.GetOppositeDirection((Direction)i)] = newLadder;
+				newLadder.WalkNodes[i] = newLadderLocalNode;
+				newLadderLocalNode.WalkNodes[(int)MapController.GetOppositeDirection((Direction)i)] = newLadder;
 			}
 			else
 			{
 				newLadder.WalkNodes[i] = null;
-				localNodeOfTheTargetLocalNode.WalkNodes[(int)MapController.GetOppositeDirection((Direction)i)] = null;
+				newLadderLocalNode.WalkNodes[(int)MapController.GetOppositeDirection((Direction)i)] = null;
 			}
 		}
 
