@@ -57,6 +57,11 @@ public static class GameController {
         }
 	}
 
+    public static void FadeInLevel()
+    {
+        GameUI.GetComponent<Animator> ().Play ("FadeIn");
+    }
+
     public static void NextLevel()
     {
         GameUI.GetComponent<Animator> ().Play ("FadeOutGameNextLevel");
@@ -67,6 +72,12 @@ public static class GameController {
         D.Log("GameController.Exit()");
 		GameUI.GetComponent<Animator> ().Play ("FadeOutGame");
 	}
+
+    public static void RestertLevel()
+    {
+        playerData.levelsData [playerData.currentLevel].Reset ();
+        LoadScene(playerData.currentLevel);
+    }
 
 	public static void ClearPlayerData()
 	{

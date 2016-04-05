@@ -115,6 +115,9 @@ public static class MapController
         SetContainer(TAG_NODE);
         SetContainer(TAG_TRIGGER);
         SetContainer(TAG_UNIT);
+
+        // FadeIn scene
+        GameController.FadeInLevel();
     }
 
 

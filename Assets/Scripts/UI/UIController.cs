@@ -17,6 +17,11 @@ public class UIController : MonoBehaviour {
 		GameController.Exit ();
 	}
 
+    public void Restart()
+    {
+        GameController.RestertLevel();
+    }
+
     public void NextLevel()
     {
         GameController.LoadScene(GameController.playerData.currentLevel + 1);
