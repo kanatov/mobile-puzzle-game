@@ -11,7 +11,8 @@ public class Unit : DynamicObject
 	(
         string _prefabPath,
         Direction _rotation,
-        Node _source
+        Node _source,
+        bool _tutorialTrigger
     )
     {
         prefabPath = _prefabPath;
@@ -19,6 +20,9 @@ public class Unit : DynamicObject
 
         path = new PathIndexer(new List<Node>{ _source });
         path[0].Walk = false;
+
+        tutorialTrigger = _tutorialTrigger;
+
         SetModel();
     }
 

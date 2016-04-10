@@ -44,10 +44,6 @@ public class NodeDTEditor : Editor {
             GUILayout.Space (15f);
             Create ();
             UpdateTriggersList ();
-
-            // Remove triggers
-            GUILayout.Space (15f);
-            if(GUILayout.Button("Remove triggers from this NodeDT", GUILayout.Height(23f))) {DestroyTriggers();}
         }
 
         // Dynamic Object UI
@@ -63,7 +59,7 @@ public class NodeDTEditor : Editor {
         // Clear Child
         if (nodeDTCur.interactiveType == InteractiveTypes.None)
         {
-            RemoveChild ();
+            RemoveChild (nodeDTCur.gameObject);
         }
 
         // Save settings
@@ -253,7 +249,7 @@ public class NodeDTEditor : Editor {
             TriggerRotationUIControl (i);
 
             if (
-                nodeDTCur.GetComponent<Transform>().childCount == 0
+                nodeDTCur.triggersList[i].path[0].GetComponent<Transform>().childCount == 0
                 || nodeDTCur.triggersList [i].prefabPath == null
                 || nodeDTCur.triggersList [i].prefabPath == ""
             )
@@ -279,23 +275,25 @@ public class NodeDTEditor : Editor {
 		nodeDTCur.triggers.Add (_name);
 	}
 
-	void RemoveChild ()
+    void RemoveChild (GameObject _parent)
 	{
-		while (nodeDTTrans.childCount > 0) {
-			GameObject.DestroyImmediate (nodeDTTrans.GetChild (0).gameObject);
+        Transform parentTrans = _parent.GetComponent<Transform>();
+
+		while (parentTrans.childCount > 0) {
+            GameObject.DestroyImmediate (parentTrans.GetChild (0).gameObject);
 		}
 	}
 
 	void SetTriggerModel (int i)
 	{
 		// Remove old children
-		RemoveChild ();
+        RemoveChild (nodeDTCur.triggersList[i].path[0]);
 
 		// Instant new children
         nodeDTCur.triggersList[i].prefabPath = LevelUpdater.GetModelPath (nodeDTCur.triggersList[i].model);
 		GameObject newChild = (GameObject)PrefabUtility.InstantiatePrefab (nodeDTCur.triggersList [i].model);
 		Transform newChildTransform = newChild.GetComponent<Transform> ();
-		newChildTransform.SetParent (nodeDTTrans);
+        newChildTransform.SetParent (nodeDTCur.triggersList[i].path[0].GetComponent<Transform>());
 		newChildTransform.localPosition = Vector3.zero;
 		newChildTransform.eulerAngles = MapController.GetEulerAngle (nodeDTCur.triggersList [i].modelDirection);
 		newChildTransform.tag = "Untagged";
@@ -310,12 +308,6 @@ public class NodeDTEditor : Editor {
 			nodeDTCur.triggersList [i].modelDirection = rotation;
             SetTriggerModel (i);
 		}
-	}
-
-    void DestroyTriggers ()
-	{
-		nodeDTCur.triggers = new List<string> ();
-		RemoveChild ();
 	}
 
 	void Create ()
@@ -405,11 +397,12 @@ public class NodeDTEditor : Editor {
 
         // Prefab
         DefaultUIControl ("dynamicObjectPrefabPath");
+        DefaultUIControl ("tutorialTrigger");
     }
 
     void SetDynamicObjectModel ()
     {
-        RemoveChild ();
+        RemoveChild (nodeDTCur.gameObject);
 
         // Instant new children
         nodeDTCur.dynamicObjectPrefabPath = LevelUpdater.GetModelPath (nodeDTCur.dynamicObjectModel);
@@ -425,6 +418,6 @@ public class NodeDTEditor : Editor {
 
     void DestroyDynamicObjects()
     {
-        RemoveChild ();
+        RemoveChild (nodeDTCur.gameObject);
     }
 }

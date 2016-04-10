@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using GenericData;
 using System.Linq;
+using UnityEngine.UI;
 
 public enum NodeTypes
 {
@@ -163,7 +164,7 @@ public static class MapController
                 currentLevelNodes[i].LocalNodes[m] = GetNodeByGO(nodeDTCur.localNodes[m]);
             }
 
-            // Copy TriggersDT from NodeDT
+            // Copy TriggersDT from NodeDT once
             if (i == 0)
             {
                 triggersDT = nodeDTCur.triggersList;
@@ -268,7 +269,8 @@ public static class MapController
                 dynamicObject = new Snowball(
                     _nodeDT.dynamicObjectPrefabPath,
                     _nodeDT.dynamicObjectDirection,
-                    GetNodeByGO(_nodeDT.gameObject)
+                    GetNodeByGO(_nodeDT.gameObject),
+                    _nodeDT.tutorialTrigger
                 );
                 break;
 
@@ -276,7 +278,8 @@ public static class MapController
                 dynamicObject = new Unit(
                     _nodeDT.dynamicObjectPrefabPath,
                     _nodeDT.dynamicObjectDirection,
-                    GetNodeByGO(_nodeDT.gameObject)
+                    GetNodeByGO(_nodeDT.gameObject),
+                    _nodeDT.tutorialTrigger
                 );
                 break;
         }

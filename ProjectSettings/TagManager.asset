@@ -16,6 +16,7 @@ TagManager:
   - Waypoint
   - Light
   - GameUI
+  - Tutorial
   layers:
   - Default
   - TransparentFX

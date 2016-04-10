@@ -24,7 +24,10 @@ public class DynamicObject {
 	public PathIndexer path;
 	public Direction modelDirection;
 	public int id;
-	public string prefabPath;
+    public string prefabPath;
+    public bool tutorialTrigger;
+    public bool tutorialActivated;
+
 	[SerializeField] protected int currentNode;
 
 	[System.NonSerialized] public GameObject model;

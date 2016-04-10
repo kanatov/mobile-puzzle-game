@@ -22,4 +22,6 @@ public class NodeDT : MonoBehaviour {
     public GameObject dynamicObjectModel;
     public string dynamicObjectPrefabPath;
     public Direction dynamicObjectDirection;
+    public bool tutorialTrigger;
+
 }
